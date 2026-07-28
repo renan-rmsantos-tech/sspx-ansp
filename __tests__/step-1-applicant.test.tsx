@@ -5,7 +5,7 @@ import { INITIAL_FORM_DATA } from "@/app/form/_components/form-types";
 import type { FormData } from "@/app/form/_components/form-types";
 
 vi.mock("@/app/form/_actions/form-actions", () => ({
-  createSignedUploadUrl: vi.fn().mockResolvedValue({
+  createUploadUrl: vi.fn().mockResolvedValue({
     url: "https://example.com/upload",
     path: "pending/abc/rg_pai/file.pdf",
   }),

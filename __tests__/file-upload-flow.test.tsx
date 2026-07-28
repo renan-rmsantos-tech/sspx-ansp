@@ -2,15 +2,15 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { render, screen, fireEvent, cleanup, waitFor } from "@testing-library/react";
 import { FileUpload } from "@/app/form/_components/file-upload";
 
-const mockCreateSignedUploadUrl = vi.fn();
+const mockCreateUploadUrl = vi.fn();
 
 vi.mock("@/app/form/_actions/form-actions", () => ({
-  createSignedUploadUrl: (...args: unknown[]) => mockCreateSignedUploadUrl(...args),
+  createUploadUrl: (...args: unknown[]) => mockCreateUploadUrl(...args),
 }));
 
 describe("FileUpload upload flow", () => {
   beforeEach(() => {
-    mockCreateSignedUploadUrl.mockReset();
+    mockCreateUploadUrl.mockReset();
     vi.stubGlobal("fetch", vi.fn());
   });
 
@@ -19,8 +19,8 @@ describe("FileUpload upload flow", () => {
     vi.unstubAllGlobals();
   });
 
-  it("uploads a file via signed URL on file input change", async () => {
-    mockCreateSignedUploadUrl.mockResolvedValue({
+  it("uploads a file via an upload ticket on file input change", async () => {
+    mockCreateUploadUrl.mockResolvedValue({
       url: "https://storage.example.com/upload",
       path: "pending/uuid1/rg_pai/doc.pdf",
     });
@@ -43,7 +43,7 @@ describe("FileUpload upload flow", () => {
     fireEvent.change(input);
 
     await waitFor(() => {
-      expect(mockCreateSignedUploadUrl).toHaveBeenCalledWith("doc.pdf", "rg_pai");
+      expect(mockCreateUploadUrl).toHaveBeenCalledWith("doc.pdf", "rg_pai");
     });
 
     await waitFor(() => {
@@ -53,8 +53,8 @@ describe("FileUpload upload flow", () => {
     });
   });
 
-  it("handles upload error from signed URL", async () => {
-    mockCreateSignedUploadUrl.mockResolvedValue({
+  it("handles an upload ticket error", async () => {
+    mockCreateUploadUrl.mockResolvedValue({
       error: "Erro ao gerar URL",
     });
 
@@ -81,7 +81,7 @@ describe("FileUpload upload flow", () => {
   });
 
   it("handles fetch failure during upload", async () => {
-    mockCreateSignedUploadUrl.mockResolvedValue({
+    mockCreateUploadUrl.mockResolvedValue({
       url: "https://storage.example.com/upload",
       path: "pending/uuid1/rg_pai/doc.pdf",
     });
@@ -113,7 +113,7 @@ describe("FileUpload upload flow", () => {
   });
 
   it("handles drop event and uploads files", async () => {
-    mockCreateSignedUploadUrl.mockResolvedValue({
+    mockCreateUploadUrl.mockResolvedValue({
       url: "https://storage.example.com/upload",
       path: "pending/uuid1/rg_pai/doc.pdf",
     });
@@ -139,7 +139,7 @@ describe("FileUpload upload flow", () => {
     });
 
     await waitFor(() => {
-      expect(mockCreateSignedUploadUrl).toHaveBeenCalledWith(
+      expect(mockCreateUploadUrl).toHaveBeenCalledWith(
         "dropped.pdf",
         "rg_pai"
       );
@@ -147,7 +147,7 @@ describe("FileUpload upload flow", () => {
   });
 
   it("appends files in multiple mode", async () => {
-    mockCreateSignedUploadUrl.mockResolvedValue({
+    mockCreateUploadUrl.mockResolvedValue({
       url: "https://storage.example.com/upload",
       path: "pending/uuid1/rg_pai/new.pdf",
     });

@@ -5,7 +5,7 @@ import { INITIAL_FORM_DATA } from "@/app/form/_components/form-types";
 import type { FormData } from "@/app/form/_components/form-types";
 
 vi.mock("@/app/form/_actions/form-actions", () => ({
-  createSignedUploadUrl: vi.fn(),
+  createUploadUrl: vi.fn(),
 }));
 
 function renderStep5(overrides: Partial<FormData> = {}) {

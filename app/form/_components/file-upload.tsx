@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { createSignedUploadUrl } from "../_actions/form-actions";
+import { createUploadUrl } from "../_actions/form-actions";
 
 export interface UploadedFile {
   name: string;
@@ -54,7 +54,7 @@ export function FileUpload({
 
       for (let i = 0; i < newFiles.length; i++) {
         const file = Array.from(fileList)[i];
-        const result = await createSignedUploadUrl(file.name, category);
+        const result = await createUploadUrl(file.name, category);
 
         if ("error" in result) {
           results.push({

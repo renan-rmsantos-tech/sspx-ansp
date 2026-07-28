@@ -1,11 +1,12 @@
 "use server";
 
-import { createServiceClient } from "@/lib/supabase/server";
+import { db } from "@/lib/db";
+import { donorPledges } from "@/lib/db/schema";
+import { formatCPF } from "@/lib/validations/cpf";
 import {
   donorPledgeSchema,
   type DonorPledge,
 } from "@/lib/validations/donor-schema";
-import { formatCPF } from "@/lib/validations/cpf";
 
 export async function registerDonorPledge(
   input: DonorPledge
@@ -23,24 +24,22 @@ export async function registerDonorPledge(
   }
 
   const data = result.data;
-  // anon só tem INSERT; usamos service role no server (RLS continua server-only).
-  const supabase = createServiceClient();
 
-  const { error } = await supabase.from("donor_pledges").insert({
-    nome: data.nome,
-    cpf: formatCPF(data.cpf),
-    email: data.email,
-    telefone: data.telefone || null,
-    frequencia: data.frequencia,
-    duracao: data.frequencia === "mensal" ? data.duracao ?? null : null,
-    valor: data.valor,
-    meio_pagamento: data.meio_pagamento,
-    data_pagamento: data.data_pagamento || null,
-    lembrete_canal: data.lembrete_canal || null,
-    observacoes: data.observacoes || null,
-  });
-
-  if (error) {
+  try {
+    await db.insert(donorPledges).values({
+      nome: data.nome,
+      cpf: formatCPF(data.cpf),
+      email: data.email,
+      telefone: data.telefone || null,
+      frequencia: data.frequencia,
+      duracao: data.frequencia === "mensal" ? data.duracao ?? null : null,
+      valor: data.valor,
+      meio_pagamento: data.meio_pagamento,
+      data_pagamento: data.data_pagamento || null,
+      lembrete_canal: data.lembrete_canal || null,
+      observacoes: data.observacoes || null,
+    });
+  } catch {
     return {
       success: false,
       errors: { _form: ["Erro ao registrar sua doação. Tente novamente."] },

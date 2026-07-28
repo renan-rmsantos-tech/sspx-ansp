@@ -1,0 +1,28 @@
+# Postgres local para desenvolvimento (`npm run db:start` / `npm run db:stop`).
+# Em produção o app usa o Postgres compartilhado do droplet — ver
+# compose.traefik.yaml e docs/plano-deploy-droplet.md.
+name: sspx-ansp-dev
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ansp-postgres-dev
+    restart: unless-stopped
+    ports:
+      # 5433 para não colidir com o acipec-postgres, que já ocupa a 5432.
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: ansp
+      POSTGRES_PASSWORD: ansp
+      POSTGRES_DB: ansp
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ansp"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  pgdata:

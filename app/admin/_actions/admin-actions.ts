@@ -1,20 +1,33 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { createClient, createServiceClient } from "@/lib/supabase/server";
-import { replaceTokens, type TokenData } from "@/lib/templates/token-replacer";
+import { asc, desc, eq } from "drizzle-orm";
+import { BYPASS_USER, isAuthBypass } from "@/lib/auth/bypass";
+import { getSessionUser } from "@/lib/auth/session";
+import { db } from "@/lib/db";
 import {
-  replaceContractTokens,
+  applications,
+  contractTemplates,
+  decisionTemplates,
+  documentHeader,
+  donorPledges,
+  schoolYears,
+} from "@/lib/db/schema";
+import { getStorage } from "@/lib/storage";
+import { createTicket } from "@/lib/storage/tickets";
+import {
   formatDataExtenso,
+  replaceContractTokens,
   type ContractClause,
   type ContractTokenData,
 } from "@/lib/templates/contract-tokens";
-import { BYPASS_USER, isAuthBypass } from "@/lib/auth/bypass";
+import { replaceTokens, type TokenData } from "@/lib/templates/token-replacer";
 
 type ActionResult = { success: boolean; error?: string };
 
+const DOCUMENT_TICKET_TTL_SECONDS = 300;
+
 function resolveDecidedBy(userId: string): string | null {
-  // Auth bypass uses a placeholder UUID that does not exist in auth.users.
+  // O bypass usa um UUID de fachada que não existe em admin_users.
   if (isAuthBypass() && userId === BYPASS_USER.id) {
     return null;
   }
@@ -22,28 +35,13 @@ function resolveDecidedBy(userId: string): string | null {
 }
 
 async function requireAuth() {
-  if (isAuthBypass()) {
-    const cookieStore = await cookies();
-    const devAuth = cookieStore.get("dev-auth")?.value;
-    if (devAuth !== "true") {
-      throw new Error("Não autorizado. Faça login para continuar.");
-    }
-    // Sem sessão real, o papel no Postgres seria `anon` e a RLS bloquearia
-    // as escritas admin. A service_role ignora RLS (uso server-only).
-    const supabase = createServiceClient();
-    return { supabase, user: BYPASS_USER };
-  }
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
 
   if (!user) {
     throw new Error("Não autorizado. Faça login para continuar.");
   }
 
-  return { supabase, user };
+  return { user };
 }
 
 // --- Applications ---
@@ -51,92 +49,72 @@ async function requireAuth() {
 export async function getApplications(
   filter?: "pendente" | "aprovada" | "rejeitada"
 ) {
-  const { supabase } = await requireAuth();
+  await requireAuth();
 
-  let query = supabase
-    .from("applications")
-    .select("*, students(*)")
-    .order("data_envio", { ascending: false });
+  try {
+    const data = await db.query.applications.findMany({
+      with: { students: true },
+      where: filter ? eq(applications.status, filter) : undefined,
+      orderBy: desc(applications.data_envio),
+    });
 
-  if (filter) {
-    query = query.eq("status", filter);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
+    return { data, error: null };
+  } catch {
     return { data: null, error: "Erro ao buscar solicitações." };
   }
-
-  return { data, error: null };
 }
 
 export async function getApplicationDetail(id: string) {
-  const { supabase } = await requireAuth();
+  await requireAuth();
 
-  const [
-    appResult,
-    studentsResult,
-    childrenResult,
-    vehiclesResult,
-    collabResult,
-    benefactorsResult,
-    docsResult,
-  ] = await Promise.all([
-    supabase.from("applications").select("*").eq("id", id).single(),
-    supabase.from("students").select("*").eq("application_id", id),
-    supabase.from("other_children").select("*").eq("application_id", id),
-    supabase.from("vehicles").select("*").eq("application_id", id),
-    supabase
-      .from("collaboration")
-      .select("*")
-      .eq("application_id", id)
-      .single(),
-    supabase.from("benefactors").select("*").eq("application_id", id),
-    supabase.from("documents").select("*").eq("application_id", id),
-  ]);
+  try {
+    const application = await db.query.applications.findFirst({
+      where: eq(applications.id, id),
+      with: {
+        students: true,
+        other_children: true,
+        vehicles: true,
+        collaboration: true,
+        benefactors: true,
+        documents: true,
+      },
+    });
 
-  if (appResult.error || !appResult.data) {
+    if (!application) {
+      return { data: null, error: "Solicitação não encontrada." };
+    }
+
+    return {
+      data: { ...application, collaboration: application.collaboration ?? null },
+      error: null,
+    };
+  } catch {
     return { data: null, error: "Solicitação não encontrada." };
   }
-
-  return {
-    data: {
-      ...appResult.data,
-      students: studentsResult.data ?? [],
-      other_children: childrenResult.data ?? [],
-      vehicles: vehiclesResult.data ?? [],
-      collaboration: collabResult.data ?? null,
-      benefactors: benefactorsResult.data ?? [],
-      documents: docsResult.data ?? [],
-    },
-    error: null,
-  };
 }
 
 // --- Donor Pledges ---
 
 export async function getDonorPledges() {
-  const { supabase } = await requireAuth();
+  await requireAuth();
 
-  const { data, error } = await supabase
-    .from("donor_pledges")
-    .select("*")
-    .order("created_at", { ascending: false });
+  try {
+    const data = await db.query.donorPledges.findMany({
+      orderBy: desc(donorPledges.created_at),
+    });
 
-  if (error) {
+    return { data, error: null };
+  } catch {
     return { data: null, error: "Erro ao buscar benfeitores." };
   }
-
-  return { data, error: null };
 }
 
 export async function deleteDonorPledge(id: string): Promise<ActionResult> {
-  const { supabase } = await requireAuth();
+  await requireAuth();
 
-  const { error } = await supabase.from("donor_pledges").delete().eq("id", id);
-
-  if (error) {
+  try {
+    await db.delete(donorPledges).where(eq(donorPledges.id, id));
+  } catch {
     return { success: false, error: "Erro ao excluir benfeitor." };
   }
 
@@ -146,15 +124,13 @@ export async function deleteDonorPledge(id: string): Promise<ActionResult> {
 export async function exportDonorPledge(
   id: string
 ): Promise<{ pdfBase64: string; filename: string } | { error: string }> {
-  const { supabase } = await requireAuth();
+  await requireAuth();
 
-  const { data: donor, error } = await supabase
-    .from("donor_pledges")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const donor = await db.query.donorPledges.findFirst({
+    where: eq(donorPledges.id, id),
+  });
 
-  if (error || !donor) {
+  if (!donor) {
     return { error: "Benfeitor não encontrado." };
   }
 
@@ -186,20 +162,28 @@ function resolveDocumentPaths(path: string, applicationId?: string): string[] {
   return paths;
 }
 
+/**
+ * URL temporária para o admin abrir um documento. O ticket assinado expira em
+ * 5 minutos e é o que autoriza a rota `/api/documents` a ler o arquivo.
+ */
 export async function getDocumentUrl(
   path: string,
   applicationId?: string
 ): Promise<{ url: string } | { error: string }> {
-  const { supabase } = await requireAuth();
+  await requireAuth();
+
+  const storage = getStorage();
 
   for (const candidate of resolveDocumentPaths(path, applicationId)) {
-    const { data, error } = await supabase.storage
-      .from("documents")
-      .createSignedUrl(candidate, 300);
+    if ((await storage.size(candidate)) === null) continue;
 
-    if (!error && data?.signedUrl) {
-      return { url: data.signedUrl };
-    }
+    const ticket = createTicket(
+      candidate,
+      "download",
+      DOCUMENT_TICKET_TTL_SECONDS
+    );
+
+    return { url: `/api/documents?ticket=${encodeURIComponent(ticket)}` };
   }
 
   return { error: "Erro ao gerar URL do documento." };
@@ -216,20 +200,20 @@ export async function approveApplication(
     return { success: false, error: "Desconto deve estar entre 0 e 100." };
   }
 
-  const { supabase, user } = await requireAuth();
+  const { user } = await requireAuth();
 
-  const { error } = await supabase
-    .from("applications")
-    .update({
-      status: "aprovada",
-      desconto_concedido: desconto,
-      motivo: motivo || null,
-      data_decisao: new Date().toISOString(),
-      decided_by: resolveDecidedBy(user.id),
-    })
-    .eq("id", id);
-
-  if (error) {
+  try {
+    await db
+      .update(applications)
+      .set({
+        status: "aprovada",
+        desconto_concedido: desconto,
+        motivo: motivo || null,
+        data_decisao: new Date().toISOString(),
+        decided_by: resolveDecidedBy(user.id),
+      })
+      .where(eq(applications.id, id));
+  } catch {
     return { success: false, error: "Erro ao aprovar solicitação." };
   }
 
@@ -240,19 +224,19 @@ export async function rejectApplication(
   id: string,
   motivo?: string
 ): Promise<ActionResult> {
-  const { supabase, user } = await requireAuth();
+  const { user } = await requireAuth();
 
-  const { error } = await supabase
-    .from("applications")
-    .update({
-      status: "rejeitada",
-      motivo: motivo || null,
-      data_decisao: new Date().toISOString(),
-      decided_by: resolveDecidedBy(user.id),
-    })
-    .eq("id", id);
-
-  if (error) {
+  try {
+    await db
+      .update(applications)
+      .set({
+        status: "rejeitada",
+        motivo: motivo || null,
+        data_decisao: new Date().toISOString(),
+        decided_by: resolveDecidedBy(user.id),
+      })
+      .where(eq(applications.id, id));
+  } catch {
     return { success: false, error: "Erro ao rejeitar solicitação." };
   }
 
@@ -262,18 +246,17 @@ export async function rejectApplication(
 // --- School Years ---
 
 export async function getSchoolYears() {
-  const { supabase } = await requireAuth();
+  await requireAuth();
 
-  const { data, error } = await supabase
-    .from("school_years")
-    .select("*")
-    .order("data_inicio", { ascending: false });
+  try {
+    const data = await db.query.schoolYears.findMany({
+      orderBy: desc(schoolYears.data_inicio),
+    });
 
-  if (error) {
+    return { data, error: null };
+  } catch {
     return { data: null, error: "Erro ao buscar anos letivos." };
   }
-
-  return { data, error: null };
 }
 
 export async function createSchoolYear(input: {
@@ -288,16 +271,16 @@ export async function createSchoolYear(input: {
     };
   }
 
-  const { supabase } = await requireAuth();
+  await requireAuth();
 
-  const { error } = await supabase.from("school_years").insert({
-    nome: input.nome,
-    data_inicio: input.data_inicio,
-    data_fim: input.data_fim,
-    ativo: false,
-  });
-
-  if (error) {
+  try {
+    await db.insert(schoolYears).values({
+      nome: input.nome,
+      data_inicio: input.data_inicio,
+      data_fim: input.data_fim,
+      ativo: false,
+    });
+  } catch {
     return { success: false, error: "Erro ao criar ano letivo." };
   }
 
@@ -305,24 +288,24 @@ export async function createSchoolYear(input: {
 }
 
 export async function toggleSchoolYear(id: string): Promise<ActionResult> {
-  const { supabase } = await requireAuth();
+  await requireAuth();
 
-  const { data: current, error: fetchError } = await supabase
-    .from("school_years")
-    .select("ativo")
-    .eq("id", id)
-    .single();
+  const current = await db.query.schoolYears.findFirst({
+    columns: { ativo: true },
+    where: eq(schoolYears.id, id),
+  });
 
-  if (fetchError || !current) {
+  if (!current) {
     return { success: false, error: "Ano letivo não encontrado." };
   }
 
-  const { error } = await supabase
-    .from("school_years")
-    .update({ ativo: !current.ativo })
-    .eq("id", id);
-
-  if (error) {
+  try {
+    // O trigger `trg_enforce_single_active_school_year` desativa os demais.
+    await db
+      .update(schoolYears)
+      .set({ ativo: !current.ativo })
+      .where(eq(schoolYears.id, id));
+  } catch {
     return { success: false, error: "Erro ao atualizar ano letivo." };
   }
 
@@ -330,11 +313,11 @@ export async function toggleSchoolYear(id: string): Promise<ActionResult> {
 }
 
 export async function deleteSchoolYear(id: string): Promise<ActionResult> {
-  const { supabase } = await requireAuth();
+  await requireAuth();
 
-  const { error } = await supabase.from("school_years").delete().eq("id", id);
-
-  if (error) {
+  try {
+    await db.delete(schoolYears).where(eq(schoolYears.id, id));
+  } catch {
     return { success: false, error: "Erro ao excluir ano letivo." };
   }
 
@@ -344,18 +327,17 @@ export async function deleteSchoolYear(id: string): Promise<ActionResult> {
 // --- Decision Templates ---
 
 export async function getTemplates() {
-  const { supabase } = await requireAuth();
+  await requireAuth();
 
-  const { data, error } = await supabase
-    .from("decision_templates")
-    .select("*")
-    .order("tipo");
+  try {
+    const data = await db.query.decisionTemplates.findMany({
+      orderBy: asc(decisionTemplates.tipo),
+    });
 
-  if (error) {
+    return { data, error: null };
+  } catch {
     return { data: null, error: "Erro ao buscar modelos de decisão." };
   }
-
-  return { data, error: null };
 }
 
 export async function saveTemplate(input: {
@@ -364,39 +346,39 @@ export async function saveTemplate(input: {
   corpo: string;
   rodape: string;
 }): Promise<ActionResult> {
-  const { supabase } = await requireAuth();
+  await requireAuth();
 
-  const { data: existing } = await supabase
-    .from("decision_templates")
-    .select("id")
-    .eq("tipo", input.tipo)
-    .single();
+  const existing = await db.query.decisionTemplates.findFirst({
+    columns: { id: true },
+    where: eq(decisionTemplates.tipo, input.tipo),
+  });
 
-  if (existing) {
-    const { error } = await supabase
-      .from("decision_templates")
-      .update({
+  try {
+    if (existing) {
+      await db
+        .update(decisionTemplates)
+        .set({
+          cabecalho: input.cabecalho,
+          corpo: input.corpo,
+          rodape: input.rodape,
+          updated_at: new Date().toISOString(),
+        })
+        .where(eq(decisionTemplates.id, existing.id));
+    } else {
+      await db.insert(decisionTemplates).values({
+        tipo: input.tipo,
         cabecalho: input.cabecalho,
         corpo: input.corpo,
         rodape: input.rodape,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", existing.id);
-
-    if (error) {
-      return { success: false, error: "Erro ao atualizar modelo." };
+      });
     }
-  } else {
-    const { error } = await supabase.from("decision_templates").insert({
-      tipo: input.tipo,
-      cabecalho: input.cabecalho,
-      corpo: input.corpo,
-      rodape: input.rodape,
-    });
-
-    if (error) {
-      return { success: false, error: "Erro ao criar modelo." };
-    }
+  } catch {
+    return {
+      success: false,
+      error: existing
+        ? "Erro ao atualizar modelo."
+        : "Erro ao criar modelo.",
+    };
   }
 
   return { success: true };
@@ -407,15 +389,14 @@ export async function saveTemplate(input: {
 export async function exportDecision(
   id: string
 ): Promise<{ pdfBase64: string; filename: string } | { error: string }> {
-  const { supabase } = await requireAuth();
+  await requireAuth();
 
-  const { data: app, error: appError } = await supabase
-    .from("applications")
-    .select("*, students(*), school_years!inner(nome)")
-    .eq("id", id)
-    .single();
+  const app = await db.query.applications.findFirst({
+    where: eq(applications.id, id),
+    with: { students: true, school_years: true },
+  });
 
-  if (appError || !app) {
+  if (!app) {
     return { error: "Solicitação não encontrada." };
   }
 
@@ -423,16 +404,13 @@ export async function exportDecision(
     return { error: "Solicitação ainda não foi decidida." };
   }
 
-  const templateTipo =
-    app.status === "aprovada" ? "aprovacao" : "rejeicao";
+  const templateTipo = app.status === "aprovada" ? "aprovacao" : "rejeicao";
 
-  const { data: template, error: templateError } = await supabase
-    .from("decision_templates")
-    .select("*")
-    .eq("tipo", templateTipo)
-    .single();
+  const template = await db.query.decisionTemplates.findFirst({
+    where: eq(decisionTemplates.tipo, templateTipo),
+  });
 
-  if (templateError || !template) {
+  if (!template) {
     return { error: "Modelo de decisão não encontrado." };
   }
 
@@ -440,9 +418,7 @@ export async function exportDecision(
     nome_pai: app.pai_nome,
     nome_mae: app.mae_nome,
     escola: app.escola,
-    alunos: (app.students ?? []).map(
-      (s: { nome: string }) => s.nome
-    ),
+    alunos: (app.students ?? []).map((s) => s.nome),
     desconto: app.desconto_concedido?.toString() ?? "0",
     data: app.data_decisao
       ? new Date(app.data_decisao).toLocaleDateString("pt-BR")
@@ -464,7 +440,9 @@ export async function exportDecision(
   const { renderDecisionPdf } = await import("@/lib/pdf/decision-pdf");
   const pdf = await renderDecisionPdf(resolved);
 
-  const safeNome = app.pai_nome.replace(/[^a-zA-Z0-9À-ú ]/g, "").replace(/\s+/g, "_");
+  const safeNome = app.pai_nome
+    .replace(/[^a-zA-Z0-9À-ú ]/g, "")
+    .replace(/\s+/g, "_");
   const filename = `decisao_${templateTipo}_${safeNome}.pdf`;
 
   return { pdfBase64: pdf.toString("base64"), filename };
@@ -475,34 +453,21 @@ export async function exportDecision(
 export async function exportApplication(
   id: string
 ): Promise<{ pdfBase64: string; filename: string } | { error: string }> {
-  const { supabase } = await requireAuth();
+  await requireAuth();
 
-  const [
-    appResult,
-    studentsResult,
-    childrenResult,
-    vehiclesResult,
-    collabResult,
-    benefactorsResult,
-  ] = await Promise.all([
-    supabase
-      .from("applications")
-      .select("*, school_years(nome)")
-      .eq("id", id)
-      .single(),
-    supabase.from("students").select("*").eq("application_id", id),
-    supabase.from("other_children").select("*").eq("application_id", id),
-    supabase.from("vehicles").select("*").eq("application_id", id),
-    supabase
-      .from("collaboration")
-      .select("*")
-      .eq("application_id", id)
-      .maybeSingle(),
-    supabase.from("benefactors").select("*").eq("application_id", id),
-  ]);
+  const app = await db.query.applications.findFirst({
+    where: eq(applications.id, id),
+    with: {
+      students: true,
+      other_children: true,
+      vehicles: true,
+      collaboration: true,
+      benefactors: true,
+      school_years: true,
+    },
+  });
 
-  const app = appResult.data;
-  if (appResult.error || !app) {
+  if (!app) {
     return { error: "Solicitação não encontrada." };
   }
 
@@ -513,11 +478,7 @@ export async function exportApplication(
     ...app,
     header,
     ano_letivo: app.school_years?.nome ?? null,
-    students: studentsResult.data ?? [],
-    other_children: childrenResult.data ?? [],
-    vehicles: vehiclesResult.data ?? [],
-    collaboration: collabResult.data ?? null,
-    benefactors: benefactorsResult.data ?? [],
+    collaboration: app.collaboration ?? null,
   });
 
   const safeNome = app.pai_nome
@@ -539,20 +500,17 @@ export interface DocumentHeader {
 }
 
 export async function getDocumentHeader() {
-  const { supabase } = await requireAuth();
+  await requireAuth();
 
-  const { data, error } = await supabase
-    .from("document_header")
-    .select("*")
-    .order("updated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  try {
+    const data = await db.query.documentHeader.findFirst({
+      orderBy: desc(documentHeader.updated_at),
+    });
 
-  if (error) {
+    return { data: (data as DocumentHeader) ?? null, error: null };
+  } catch {
     return { data: null, error: "Erro ao buscar cabeçalho dos documentos." };
   }
-
-  return { data: data as DocumentHeader | null, error: null };
 }
 
 export async function saveDocumentHeader(input: {
@@ -561,14 +519,12 @@ export async function saveDocumentHeader(input: {
   linha3: string;
   mostrar_selo: boolean;
 }): Promise<ActionResult> {
-  const { supabase } = await requireAuth();
+  await requireAuth();
 
-  const { data: existing } = await supabase
-    .from("document_header")
-    .select("id")
-    .order("updated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const existing = await db.query.documentHeader.findFirst({
+    columns: { id: true },
+    orderBy: desc(documentHeader.updated_at),
+  });
 
   const payload = {
     linha1: input.linha1,
@@ -578,21 +534,22 @@ export async function saveDocumentHeader(input: {
     updated_at: new Date().toISOString(),
   };
 
-  if (existing) {
-    const { error } = await supabase
-      .from("document_header")
-      .update(payload)
-      .eq("id", existing.id);
-
-    if (error) {
-      return { success: false, error: "Erro ao atualizar cabeçalho." };
+  try {
+    if (existing) {
+      await db
+        .update(documentHeader)
+        .set(payload)
+        .where(eq(documentHeader.id, existing.id));
+    } else {
+      await db.insert(documentHeader).values(payload);
     }
-  } else {
-    const { error } = await supabase.from("document_header").insert(payload);
-
-    if (error) {
-      return { success: false, error: "Erro ao criar cabeçalho." };
-    }
+  } catch {
+    return {
+      success: false,
+      error: existing
+        ? "Erro ao atualizar cabeçalho."
+        : "Erro ao criar cabeçalho.",
+    };
   }
 
   return { success: true };
@@ -609,20 +566,17 @@ export interface ContractTemplate {
 }
 
 export async function getContractTemplate() {
-  const { supabase } = await requireAuth();
+  await requireAuth();
 
-  const { data, error } = await supabase
-    .from("contract_templates")
-    .select("*")
-    .order("updated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  try {
+    const data = await db.query.contractTemplates.findFirst({
+      orderBy: desc(contractTemplates.updated_at),
+    });
 
-  if (error) {
+    return { data: (data as ContractTemplate) ?? null, error: null };
+  } catch {
     return { data: null, error: "Erro ao buscar modelo de contrato." };
   }
-
-  return { data: data as ContractTemplate | null, error: null };
 }
 
 export async function saveContractTemplate(input: {
@@ -631,14 +585,12 @@ export async function saveContractTemplate(input: {
   clausulas: ContractClause[];
   rodape: string;
 }): Promise<ActionResult> {
-  const { supabase } = await requireAuth();
+  await requireAuth();
 
-  const { data: existing } = await supabase
-    .from("contract_templates")
-    .select("id")
-    .order("updated_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const existing = await db.query.contractTemplates.findFirst({
+    columns: { id: true },
+    orderBy: desc(contractTemplates.updated_at),
+  });
 
   const payload = {
     titulo: input.titulo,
@@ -648,21 +600,22 @@ export async function saveContractTemplate(input: {
     updated_at: new Date().toISOString(),
   };
 
-  if (existing) {
-    const { error } = await supabase
-      .from("contract_templates")
-      .update(payload)
-      .eq("id", existing.id);
-
-    if (error) {
-      return { success: false, error: "Erro ao atualizar modelo de contrato." };
+  try {
+    if (existing) {
+      await db
+        .update(contractTemplates)
+        .set(payload)
+        .where(eq(contractTemplates.id, existing.id));
+    } else {
+      await db.insert(contractTemplates).values(payload);
     }
-  } else {
-    const { error } = await supabase.from("contract_templates").insert(payload);
-
-    if (error) {
-      return { success: false, error: "Erro ao criar modelo de contrato." };
-    }
+  } catch {
+    return {
+      success: false,
+      error: existing
+        ? "Erro ao atualizar modelo de contrato."
+        : "Erro ao criar modelo de contrato.",
+    };
   }
 
   return { success: true };
@@ -679,15 +632,14 @@ function formatDateBR(isoDate: string): string {
 export async function exportContract(
   id: string
 ): Promise<{ pdfBase64: string; filename: string } | { error: string }> {
-  const { supabase } = await requireAuth();
+  await requireAuth();
 
-  const { data: app, error: appError } = await supabase
-    .from("applications")
-    .select("*, students(*), school_years!inner(nome, data_inicio, data_fim)")
-    .eq("id", id)
-    .single();
+  const app = await db.query.applications.findFirst({
+    where: eq(applications.id, id),
+    with: { students: true, school_years: true },
+  });
 
-  if (appError || !app) {
+  if (!app) {
     return { error: "Solicitação não encontrada." };
   }
 
@@ -704,7 +656,7 @@ export async function exportContract(
   }
 
   const tokenData: ContractTokenData = {
-    aluno: (app.students ?? []).map((s: { nome: string }) => s.nome).join(", "),
+    aluno: (app.students ?? []).map((s) => s.nome).join(", "),
     nome_responsavel: app.pai_nome,
     rg_responsavel: app.pai_rg ?? "",
     cpf_responsavel: app.pai_cpf ?? "",
