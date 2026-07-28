@@ -6,7 +6,11 @@ export const BYPASS_USER = {
   email: BYPASS_EMAIL,
 };
 
-/** Fixed credentials for demo/staging when AUTH_BYPASS=true. */
+/**
+ * Credenciais fixas para desenvolvimento/demonstração. Com AUTH_BYPASS=true a
+ * autenticação não consulta a tabela `admin_users`, mas a sessão criada é a
+ * mesma de produção — o restante da aplicação não distingue os dois modos.
+ */
 export function isAuthBypass() {
   return process.env.AUTH_BYPASS === "true";
 }

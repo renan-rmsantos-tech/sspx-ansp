@@ -1,18 +1,33 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import fs from "fs";
 import path from "path";
 
-describe(".env.example", () => {
-  const envContent = fs.readFileSync(
-    path.resolve(__dirname, "../.env.example"),
-    "utf-8"
-  );
+const envExample = fs.readFileSync(
+  path.resolve(__dirname, "../.env.example"),
+  "utf-8"
+);
 
-  it("contains NEXT_PUBLIC_SUPABASE_URL", () => {
-    expect(envContent).toContain("NEXT_PUBLIC_SUPABASE_URL");
+describe(".env.example", () => {
+  it("documents every variable the application reads", () => {
+    for (const name of [
+      "DATABASE_URL",
+      "SESSION_SECRET",
+      "STORAGE_DIR",
+      "ADMIN_EMAIL",
+      "ADMIN_PASSWORD",
+      "AUTH_BYPASS",
+    ]) {
+      expect(envExample).toContain(name);
+    }
   });
 
-  it("contains NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", () => {
-    expect(envContent).toContain("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY");
+  it("no longer references Supabase", () => {
+    expect(envExample).not.toMatch(/supabase/i);
+  });
+
+  it("ships a placeholder secret rather than a real one", () => {
+    const secret = envExample.match(/^SESSION_SECRET=(.*)$/m)?.[1] ?? "";
+
+    expect(secret).toMatch(/troque/i);
   });
 });

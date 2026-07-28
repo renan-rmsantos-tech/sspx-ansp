@@ -3,7 +3,7 @@ import { render, screen, cleanup } from "@testing-library/react";
 
 vi.mock("@/app/form/_actions/form-actions", () => ({
   getActiveSchoolYear: vi.fn(),
-  createSignedUploadUrl: vi.fn(),
+  createUploadUrl: vi.fn(),
   submitApplication: vi.fn(),
 }));
 

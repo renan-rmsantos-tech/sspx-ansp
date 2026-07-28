@@ -1,7 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { applicationSubmissionSchema } from "@/lib/validations/application-schema";
+import {
+  applicationSubmissionSchema,
+  type ApplicationSubmission,
+} from "@/lib/validations/application-schema";
 
-function validApplication() {
+function validApplication(): ApplicationSubmission {
   return {
     escola: "Colégio São José",
     pai: {

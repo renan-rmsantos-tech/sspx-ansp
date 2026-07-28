@@ -1,85 +1,97 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mockGetUser = vi.fn();
-const mockFrom = vi.fn();
-const mockStorage = vi.fn();
+vi.stubEnv("SESSION_SECRET", "x".repeat(48));
 
-const mockSupabase = {
-  auth: { getUser: mockGetUser },
-  from: mockFrom,
-  storage: { from: mockStorage },
-};
-
-vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn(() => Promise.resolve(mockSupabase)),
+vi.mock("@/lib/db", async () => ({
+  db: (await import("./helpers/fake-db")).fakeDb,
 }));
 
-const mockRenderContractPdf = vi.fn(() => Promise.resolve(Buffer.from("PDF")));
+// vi.hoisted: as factories de vi.mock sobem para o topo do arquivo, então os
+// mocks que elas referenciam precisam existir antes de qualquer outro código.
+const {
+  mockGetSessionUser,
+  mockSize,
+  mockRenderContractPdf,
+  mockRenderDecisionPdf,
+} = vi.hoisted(() => ({
+  mockGetSessionUser: vi.fn(),
+  mockSize: vi.fn(),
+  mockRenderContractPdf: vi.fn((_d: unknown) =>
+    Promise.resolve(Buffer.from("PDF"))
+  ),
+  mockRenderDecisionPdf: vi.fn((_d: unknown) =>
+    Promise.resolve(Buffer.from("PDF"))
+  ),
+}));
+
+vi.mock("@/lib/auth/session", () => ({
+  getSessionUser: mockGetSessionUser,
+}));
+
+vi.mock("@/lib/storage", () => ({
+  getStorage: () => ({ size: mockSize }),
+}));
+
 vi.mock("@/lib/pdf/contract-pdf", () => ({
   renderContractPdf: mockRenderContractPdf,
 }));
 
-const mockRenderDecisionPdf = vi.fn((_d: unknown) =>
-  Promise.resolve(Buffer.from("PDF"))
-);
 vi.mock("@/lib/pdf/decision-pdf", () => ({
   renderDecisionPdf: mockRenderDecisionPdf,
 }));
 
 import {
-  getApplications,
-  getApplicationDetail,
-  getDocumentUrl,
+  applications,
+  contractTemplates,
+  decisionTemplates,
+  donorPledges,
+  schoolYears,
+} from "@/lib/db/schema";
+import { verifyTicket } from "@/lib/storage/tickets";
+import {
   approveApplication,
-  rejectApplication,
-  getSchoolYears,
   createSchoolYear,
-  toggleSchoolYear,
+  deleteDonorPledge,
   deleteSchoolYear,
-  getTemplates,
-  saveTemplate,
-  exportDecision,
-  getContractTemplate,
-  saveContractTemplate,
   exportContract,
+  exportDecision,
+  getApplicationDetail,
+  getApplications,
+  getContractTemplate,
+  getDocumentUrl,
+  getSchoolYears,
+  getTemplates,
+  rejectApplication,
+  saveContractTemplate,
+  saveTemplate,
+  toggleSchoolYear,
 } from "@/app/admin/_actions/admin-actions";
+import {
+  deleted,
+  failWrites,
+  inserted,
+  queryFor,
+  resetFakeDb,
+  updated,
+} from "./helpers/fake-db";
 
 const MOCK_USER = { id: "user-123", email: "admin@test.com" };
 
-function authAs(user = MOCK_USER) {
-  mockGetUser.mockResolvedValue({ data: { user } });
-}
-
-function authNone() {
-  mockGetUser.mockResolvedValue({ data: { user: null } });
-}
-
-function chainable(terminal: Record<string, unknown> = {}) {
-  const chain: Record<string, ReturnType<typeof vi.fn>> = {};
-  const handler = {
-    get(_: unknown, prop: string) {
-      if (prop in terminal) {
-        const val = terminal[prop];
-        return typeof val === "function" ? val : () => val;
-      }
-      if (!chain[prop]) {
-        chain[prop] = vi.fn(() => new Proxy({}, handler));
-      }
-      return chain[prop];
-    },
-  };
-  return new Proxy({}, handler);
+function authAs(user: typeof MOCK_USER | null = MOCK_USER) {
+  mockGetSessionUser.mockResolvedValue(user);
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
+  resetFakeDb();
+  authAs();
 });
 
 // --- Auth Guard ---
 
 describe("auth guard", () => {
   it("all admin actions reject unauthenticated requests", async () => {
-    authNone();
+    authAs(null);
 
     await expect(getApplications()).rejects.toThrow("Não autorizado");
     await expect(getApplicationDetail("id")).rejects.toThrow("Não autorizado");
@@ -87,12 +99,29 @@ describe("auth guard", () => {
     await expect(approveApplication("id", 50)).rejects.toThrow("Não autorizado");
     await expect(rejectApplication("id")).rejects.toThrow("Não autorizado");
     await expect(getSchoolYears()).rejects.toThrow("Não autorizado");
-    await expect(createSchoolYear({ nome: "2026", data_inicio: "2026-01-01", data_fim: "2026-12-31" })).rejects.toThrow("Não autorizado");
+    await expect(
+      createSchoolYear({
+        nome: "2026",
+        data_inicio: "2026-01-01",
+        data_fim: "2026-12-31",
+      })
+    ).rejects.toThrow("Não autorizado");
     await expect(toggleSchoolYear("id")).rejects.toThrow("Não autorizado");
     await expect(deleteSchoolYear("id")).rejects.toThrow("Não autorizado");
+    await expect(deleteDonorPledge("id")).rejects.toThrow("Não autorizado");
     await expect(getTemplates()).rejects.toThrow("Não autorizado");
-    await expect(saveTemplate({ tipo: "aprovacao", cabecalho: "", corpo: "", rodape: "" })).rejects.toThrow("Não autorizado");
+    await expect(
+      saveTemplate({ tipo: "aprovacao", cabecalho: "", corpo: "", rodape: "" })
+    ).rejects.toThrow("Não autorizado");
     await expect(exportDecision("id")).rejects.toThrow("Não autorizado");
+    await expect(exportContract("id")).rejects.toThrow("Não autorizado");
+  });
+
+  it("does not touch the database when unauthenticated", async () => {
+    authAs(null);
+
+    await expect(approveApplication("app-1", 50)).rejects.toThrow();
+    expect(updated).toHaveLength(0);
   });
 });
 
@@ -100,230 +129,215 @@ describe("auth guard", () => {
 
 describe("getApplications", () => {
   it("returns applications filtered by status", async () => {
-    authAs();
     const apps = [{ id: "1", status: "pendente", students: [] }];
-
-    mockFrom.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        order: vi.fn().mockReturnValue({
-          eq: vi.fn().mockResolvedValue({ data: apps, error: null }),
-        }),
-      }),
-    });
+    queryFor("applications").findMany.mockResolvedValue(apps);
 
     const result = await getApplications("pendente");
+
     expect(result.data).toEqual(apps);
     expect(result.error).toBeNull();
+    expect(queryFor("applications").findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expect.anything() })
+    );
   });
 
-  it("returns all applications when no filter", async () => {
-    authAs();
-    const apps = [
-      { id: "1", status: "pendente" },
-      { id: "2", status: "aprovada" },
-    ];
-
-    mockFrom.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        order: vi.fn().mockResolvedValue({ data: apps, error: null }),
-      }),
-    });
+  it("returns all applications when no filter is given", async () => {
+    const apps = [{ id: "1" }, { id: "2" }];
+    queryFor("applications").findMany.mockResolvedValue(apps);
 
     const result = await getApplications();
+
     expect(result.data).toEqual(apps);
+    expect(queryFor("applications").findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: undefined })
+    );
+  });
+
+  it("reports an error when the query fails", async () => {
+    queryFor("applications").findMany.mockRejectedValue(new Error("down"));
+
+    const result = await getApplications();
+
+    expect(result.data).toBeNull();
+    expect(result.error).toContain("Erro ao buscar solicitações");
   });
 });
 
 // --- getApplicationDetail ---
 
 describe("getApplicationDetail", () => {
-  it("returns all nested records for an application", async () => {
-    authAs();
+  it("returns the application with all nested records", async () => {
+    const detail = {
+      id: "app-1",
+      pai_nome: "João",
+      status: "pendente",
+      students: [{ id: "s1", nome: "Pedro" }],
+      other_children: [{ id: "c1", nome: "Ana" }],
+      vehicles: [{ id: "v1", marca: "Fiat" }],
+      collaboration: { id: "col1", limpeza: true },
+      benefactors: [{ id: "b1", nome: "Carlos" }],
+      documents: [{ id: "d1", categoria: "rg_pai" }],
+    };
+    queryFor("applications").findFirst.mockResolvedValue(detail);
 
-    const appData = { id: "app-1", pai_nome: "João", status: "pendente" };
-    const students = [{ id: "s1", nome: "Pedro" }];
-    const children = [{ id: "c1", nome: "Ana" }];
-    const vehicles = [{ id: "v1", marca: "Fiat" }];
-    const collab = { id: "col1", limpeza: true };
-    const benefactors = [{ id: "b1", nome: "Carlos" }];
-    const docs = [{ id: "d1", categoria: "rg_pai" }];
+    const result = await getApplicationDetail("app-1");
 
-    let callCount = 0;
-    mockFrom.mockImplementation(() => {
-      callCount++;
-      const makeChain = (resolvedData: unknown, isSingle = false) => ({
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue(
-            isSingle
-              ? { single: vi.fn().mockResolvedValue({ data: resolvedData, error: null }) }
-              : Promise.resolve({ data: resolvedData, error: null })
-          ),
-        }),
-      });
+    expect(result.data).toMatchObject(detail);
+    expect(result.error).toBeNull();
+  });
 
-      if (callCount === 1) return makeChain(appData, true);
-      if (callCount === 2) return makeChain(students);
-      if (callCount === 3) return makeChain(children);
-      if (callCount === 4) return makeChain(vehicles);
-      if (callCount === 5) return makeChain(collab, true);
-      if (callCount === 6) return makeChain(benefactors);
-      if (callCount === 7) return makeChain(docs);
-      return makeChain(null);
+  it("normalizes a missing collaboration record to null", async () => {
+    queryFor("applications").findFirst.mockResolvedValue({
+      id: "app-1",
+      students: [],
+      collaboration: undefined,
     });
 
     const result = await getApplicationDetail("app-1");
-    expect(result.data).toBeTruthy();
-    expect(result.data!.id).toBe("app-1");
-    expect(result.data!.students).toEqual(students);
-    expect(result.data!.other_children).toEqual(children);
-    expect(result.data!.vehicles).toEqual(vehicles);
-    expect(result.data!.collaboration).toEqual(collab);
-    expect(result.data!.benefactors).toEqual(benefactors);
-    expect(result.data!.documents).toEqual(docs);
+
+    expect(result.data?.collaboration).toBeNull();
+  });
+
+  it("reports an error when the application does not exist", async () => {
+    queryFor("applications").findFirst.mockResolvedValue(undefined);
+
+    const result = await getApplicationDetail("missing");
+
+    expect(result.data).toBeNull();
+    expect(result.error).toContain("não encontrada");
   });
 });
 
-// --- approveApplication ---
+// --- Decisions ---
 
 describe("approveApplication", () => {
-  it("rejects desconto_concedido outside 0-100 range", async () => {
-    authAs();
-    const r1 = await approveApplication("id", -1);
-    expect(r1.success).toBe(false);
-    expect(r1.error).toContain("0 e 100");
+  it("rejects a discount outside the 0-100 range", async () => {
+    const below = await approveApplication("id", -1);
+    expect(below.success).toBe(false);
+    expect(below.error).toContain("0 e 100");
 
-    const r2 = await approveApplication("id", 101);
-    expect(r2.success).toBe(false);
-    expect(r2.error).toContain("0 e 100");
+    const above = await approveApplication("id", 101);
+    expect(above.success).toBe(false);
+    expect(above.error).toContain("0 e 100");
+
+    expect(updated).toHaveLength(0);
   });
 
-  it("updates status, discount, reason, timestamp, and decided_by", async () => {
-    authAs();
-    const mockUpdate = vi.fn().mockReturnValue({
-      eq: vi.fn().mockResolvedValue({ error: null }),
-    });
-    mockFrom.mockReturnValue({ update: mockUpdate });
-
+  it("updates status, discount, reason and decided_by", async () => {
     const result = await approveApplication("app-1", 75, "Bom candidato");
+
     expect(result.success).toBe(true);
-    expect(mockUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: "aprovada",
-        desconto_concedido: 75,
-        motivo: "Bom candidato",
-        decided_by: "user-123",
-      })
-    );
+    expect(updated[0].table).toBe(applications);
+    expect(updated[0].values).toMatchObject({
+      status: "aprovada",
+      desconto_concedido: 75,
+      motivo: "Bom candidato",
+      decided_by: "user-123",
+    });
+  });
+
+  it("reports an error when the update fails", async () => {
+    failWrites();
+
+    const result = await approveApplication("app-1", 50);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("Erro ao aprovar");
   });
 });
 
-// --- rejectApplication ---
-
 describe("rejectApplication", () => {
-  it("updates status, reason, timestamp, and decided_by", async () => {
-    authAs();
-    const mockUpdate = vi.fn().mockReturnValue({
-      eq: vi.fn().mockResolvedValue({ error: null }),
-    });
-    mockFrom.mockReturnValue({ update: mockUpdate });
-
+  it("updates status, reason and decided_by", async () => {
     const result = await rejectApplication("app-1", "Renda incompatível");
+
     expect(result.success).toBe(true);
-    expect(mockUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: "rejeitada",
-        motivo: "Renda incompatível",
-        decided_by: "user-123",
-      })
-    );
+    expect(updated[0].values).toMatchObject({
+      status: "rejeitada",
+      motivo: "Renda incompatível",
+      decided_by: "user-123",
+    });
   });
 });
 
 // --- School Years ---
 
 describe("createSchoolYear", () => {
-  it("rejects end date before start date", async () => {
-    authAs();
+  it("rejects an end date before the start date", async () => {
     const result = await createSchoolYear({
       nome: "2026",
       data_inicio: "2026-12-31",
       data_fim: "2026-01-01",
     });
+
     expect(result.success).toBe(false);
     expect(result.error).toContain("Data de fim");
+    expect(inserted).toHaveLength(0);
   });
 
-  it("creates school year with valid data", async () => {
-    authAs();
-    mockFrom.mockReturnValue({
-      insert: vi.fn().mockResolvedValue({ error: null }),
-    });
-
+  it("creates an inactive school year with valid dates", async () => {
     const result = await createSchoolYear({
       nome: "2026",
       data_inicio: "2026-02-01",
       data_fim: "2026-12-15",
     });
+
     expect(result.success).toBe(true);
+    expect(inserted[0].table).toBe(schoolYears);
+    expect(inserted[0].values).toMatchObject({ nome: "2026", ativo: false });
   });
 });
 
 describe("toggleSchoolYear", () => {
-  it("deactivates previously active year when activating a new one", async () => {
-    authAs();
-    const mockUpdate = vi.fn().mockReturnValue({
-      eq: vi.fn().mockResolvedValue({ error: null }),
-    });
-    mockFrom.mockImplementation(() => ({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue({
-            data: { ativo: false },
-            error: null,
-          }),
-        }),
-      }),
-      update: mockUpdate,
-    }));
+  it("activates a year that was inactive", async () => {
+    queryFor("schoolYears").findFirst.mockResolvedValue({ ativo: false });
 
     const result = await toggleSchoolYear("year-2");
+
     expect(result.success).toBe(true);
-    expect(mockUpdate).toHaveBeenCalledWith({ ativo: true });
+    expect(updated[0].values).toEqual({ ativo: true });
+  });
+
+  it("deactivates a year that was active", async () => {
+    queryFor("schoolYears").findFirst.mockResolvedValue({ ativo: true });
+
+    await toggleSchoolYear("year-1");
+
+    expect(updated[0].values).toEqual({ ativo: false });
+  });
+
+  it("reports an error for an unknown year", async () => {
+    queryFor("schoolYears").findFirst.mockResolvedValue(undefined);
+
+    const result = await toggleSchoolYear("nope");
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("não encontrado");
   });
 });
 
 describe("deleteSchoolYear", () => {
   it("removes the record", async () => {
-    authAs();
-    const mockDelete = vi.fn().mockReturnValue({
-      eq: vi.fn().mockResolvedValue({ error: null }),
-    });
-    mockFrom.mockReturnValue({ delete: mockDelete });
-
     const result = await deleteSchoolYear("year-1");
+
     expect(result.success).toBe(true);
+    expect(deleted[0].table).toBe(schoolYears);
   });
 });
 
-// --- Templates ---
+describe("deleteDonorPledge", () => {
+  it("removes the record", async () => {
+    const result = await deleteDonorPledge("donor-1");
+
+    expect(result.success).toBe(true);
+    expect(deleted[0].table).toBe(donorPledges);
+  });
+});
+
+// --- Decision Templates ---
 
 describe("saveTemplate and getTemplates", () => {
-  it("saveTemplate persists template", async () => {
-    authAs();
-    const mockUpdate = vi.fn().mockReturnValue({
-      eq: vi.fn().mockResolvedValue({ error: null }),
-    });
-    mockFrom.mockImplementation(() => ({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue({
-            data: { id: "tmpl-1" },
-            error: null,
-          }),
-        }),
-      }),
-      update: mockUpdate,
-    }));
+  it("updates the template when one already exists", async () => {
+    queryFor("decisionTemplates").findFirst.mockResolvedValue({ id: "tmpl-1" });
 
     const result = await saveTemplate({
       tipo: "aprovacao",
@@ -331,23 +345,14 @@ describe("saveTemplate and getTemplates", () => {
       corpo: "Body {aluno}",
       rodape: "Footer",
     });
+
     expect(result.success).toBe(true);
+    expect(updated[0].table).toBe(decisionTemplates);
+    expect(inserted).toHaveLength(0);
   });
 
-  it("saveTemplate creates new template when none exists", async () => {
-    authAs();
-    const mockInsert = vi.fn().mockResolvedValue({ error: null });
-    mockFrom.mockImplementation(() => ({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue({
-            data: null,
-            error: { code: "PGRST116" },
-          }),
-        }),
-      }),
-      insert: mockInsert,
-    }));
+  it("creates the template when none exists", async () => {
+    queryFor("decisionTemplates").findFirst.mockResolvedValue(undefined);
 
     const result = await saveTemplate({
       tipo: "rejeicao",
@@ -355,23 +360,20 @@ describe("saveTemplate and getTemplates", () => {
       corpo: "B",
       rodape: "R",
     });
+
     expect(result.success).toBe(true);
-    expect(mockInsert).toHaveBeenCalled();
+    expect(inserted[0].values).toMatchObject({ tipo: "rejeicao" });
   });
 
-  it("getTemplates returns templates", async () => {
-    authAs();
+  it("returns the templates ordered by type", async () => {
     const templates = [
       { id: "t1", tipo: "aprovacao" },
       { id: "t2", tipo: "rejeicao" },
     ];
-    mockFrom.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        order: vi.fn().mockResolvedValue({ data: templates, error: null }),
-      }),
-    });
+    queryFor("decisionTemplates").findMany.mockResolvedValue(templates);
 
     const result = await getTemplates();
+
     expect(result.data).toEqual(templates);
   });
 });
@@ -379,120 +381,105 @@ describe("saveTemplate and getTemplates", () => {
 // --- Document URL ---
 
 describe("getDocumentUrl", () => {
-  it("generates signed download URL", async () => {
-    authAs();
-    mockStorage.mockReturnValue({
-      createSignedUrl: vi.fn().mockResolvedValue({
-        data: { signedUrl: "https://example.com/signed" },
-        error: null,
-      }),
-    });
+  it("issues a signed download ticket for an existing document", async () => {
+    mockSize.mockResolvedValue(1024);
 
     const result = await getDocumentUrl("applications/app-1/rg.pdf");
+
     expect("url" in result).toBe(true);
-    if ("url" in result) {
-      expect(result.url).toBe("https://example.com/signed");
-    }
+    if (!("url" in result)) return;
+
+    const ticket = new URL(result.url, "http://x").searchParams.get("ticket");
+    expect(verifyTicket(ticket, "download")).toBe("applications/app-1/rg.pdf");
   });
 
-  it("falls back to applications path when pending path is stale", async () => {
-    authAs();
-    const createSignedUrl = vi
-      .fn()
-      .mockResolvedValueOnce({ data: null, error: { message: "not found" } })
-      .mockResolvedValueOnce({
-        data: { signedUrl: "https://example.com/fallback" },
-        error: null,
-      });
-    mockStorage.mockReturnValue({ createSignedUrl });
+  it("falls back to the applications path when the pending file is gone", async () => {
+    mockSize.mockResolvedValueOnce(null).mockResolvedValueOnce(2048);
 
-    const result = await getDocumentUrl(
-      "pending/uuid/rg_pai/rg.pdf",
-      "app-1"
-    );
+    const result = await getDocumentUrl("pending/uuid/rg_pai/rg.pdf", "app-1");
 
-    expect(createSignedUrl).toHaveBeenNthCalledWith(
-      1,
-      "pending/uuid/rg_pai/rg.pdf",
-      300
-    );
-    expect(createSignedUrl).toHaveBeenNthCalledWith(
+    expect(mockSize).toHaveBeenNthCalledWith(1, "pending/uuid/rg_pai/rg.pdf");
+    expect(mockSize).toHaveBeenNthCalledWith(
       2,
-      "applications/app-1/rg_pai/rg.pdf",
-      300
+      "applications/app-1/rg_pai/rg.pdf"
     );
+
     expect("url" in result).toBe(true);
-    if ("url" in result) {
-      expect(result.url).toBe("https://example.com/fallback");
-    }
+    if (!("url" in result)) return;
+
+    const ticket = new URL(result.url, "http://x").searchParams.get("ticket");
+    expect(verifyTicket(ticket, "download")).toBe(
+      "applications/app-1/rg_pai/rg.pdf"
+    );
+  });
+
+  it("returns an error when no candidate path exists", async () => {
+    mockSize.mockResolvedValue(null);
+
+    const result = await getDocumentUrl("applications/app-1/missing.pdf");
+
+    expect("error" in result).toBe(true);
+  });
+
+  it("does not issue a ticket usable for upload", async () => {
+    mockSize.mockResolvedValue(10);
+
+    const result = await getDocumentUrl("applications/app-1/rg.pdf");
+    if (!("url" in result)) throw new Error("expected a url");
+
+    const ticket = new URL(result.url, "http://x").searchParams.get("ticket");
+    expect(verifyTicket(ticket, "upload")).toBeNull();
   });
 });
 
 // --- Export Decision ---
 
 describe("exportDecision", () => {
-  it("returns a PDF with all tokens replaced", async () => {
-    authAs();
-    mockRenderDecisionPdf.mockClear();
+  const approvedApp = {
+    id: "app-1",
+    status: "aprovada",
+    pai_nome: "João Silva",
+    mae_nome: "Maria Silva",
+    escola: "Colégio São José",
+    desconto_concedido: 50,
+    motivo: "Renda compatível",
+    data_decisao: "2026-06-15T12:00:00Z",
+    students: [{ nome: "Pedro" }, { nome: "Ana" }],
+    school_years: { nome: "2026" },
+  };
 
-    let callCount = 0;
-    mockFrom.mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({
-                data: {
-                  id: "app-1",
-                  status: "aprovada",
-                  pai_nome: "João Silva",
-                  mae_nome: "Maria Silva",
-                  escola: "Colégio São José",
-                  desconto_concedido: 50,
-                  motivo: "Renda compatível",
-                  data_decisao: "2026-06-15T12:00:00Z",
-                  students: [{ nome: "Pedro" }, { nome: "Ana" }],
-                  school_years: { nome: "2026" },
-                },
-                error: null,
-              }),
-            }),
-          }),
-        };
-      }
-      return {
-        select: vi.fn().mockReturnValue({
-          eq: vi.fn().mockReturnValue({
-            single: vi.fn().mockResolvedValue({
-              data: {
-                id: "tmpl-1",
-                tipo: "aprovacao",
-                cabecalho: "DECISÃO - {escola}",
-                corpo: "Comunicamos que a solicitação de {nome_pai} e {nome_mae} para o(s) aluno(s) {aluno} foi aprovada com desconto de {desconto}%. Motivo: {motivo}.",
-                rodape: "Data: {data} - Ano Letivo: {ano_letivo}",
-              },
-              error: null,
-            }),
-          }),
-        }),
-      };
-    });
+  const template = {
+    id: "tmpl-1",
+    tipo: "aprovacao",
+    cabecalho: "DECISÃO - {escola}",
+    corpo:
+      "Comunicamos que a solicitação de {nome_pai} e {nome_mae} para o(s) aluno(s) {aluno} foi aprovada com desconto de {desconto}%. Motivo: {motivo}.",
+    rodape: "Data: {data} - Ano Letivo: {ano_letivo}",
+  };
+
+  it("returns a PDF with every token replaced", async () => {
+    queryFor("applications").findFirst.mockResolvedValue(approvedApp);
+    queryFor("decisionTemplates").findFirst.mockResolvedValue(template);
 
     const result = await exportDecision("app-1");
-    expect("pdfBase64" in result).toBe(true);
-    if ("pdfBase64" in result) {
-      expect(result.pdfBase64).toBe(Buffer.from("PDF").toString("base64"));
-      expect(result.filename).toMatch(/^decisao_aprovacao_.*\.pdf$/);
-    }
 
-    expect(mockRenderDecisionPdf).toHaveBeenCalledTimes(1);
+    expect("pdfBase64" in result).toBe(true);
+    if (!("pdfBase64" in result)) return;
+
+    expect(result.pdfBase64).toBe(Buffer.from("PDF").toString("base64"));
+    expect(result.filename).toMatch(/^decisao_aprovacao_.*\.pdf$/);
+
     const resolved = mockRenderDecisionPdf.mock.calls[0][0] as {
       cabecalho: string;
       corpo: string;
       rodape: string;
     };
-    const fullText = [resolved.cabecalho, resolved.corpo, resolved.rodape].join("\n");
+    const fullText = [
+      resolved.cabecalho,
+      resolved.corpo,
+      resolved.rodape,
+    ].join("\n");
+
     expect(fullText).toContain("João Silva");
     expect(fullText).toContain("Maria Silva");
     expect(fullText).toContain("Colégio São José");
@@ -502,68 +489,49 @@ describe("exportDecision", () => {
     expect(fullText).toContain("2026");
   });
 
-  it("rejects export for pending applications", async () => {
-    authAs();
-    mockFrom.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue({
-            data: { id: "app-1", status: "pendente" },
-            error: null,
-          }),
-        }),
-      }),
+  it("refuses to export a pending application", async () => {
+    queryFor("applications").findFirst.mockResolvedValue({
+      id: "app-1",
+      status: "pendente",
     });
 
     const result = await exportDecision("app-1");
+
     expect("error" in result).toBe(true);
+    expect(mockRenderDecisionPdf).not.toHaveBeenCalled();
+  });
+
+  it("reports a missing decision template", async () => {
+    queryFor("applications").findFirst.mockResolvedValue(approvedApp);
+    queryFor("decisionTemplates").findFirst.mockResolvedValue(undefined);
+
+    const result = await exportDecision("app-1");
+
+    expect(result).toEqual({ error: "Modelo de decisão não encontrado." });
   });
 });
 
+// --- Contract Template ---
+
 describe("getContractTemplate and saveContractTemplate", () => {
-  it("returns the contract template", async () => {
-    authAs();
-    mockFrom.mockImplementation(() => ({
-      select: vi.fn().mockReturnValue({
-        order: vi.fn().mockReturnValue({
-          limit: vi.fn().mockReturnValue({
-            maybeSingle: vi.fn().mockResolvedValue({
-              data: {
-                id: "ct-1",
-                titulo: "CONTRATO",
-                cabecalho: "{aluno}",
-                clausulas: [{ titulo: "C1", corpo: "x" }],
-                rodape: "{data_extenso}",
-              },
-              error: null,
-            }),
-          }),
-        }),
-      }),
-    }));
+  it("returns the stored contract template", async () => {
+    queryFor("contractTemplates").findFirst.mockResolvedValue({
+      id: "ct-1",
+      titulo: "CONTRATO",
+      cabecalho: "{aluno}",
+      clausulas: [{ titulo: "C1", corpo: "x" }],
+      rodape: "{data_extenso}",
+    });
 
     const result = await getContractTemplate();
+
     expect(result.error).toBeNull();
     expect(result.data?.titulo).toBe("CONTRATO");
     expect(result.data?.clausulas).toHaveLength(1);
   });
 
-  it("updates an existing template", async () => {
-    authAs();
-    const updateEq = vi.fn().mockResolvedValue({ error: null });
-    mockFrom.mockImplementation(() => ({
-      select: vi.fn().mockReturnValue({
-        order: vi.fn().mockReturnValue({
-          limit: vi.fn().mockReturnValue({
-            maybeSingle: vi.fn().mockResolvedValue({
-              data: { id: "ct-1" },
-              error: null,
-            }),
-          }),
-        }),
-      }),
-      update: vi.fn().mockReturnValue({ eq: updateEq }),
-    }));
+  it("updates the existing template", async () => {
+    queryFor("contractTemplates").findFirst.mockResolvedValue({ id: "ct-1" });
 
     const result = await saveContractTemplate({
       titulo: "T",
@@ -571,23 +539,14 @@ describe("getContractTemplate and saveContractTemplate", () => {
       clausulas: [],
       rodape: "R",
     });
+
     expect(result.success).toBe(true);
-    expect(updateEq).toHaveBeenCalledWith("id", "ct-1");
+    expect(updated[0].table).toBe(contractTemplates);
+    expect(inserted).toHaveLength(0);
   });
 
-  it("inserts when no template exists", async () => {
-    authAs();
-    const insert = vi.fn().mockResolvedValue({ error: null });
-    mockFrom.mockImplementation(() => ({
-      select: vi.fn().mockReturnValue({
-        order: vi.fn().mockReturnValue({
-          limit: vi.fn().mockReturnValue({
-            maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-          }),
-        }),
-      }),
-      insert,
-    }));
+  it("inserts when no template exists yet", async () => {
+    queryFor("contractTemplates").findFirst.mockResolvedValue(undefined);
 
     const result = await saveContractTemplate({
       titulo: "T",
@@ -595,85 +554,62 @@ describe("getContractTemplate and saveContractTemplate", () => {
       clausulas: [],
       rodape: "R",
     });
+
     expect(result.success).toBe(true);
-    expect(insert).toHaveBeenCalled();
+    expect(inserted[0].table).toBe(contractTemplates);
   });
 });
 
+// --- Export Contract ---
+
 describe("exportContract", () => {
-  function mockApprovedAppAndTemplate() {
-    let callCount = 0;
-    mockFrom.mockImplementation(() => {
-      callCount++;
-      if (callCount === 1) {
-        // applications
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({
-                data: {
-                  id: "app-1",
-                  status: "aprovada",
-                  pai_nome: "João Silva",
-                  pai_rg: "12.345.678-9",
-                  pai_cpf: "123.456.789-00",
-                  endereco: "Rua A, 123",
-                  cep: "13250-000",
-                  desconto_concedido: 50,
-                  students: [{ nome: "Pedro" }, { nome: "Ana" }],
-                  school_years: {
-                    nome: "2026",
-                    data_inicio: "2026-02-01",
-                    data_fim: "2026-11-30",
-                  },
-                },
-                error: null,
-              }),
-            }),
-          }),
-        };
-      }
-      // contract_templates (getContractTemplate)
-      return {
-        select: vi.fn().mockReturnValue({
-          order: vi.fn().mockReturnValue({
-            limit: vi.fn().mockReturnValue({
-              maybeSingle: vi.fn().mockResolvedValue({
-                data: {
-                  id: "ct-1",
-                  titulo: "CONTRATO",
-                  cabecalho: "Aluno: {aluno}, CPF {cpf_responsavel}, end {endereco}",
-                  clausulas: [
-                    { titulo: "C1", corpo: "Bolsa {desconto}% de {data_inicio} a {data_termino}" },
-                  ],
-                  rodape: "{data_extenso}",
-                },
-                error: null,
-              }),
-            }),
-          }),
-        }),
-      };
-    });
-  }
+  const approvedApp = {
+    id: "app-1",
+    status: "aprovada",
+    pai_nome: "João Silva",
+    pai_rg: "12.345.678-9",
+    pai_cpf: "123.456.789-00",
+    endereco: "Rua A, 123",
+    cep: "13250-000",
+    desconto_concedido: 50,
+    students: [{ nome: "Pedro" }, { nome: "Ana" }],
+    school_years: {
+      nome: "2026",
+      data_inicio: "2026-02-01",
+      data_fim: "2026-11-30",
+    },
+  };
+
+  const template = {
+    id: "ct-1",
+    titulo: "CONTRATO",
+    cabecalho: "Aluno: {aluno}, CPF {cpf_responsavel}, end {endereco}",
+    clausulas: [
+      {
+        titulo: "C1",
+        corpo: "Bolsa {desconto}% de {data_inicio} a {data_termino}",
+      },
+    ],
+    rodape: "{data_extenso}",
+  };
 
   it("generates a PDF with resolved tokens for an approved application", async () => {
-    authAs();
-    mockApprovedAppAndTemplate();
+    queryFor("applications").findFirst.mockResolvedValue(approvedApp);
+    queryFor("contractTemplates").findFirst.mockResolvedValue(template);
 
     const result = await exportContract("app-1");
-    expect("pdfBase64" in result).toBe(true);
-    if ("pdfBase64" in result) {
-      expect(result.filename).toMatch(/^contrato_.*\.pdf$/);
-      expect(result.pdfBase64).toBe(Buffer.from("PDF").toString("base64"));
-    }
 
-    // tokens were resolved before rendering
-    expect(mockRenderContractPdf).toHaveBeenCalledTimes(1);
+    expect("pdfBase64" in result).toBe(true);
+    if (!("pdfBase64" in result)) return;
+
+    expect(result.filename).toMatch(/^contrato_.*\.pdf$/);
+    expect(result.pdfBase64).toBe(Buffer.from("PDF").toString("base64"));
+
     const resolved = mockRenderContractPdf.mock.calls[0][0] as {
       cabecalho: string;
       clausulas: { corpo: string }[];
     };
+
     expect(resolved.cabecalho).toContain("Pedro, Ana");
     expect(resolved.cabecalho).toContain("123.456.789-00");
     expect(resolved.cabecalho).toContain("CEP 13250-000");
@@ -682,20 +618,14 @@ describe("exportContract", () => {
     expect(resolved.clausulas[0].corpo).toContain("30/11/2026");
   });
 
-  it("rejects contract generation for non-approved applications", async () => {
-    authAs();
-    mockFrom.mockReturnValue({
-      select: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          single: vi.fn().mockResolvedValue({
-            data: { id: "app-1", status: "pendente" },
-            error: null,
-          }),
-        }),
-      }),
+  it("refuses to generate a contract for an application that was not approved", async () => {
+    queryFor("applications").findFirst.mockResolvedValue({
+      ...approvedApp,
+      status: "pendente",
     });
 
     const result = await exportContract("app-1");
+
     expect("error" in result).toBe(true);
     expect(mockRenderContractPdf).not.toHaveBeenCalled();
   });

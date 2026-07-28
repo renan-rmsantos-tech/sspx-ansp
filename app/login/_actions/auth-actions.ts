@@ -1,15 +1,28 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { eq } from "drizzle-orm";
+import { redirect } from "next/navigation";
 import {
   BYPASS_EMAIL,
   BYPASS_PASSWORD,
+  BYPASS_USER,
   isAuthBypass,
 } from "@/lib/auth/bypass";
-import { createClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { verifyPassword } from "@/lib/auth/password";
+import { getSession } from "@/lib/auth/session";
+import { db } from "@/lib/db";
+import { adminUsers } from "@/lib/db/schema";
 
 export type LoginState = { error: string | null };
+
+const INVALID = "Credenciais inválidas. Verifique seu email e senha.";
+
+async function startSession(userId: string, email: string) {
+  const session = await getSession();
+  session.userId = userId;
+  session.email = email;
+  await session.save();
+}
 
 async function authenticate(
   email: string,
@@ -17,28 +30,23 @@ async function authenticate(
 ): Promise<LoginState> {
   if (isAuthBypass()) {
     if (email === BYPASS_EMAIL && password === BYPASS_PASSWORD) {
-      const cookieStore = await cookies();
-      cookieStore.set("dev-auth", "true", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-      });
+      await startSession(BYPASS_USER.id, BYPASS_USER.email);
       return { error: null };
     }
-    return { error: "Credenciais inválidas. Verifique seu email e senha." };
+    return { error: INVALID };
   }
 
-  const supabase = await createClient();
+  const normalized = (email ?? "").trim().toLowerCase();
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
+  const user = await db.query.adminUsers.findFirst({
+    where: eq(adminUsers.email, normalized),
   });
 
-  if (error) {
-    return { error: "Credenciais inválidas. Verifique seu email e senha." };
+  if (!user || !(await verifyPassword(password ?? "", user.password_hash))) {
+    return { error: INVALID };
   }
+
+  await startSession(user.id, user.email);
 
   return { error: null };
 }
@@ -69,13 +77,7 @@ export async function login(email: string, password: string) {
 }
 
 export async function logout() {
-  if (isAuthBypass()) {
-    const cookieStore = await cookies();
-    cookieStore.delete("dev-auth");
-    redirect("/login");
-  }
-
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  const session = await getSession();
+  session.destroy();
   redirect("/login");
 }

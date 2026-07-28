@@ -1,49 +1,33 @@
-import { isAuthBypass } from "@/lib/auth/bypass";
-import { createServerClient } from "@supabase/ssr";
+import { getIronSession } from "iron-session";
 import { NextResponse, type NextRequest } from "next/server";
+import { sessionOptions, type SessionData } from "@/lib/auth/session";
 
 export async function proxy(request: NextRequest) {
-  if (isAuthBypass()) {
-    const devAuth = request.cookies.get("dev-auth")?.value;
-    if (request.nextUrl.pathname.startsWith("/admin") && devAuth !== "true") {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-    return NextResponse.next();
+  const response = NextResponse.next({ request });
+
+  if (!request.nextUrl.pathname.startsWith("/admin")) {
+    return response;
   }
 
-  let supabaseResponse = NextResponse.next({ request });
+  let authenticated = false;
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          for (const { name, value } of cookiesToSet) {
-            request.cookies.set(name, value);
-          }
-          supabaseResponse = NextResponse.next({ request });
-          for (const { name, value, options } of cookiesToSet) {
-            supabaseResponse.cookies.set(name, value, options);
-          }
-        },
-      },
-    }
-  );
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (request.nextUrl.pathname.startsWith("/admin") && !user) {
-    const loginUrl = new URL("/login", request.url);
-    return NextResponse.redirect(loginUrl);
+  try {
+    const session = await getIronSession<SessionData>(
+      request,
+      response,
+      sessionOptions()
+    );
+    authenticated = Boolean(session.userId);
+  } catch {
+    // SESSION_SECRET ausente ou cookie corrompido: trata como não autenticado.
+    authenticated = false;
   }
 
-  return supabaseResponse;
+  if (!authenticated) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  return response;
 }
 
 export const config = {

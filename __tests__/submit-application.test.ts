@@ -1,25 +1,43 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mockFrom = vi.fn();
-const mockStorageFrom = vi.fn();
-const mockMove = vi.fn().mockResolvedValue({ error: null });
+vi.stubEnv("SESSION_SECRET", "z".repeat(48));
 
-const mockSupabase = {
-  from: mockFrom,
-  storage: { from: () => ({ move: mockMove }) },
-};
-
-vi.mock("@/lib/supabase/server", () => ({
-  createClient: vi.fn(() => Promise.resolve(mockSupabase)),
-  createServiceClient: vi.fn(() => mockSupabase),
+vi.mock("@/lib/db", async () => ({
+  db: (await import("./helpers/fake-db")).fakeDb,
 }));
 
-vi.mock("crypto", async () => {
-  const actual = await vi.importActual<typeof import("crypto")>("crypto");
-  return { ...actual, randomUUID: () => "test-uuid-1234" };
+const { mockMove, mockSize } = vi.hoisted(() => ({
+  mockMove: vi.fn(),
+  mockSize: vi.fn(),
+}));
+
+vi.mock("@/lib/storage", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/storage")>(
+    "@/lib/storage"
+  );
+  return {
+    ...actual,
+    getStorage: () => ({ move: mockMove, size: mockSize }),
+  };
 });
 
+import {
+  applications,
+  benefactors,
+  collaboration,
+  documents,
+  otherChildren,
+  students,
+  vehicles,
+} from "@/lib/db/schema";
 import { submitApplication } from "@/app/form/_actions/form-actions";
+import {
+  failWrites,
+  inserted,
+  queryFor,
+  resetFakeDb,
+  setReturning,
+} from "./helpers/fake-db";
 
 function validInput() {
   return {
@@ -58,150 +76,129 @@ function validInput() {
       arrecadacao: true,
       benfeitores: false,
     },
-    indicacao_benfeitores: [
-      { nome: "Carlos", email: "carlos@email.com" },
-    ],
+    indicacao_benfeitores: [{ nome: "Carlos", email: "carlos@email.com" }],
   };
 }
 
-function createTableMock() {
-  const insertSelectMock = vi.fn().mockResolvedValue({
-    data: [{ id: "student-1", nome: "Ana Silva" }],
-    error: null,
-  });
-  const insertMock = vi.fn().mockReturnValue({
-    select: insertSelectMock,
-  });
-
-  const singleMock = vi.fn();
-  const eqMock = vi.fn().mockReturnValue({ single: singleMock });
-  const selectMock = vi.fn().mockReturnValue({ eq: eqMock });
-
-  return { insert: insertMock, select: selectMock, single: singleMock, eq: eqMock };
+function insertedFor(table: unknown) {
+  return inserted.find((row) => row.table === table)?.values;
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
+  resetFakeDb();
 
-  const tables: Record<string, ReturnType<typeof createTableMock>> = {};
-
-  const getTable = (name: string) => {
-    if (!tables[name]) tables[name] = createTableMock();
-    return tables[name];
-  };
-
-  mockFrom.mockImplementation((table: string) => getTable(table));
-
-  // school_years: SELECT id WHERE ativo = true → { id: "year-1" }
-  const syTable = getTable("school_years");
-  syTable.single.mockResolvedValue({ data: { id: "year-1" }, error: null });
-
-  // applications: INSERT → SELECT id → single → { id: "app-1" }
-  const appTable = getTable("applications");
-  const appInsertSelect = vi.fn().mockReturnValue({
-    single: vi.fn().mockResolvedValue({ data: { id: "app-1" }, error: null }),
-  });
-  appTable.insert.mockReturnValue({ select: appInsertSelect });
-
-  // students: INSERT → SELECT → [{ id, nome }]
-  const studentsTable = getTable("students");
-  studentsTable.insert.mockReturnValue({
-    select: vi.fn().mockResolvedValue({
-      data: [{ id: "student-1", nome: "Ana Silva" }],
-      error: null,
-    }),
-  });
-
-  // other tables just need insert to resolve
-  for (const t of ["other_children", "vehicles", "collaboration", "benefactors", "documents"]) {
-    getTable(t).insert.mockResolvedValue({ data: null, error: null });
-  }
+  queryFor("schoolYears").findFirst.mockResolvedValue({ id: "year-1" });
+  setReturning(applications, [{ id: "app-1" }]);
+  setReturning(students, [{ id: "student-1", nome: "Ana Silva" }]);
+  mockMove.mockResolvedValue(undefined);
+  mockSize.mockResolvedValue(2048);
 });
 
 describe("submitApplication", () => {
-  it("with valid data creates records in all related tables", async () => {
+  it("creates records in every related table", async () => {
     const result = await submitApplication(validInput());
 
     expect(result.success).toBe(true);
     expect(result.id).toBe("app-1");
 
-    // Verify tables were called
-    const calledTables = mockFrom.mock.calls.map((c: string[]) => c[0]);
-    expect(calledTables).toContain("school_years");
-    expect(calledTables).toContain("applications");
-    expect(calledTables).toContain("students");
-    expect(calledTables).toContain("collaboration");
-    expect(calledTables).toContain("documents");
-    expect(calledTables).toContain("vehicles");
-    expect(calledTables).toContain("benefactors");
+    const tables = inserted.map((row) => row.table);
+    expect(tables).toContain(applications);
+    expect(tables).toContain(students);
+    expect(tables).toContain(collaboration);
+    expect(tables).toContain(documents);
+    expect(tables).toContain(vehicles);
+    expect(tables).toContain(benefactors);
   });
 
-  it("with invalid data returns Zod errors without inserting any records", async () => {
+  it("strips punctuation from the CPFs it stores", async () => {
+    await submitApplication(validInput());
+
+    expect(insertedFor(applications)).toMatchObject({
+      pai_cpf: "52998224725",
+      mae_cpf: "11144477735",
+    });
+  });
+
+  it("skips tables with nothing to insert", async () => {
+    await submitApplication(validInput());
+
+    // outros_filhos está vazio na entrada válida.
+    expect(inserted.map((row) => row.table)).not.toContain(otherChildren);
+  });
+
+  it("links student documents to the inserted student", async () => {
+    await submitApplication(validInput());
+
+    const rows = insertedFor(documents) as Array<{
+      categoria: string;
+      student_id: string | null;
+    }>;
+    const studentDoc = rows.find((row) => row.categoria === "rg_aluno");
+
+    expect(studentDoc?.student_id).toBe("student-1");
+  });
+
+  it("moves uploaded files from pending/ into the application folder", async () => {
+    await submitApplication(validInput());
+
+    expect(mockMove).toHaveBeenCalledWith(
+      "pending/uuid/rg_pai/rg.pdf",
+      "applications/app-1/rg_pai/rg.pdf"
+    );
+
+    const rows = insertedFor(documents) as Array<{ storage_path: string }>;
+    expect(
+      rows.every((row) => row.storage_path.startsWith("applications/app-1/"))
+    ).toBe(true);
+  });
+
+  it("records the real file size", async () => {
+    await submitApplication(validInput());
+
+    const rows = insertedFor(documents) as Array<{ tamanho_bytes: number }>;
+    expect(rows.every((row) => row.tamanho_bytes === 2048)).toBe(true);
+  });
+
+  it("keeps the pending path when the file cannot be moved", async () => {
+    mockMove.mockRejectedValue(new Error("ENOENT"));
+
+    await submitApplication(validInput());
+
+    const rows = insertedFor(documents) as Array<{ storage_path: string }>;
+    expect(rows.every((row) => row.storage_path.startsWith("pending/"))).toBe(
+      true
+    );
+  });
+
+  it("returns Zod errors without touching the database", async () => {
     const data = validInput();
     data.pai.nome = "";
     data.pai.cpf = "invalid";
     data.alunos = [];
 
     const result = await submitApplication(data);
+
     expect(result.success).toBe(false);
     expect(result.errors).toBeDefined();
-    // Should NOT have called any table
-    expect(mockFrom).not.toHaveBeenCalled();
+    expect(inserted).toHaveLength(0);
   });
 
-  it("returns error when school year is not active", async () => {
-    // Override school_years mock to return no data
-    mockFrom.mockImplementation((table: string) => {
-      if (table === "school_years") {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({
-                data: null,
-                error: { code: "PGRST116" },
-              }),
-            }),
-          }),
-        };
-      }
-      return { insert: vi.fn().mockResolvedValue({ data: null, error: null }) };
-    });
+  it("returns an error when no school year is active", async () => {
+    queryFor("schoolYears").findFirst.mockResolvedValue(undefined);
 
     const result = await submitApplication(validInput());
+
     expect(result.success).toBe(false);
     expect(result.errors?._form).toBeDefined();
+    expect(inserted).toHaveLength(0);
   });
 
-  it("returns error when application insert fails", async () => {
-    mockFrom.mockImplementation((table: string) => {
-      if (table === "school_years") {
-        return {
-          select: vi.fn().mockReturnValue({
-            eq: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({
-                data: { id: "year-1" },
-                error: null,
-              }),
-            }),
-          }),
-        };
-      }
-      if (table === "applications") {
-        return {
-          insert: vi.fn().mockReturnValue({
-            select: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({
-                data: null,
-                error: { message: "DB error" },
-              }),
-            }),
-          }),
-        };
-      }
-      return { insert: vi.fn().mockResolvedValue({ data: null, error: null }) };
-    });
+  it("returns an error when a write inside the transaction fails", async () => {
+    failWrites();
 
     const result = await submitApplication(validInput());
+
     expect(result.success).toBe(false);
     expect(result.errors?._form).toBeDefined();
   });
