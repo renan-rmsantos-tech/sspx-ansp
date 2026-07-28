@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { DonorForm } from "./_components/donor-form";
 
 export const metadata: Metadata = {
@@ -11,39 +12,50 @@ export default function BenfeitorPage() {
   return (
     <div className="min-h-screen bg-bg">
       <div className="mx-auto max-w-[720px] px-4 py-8 pb-16 max-sm:px-3 max-sm:py-5">
-        <header className="mb-8 text-center">
-          <svg
-            width="64"
-            height="64"
-            viewBox="0 0 220 220"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="mx-auto mb-3"
-            role="img"
-            aria-label="Logo Arca N. S. da Providência"
+        <div className="mb-5">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:underline"
           >
-            <defs>
-              <clipPath id="benf-clip">
-                <circle cx="110" cy="110" r="84" />
-              </clipPath>
-              <radialGradient id="benf-bg" cx="50%" cy="45%" r="55%">
-                <stop offset="0%" stopColor="#1e2a4a" />
-                <stop offset="100%" stopColor="#0f1729" />
-              </radialGradient>
-            </defs>
-            <circle cx="110" cy="110" r="106" fill="url(#benf-bg)" stroke="#c9a84c" strokeWidth="3" />
-            <circle cx="110" cy="110" r="98" fill="none" stroke="#c9a84c" strokeWidth="0.6" opacity="0.35" />
-            <image
-              href="/base1.png"
-              x="22"
-              y="30"
-              width="176"
-              height="184"
-              clipPath="url(#benf-clip)"
-              preserveAspectRatio="xMidYMid slice"
-            />
-            <circle cx="110" cy="110" r="84" fill="none" stroke="#0f1729" strokeWidth="12" opacity="0.2" />
-          </svg>
+            <span aria-hidden="true">←</span>
+            Voltar à página principal
+          </Link>
+        </div>
+
+        <header className="mb-8 text-center">
+          <Link href="/" className="mx-auto mb-3 inline-block" aria-label="Arca N. S. da Providência — início">
+            <svg
+              width="64"
+              height="64"
+              viewBox="0 0 220 220"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              role="img"
+              aria-hidden="true"
+            >
+              <defs>
+                <clipPath id="benf-clip">
+                  <circle cx="110" cy="110" r="84" />
+                </clipPath>
+                <radialGradient id="benf-bg" cx="50%" cy="45%" r="55%">
+                  <stop offset="0%" stopColor="#1e2a4a" />
+                  <stop offset="100%" stopColor="#0f1729" />
+                </radialGradient>
+              </defs>
+              <circle cx="110" cy="110" r="106" fill="url(#benf-bg)" stroke="#c9a84c" strokeWidth="3" />
+              <circle cx="110" cy="110" r="98" fill="none" stroke="#c9a84c" strokeWidth="0.6" opacity="0.35" />
+              <image
+                href="/base1.png"
+                x="22"
+                y="30"
+                width="176"
+                height="184"
+                clipPath="url(#benf-clip)"
+                preserveAspectRatio="xMidYMid slice"
+              />
+              <circle cx="110" cy="110" r="84" fill="none" stroke="#0f1729" strokeWidth="12" opacity="0.2" />
+            </svg>
+          </Link>
           <p className="mb-1.5 text-xs font-medium uppercase tracking-widest text-muted">
             Arca N. S. da Providência
           </p>

@@ -383,11 +383,12 @@ export function DonorForm() {
           {submitting ? "Enviando..." : "Quero ser benfeitor"}
         </button>
 
-        <div className="text-center">
-          <Link href="/" className="text-sm font-medium text-accent hover:underline">
-            Voltar à página principal
-          </Link>
-        </div>
+        <Link
+          href="/"
+          className="flex w-full items-center justify-center rounded-md border border-border bg-surface px-7 py-3 text-sm font-medium text-accent transition-colors hover:bg-bg"
+        >
+          Voltar à página principal
+        </Link>
       </div>
     </form>
   );
