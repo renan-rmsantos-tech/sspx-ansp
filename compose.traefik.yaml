@@ -1,0 +1,42 @@
+name: sspx-ansp
+
+services:
+  ansp:
+    build:
+      context: .
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      HOSTNAME: "0.0.0.0"
+      STORAGE_DIR: /data/uploads
+    volumes:
+      # Documentos das solicitações (RG, comprovantes, extratos). Precisa
+      # sobreviver ao redeploy e entrar na rotina de backup.
+      - uploads:/data/uploads
+    networks:
+      # `internal`: alcança o Postgres compartilhado (acipec-postgres).
+      # `proxy`: exposta ao Traefik, que termina o TLS.
+      - internal
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.bolsas.rule=Host(`${APP_HOST}`)
+      - traefik.http.routers.bolsas.entrypoints=websecure
+      - traefik.http.routers.bolsas.tls=true
+      - traefik.http.routers.bolsas.tls.certresolver=letsencrypt
+      - traefik.http.services.bolsas.loadbalancer.server.port=3000
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  internal:
+    external: true
+  proxy:
+    external: true
+
+volumes:
+  uploads:
