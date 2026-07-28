@@ -15,12 +15,15 @@ export const donorPledgeSchema = z
       .min(1, "E-mail é obrigatório")
       .refine((v) => EMAIL_RE.test(v), { message: "E-mail inválido" }),
     telefone: z.string().min(1, "Telefone é obrigatório"),
+    endereco: z.string().min(1, "Endereço é obrigatório"),
+    cep: z.string().min(1, "CEP é obrigatório"),
     frequencia: z.enum(["unica", "mensal"]),
     duracao: z.enum(["um_ano", "indeterminado"]).optional(),
     valor: z.number().positive("Informe um valor maior que zero"),
-    meio_pagamento: z.enum(["cartao", "boleto", "transferencia", "pix"]),
     data_pagamento: z.string().min(1, "Informe a data do pagamento"),
     lembrete_canal: z.enum(["whatsapp", "email"]),
+    recibo_path: z.string().min(1, "Envie o recibo de pagamento"),
+    recibo_nome: z.string().min(1, "Envie o recibo de pagamento"),
     observacoes: z.string().optional(),
   })
   .refine(

@@ -292,11 +292,14 @@ export const donorPledges = pgTable(
       mode: "number",
     }).notNull(),
     meio_pagamento: text("meio_pagamento")
-      .$type<"cartao" | "boleto" | "transferencia" | "pix">()
-      .notNull(),
+      .$type<"cartao" | "boleto" | "transferencia" | "pix">(),
     data_pagamento: date("data_pagamento", { mode: "string" }),
     lembrete_canal: text("lembrete_canal").$type<"whatsapp" | "email">(),
     telefone: text("telefone"),
+    endereco: text("endereco"),
+    cep: text("cep"),
+    recibo_path: text("recibo_path"),
+    recibo_nome: text("recibo_nome"),
     observacoes: text("observacoes"),
     created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
       .notNull()

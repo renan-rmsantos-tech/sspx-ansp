@@ -19,12 +19,14 @@ export interface DonorPdfData {
   cpf: string;
   email: string;
   telefone?: string | null;
+  endereco?: string | null;
+  cep?: string | null;
   frequencia: "unica" | "mensal";
   duracao?: "um_ano" | "indeterminado" | null;
   valor: number;
-  meio_pagamento: "cartao" | "boleto" | "transferencia" | "pix";
   data_pagamento?: string | null;
   lembrete_canal?: "whatsapp" | "email" | null;
+  recibo_nome?: string | null;
   observacoes?: string | null;
   created_at: string;
 }
@@ -37,13 +39,6 @@ const FREQUENCIA_LABELS: Record<DonorPdfData["frequencia"], string> = {
 const DURACAO_LABELS: Record<NonNullable<DonorPdfData["duracao"]>, string> = {
   um_ano: "Por um ano",
   indeterminado: "Indeterminado",
-};
-
-const MEIO_LABELS: Record<DonorPdfData["meio_pagamento"], string> = {
-  cartao: "Cartão de crédito",
-  boleto: "Boleto",
-  transferencia: "Transferência",
-  pix: "Pix",
 };
 
 const CANAL_LABELS: Record<NonNullable<DonorPdfData["lembrete_canal"]>, string> = {
@@ -160,6 +155,8 @@ function DonorDocument({ data }: { data: DonorPdfData }) {
           <Field label="CPF" value={data.cpf} />
           <Field label="E-mail" value={data.email} />
           <Field label="Telefone" value={data.telefone} />
+          <Field label="Endereço" value={data.endereco} />
+          <Field label="CEP" value={data.cep} />
           <Field
             label="Data do cadastro"
             value={fmtDate(data.created_at)}
@@ -177,12 +174,12 @@ function DonorDocument({ data }: { data: DonorPdfData }) {
           )}
           <Field label="Valor" value={valorLabel} />
           <Field
-            label="Meio de pagamento"
-            value={MEIO_LABELS[data.meio_pagamento]}
-          />
-          <Field
             label="Data de pagamento"
             value={fmtDate(data.data_pagamento)}
+          />
+          <Field
+            label="Recibo anexado"
+            value={data.recibo_nome ?? "—"}
           />
           {data.lembrete_canal && (
             <Field

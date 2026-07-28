@@ -91,6 +91,48 @@ export default function BenfeitorPage() {
           </div>
         </section>
 
+        <section
+          className="mb-8 rounded-xl border border-border bg-surface p-6 max-sm:p-5"
+          aria-labelledby="dados-bancarios-titulo"
+        >
+          <h2
+            id="dados-bancarios-titulo"
+            className="font-display text-[20px] font-semibold text-fg"
+          >
+            Dados para transferência
+          </h2>
+          <p className="mt-1 text-sm text-muted">
+            Utilize a conta abaixo para Pix ou transferência bancária. Depois,
+            anexe o comprovante no formulário.
+          </p>
+          <dl className="mt-5 grid gap-3 text-[15px] sm:grid-cols-2">
+            <div className="rounded-md bg-bg px-4 py-3 sm:col-span-2">
+              <dt className="text-[11px] font-semibold uppercase tracking-widest text-muted">
+                Titular / Banco
+              </dt>
+              <dd className="mt-1 font-medium text-fg">ACIPEC · Santander</dd>
+            </div>
+            <div className="rounded-md bg-bg px-4 py-3">
+              <dt className="text-[11px] font-semibold uppercase tracking-widest text-muted">
+                Agência
+              </dt>
+              <dd className="mt-1 font-medium tabular-nums text-fg">0197</dd>
+            </div>
+            <div className="rounded-md bg-bg px-4 py-3">
+              <dt className="text-[11px] font-semibold uppercase tracking-widest text-muted">
+                Conta
+              </dt>
+              <dd className="mt-1 font-medium tabular-nums text-fg">13.008003-2</dd>
+            </div>
+            <div className="rounded-md bg-bg px-4 py-3 sm:col-span-2">
+              <dt className="text-[11px] font-semibold uppercase tracking-widest text-muted">
+                CNPJ
+              </dt>
+              <dd className="mt-1 font-medium tabular-nums text-fg">42.736.079/0001-63</dd>
+            </div>
+          </dl>
+        </section>
+
         <DonorForm />
       </div>
     </div>

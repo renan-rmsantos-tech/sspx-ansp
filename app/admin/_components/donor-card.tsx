@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { deleteDonorPledge, exportDonorPledge } from "../_actions/admin-actions";
+import {
+  deleteDonorPledge,
+  exportDonorPledge,
+  getDocumentUrl,
+} from "../_actions/admin-actions";
 import { PdfPreviewModal } from "./pdf-preview-modal";
 
 export interface DonorPledge {
@@ -10,12 +14,15 @@ export interface DonorPledge {
   cpf: string;
   email: string;
   telefone?: string | null;
+  endereco?: string | null;
+  cep?: string | null;
   frequencia: "unica" | "mensal";
   duracao?: "um_ano" | "indeterminado" | null;
   valor: number;
-  meio_pagamento: "cartao" | "boleto" | "transferencia" | "pix";
   data_pagamento?: string | null;
   lembrete_canal?: "whatsapp" | "email" | null;
+  recibo_path?: string | null;
+  recibo_nome?: string | null;
   observacoes?: string | null;
   created_at: string;
 }
@@ -28,13 +35,6 @@ export const FREQUENCIA_LABELS: Record<DonorPledge["frequencia"], string> = {
 const DURACAO_LABELS: Record<NonNullable<DonorPledge["duracao"]>, string> = {
   um_ano: "Por um ano",
   indeterminado: "Indeterminado",
-};
-
-const MEIO_LABELS: Record<DonorPledge["meio_pagamento"], string> = {
-  cartao: "Cartão de crédito",
-  boleto: "Boleto",
-  transferencia: "Transferência",
-  pix: "Pix",
 };
 
 const CANAL_LABELS: Record<NonNullable<DonorPledge["lembrete_canal"]>, string> = {
@@ -69,6 +69,8 @@ export function DonorCard({ donor, onDelete }: DonorCardProps) {
   const [error, setError] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [reciboLoading, setReciboLoading] = useState(false);
+  const [reciboError, setReciboError] = useState<string | null>(null);
   const [preview, setPreview] = useState<
     { pdfBase64: string; filename: string } | null
   >(null);
@@ -84,6 +86,19 @@ export function DonorCard({ donor, onDelete }: DonorCardProps) {
     }
     setExporting(false);
   }, [donor.id]);
+
+  const handleOpenRecibo = useCallback(async () => {
+    if (!donor.recibo_path) return;
+    setReciboLoading(true);
+    setReciboError(null);
+    const result = await getDocumentUrl(donor.recibo_path);
+    setReciboLoading(false);
+    if ("url" in result) {
+      window.open(result.url, "_blank", "noopener,noreferrer");
+    } else {
+      setReciboError(result.error);
+    }
+  }, [donor.recibo_path]);
 
   const handleDelete = useCallback(async () => {
     setDeleting(true);
@@ -135,6 +150,8 @@ export function DonorCard({ donor, onDelete }: DonorCardProps) {
             </a>
             <span>CPF: {donor.cpf}</span>
             {donor.telefone && <span>{donor.telefone}</span>}
+            {donor.endereco && <span>{donor.endereco}</span>}
+            {donor.cep && <span>CEP: {donor.cep}</span>}
             <span>
               Cadastro: {new Date(donor.created_at).toLocaleDateString("pt-BR")}
             </span>
@@ -148,10 +165,6 @@ export function DonorCard({ donor, onDelete }: DonorCardProps) {
                 {donor.frequencia === "mensal" ? "/mês" : ""}
               </span>
             </span>
-            <span>
-              <span className="text-muted">Meio: </span>
-              <span className="text-fg">{MEIO_LABELS[donor.meio_pagamento]}</span>
-            </span>
             {donor.data_pagamento && (
               <span>
                 <span className="text-muted">Pagamento: </span>
@@ -162,6 +175,12 @@ export function DonorCard({ donor, onDelete }: DonorCardProps) {
               <span>
                 <span className="text-muted">Lembrete: </span>
                 <span className="text-fg">{CANAL_LABELS[donor.lembrete_canal]}</span>
+              </span>
+            )}
+            {donor.recibo_nome && (
+              <span>
+                <span className="text-muted">Recibo: </span>
+                <span className="text-fg">{donor.recibo_nome}</span>
               </span>
             )}
           </div>
@@ -183,9 +202,25 @@ export function DonorCard({ donor, onDelete }: DonorCardProps) {
               {exportError}
             </p>
           )}
+          {reciboError && (
+            <p className="mt-2 text-sm text-danger" data-testid="donor-recibo-error">
+              {reciboError}
+            </p>
+          )}
         </div>
 
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+          {donor.recibo_path && (
+            <button
+              type="button"
+              onClick={handleOpenRecibo}
+              disabled={reciboLoading}
+              className="rounded-md border border-border px-3 py-1.5 text-sm font-medium text-accent hover:bg-bg disabled:opacity-50"
+              data-testid="donor-recibo-button"
+            >
+              {reciboLoading ? "Abrindo..." : "Ver recibo"}
+            </button>
+          )}
           <button
             type="button"
             onClick={handleExport}

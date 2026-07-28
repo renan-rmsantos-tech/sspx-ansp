@@ -5,20 +5,16 @@ import Link from "next/link";
 import { registerDonorPledge } from "../_actions/donor-actions";
 import type { DonorPledge } from "@/lib/validations/donor-schema";
 import { isValidCPF } from "@/lib/validations/cpf";
+import {
+  FileUpload,
+  type UploadedFile,
+} from "@/app/form/_components/file-upload";
 
 type Frequencia = "unica" | "mensal";
 type Duracao = "um_ano" | "indeterminado";
-type Meio = "cartao" | "boleto" | "transferencia" | "pix";
 type Canal = "whatsapp" | "email";
 
 const VALOR_PRESETS = [40, 80, 160] as const;
-
-const MEIO_OPTIONS: { value: Meio; label: string }[] = [
-  { value: "cartao", label: "Cartão de crédito" },
-  { value: "boleto", label: "Boleto" },
-  { value: "transferencia", label: "Transferência" },
-  { value: "pix", label: "Pix" },
-];
 
 const inputClass =
   "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg outline-none focus:border-accent";
@@ -62,13 +58,15 @@ export function DonorForm() {
   const [duracao, setDuracao] = useState<Duracao | null>("um_ano");
   const [valorPreset, setValorPreset] = useState<number | "outro">(80);
   const [valorOutro, setValorOutro] = useState("");
-  const [meio, setMeio] = useState<Meio | null>(null);
   const [dataPagamento, setDataPagamento] = useState("");
   const [canal, setCanal] = useState<Canal | null>(null);
   const [nome, setNome] = useState("");
   const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
   const [telefone, setTelefone] = useState("");
+  const [endereco, setEndereco] = useState("");
+  const [cep, setCep] = useState("");
+  const [recibo, setRecibo] = useState<UploadedFile[]>([]);
   const [observacoes, setObservacoes] = useState("");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -90,12 +88,16 @@ export function DonorForm() {
     else if (!isValidCPF(cpf)) localErrors.cpf = "CPF inválido.";
     if (!email.trim()) localErrors.email = "Informe seu e-mail.";
     if (!telefone.trim()) localErrors.telefone = "Informe seu telefone.";
+    if (!endereco.trim()) localErrors.endereco = "Informe seu endereço.";
+    if (!cep.trim()) localErrors.cep = "Informe seu CEP.";
     if (valor <= 0) localErrors.valor = "Informe um valor maior que zero.";
-    if (!meio) localErrors.meio_pagamento = "Selecione um meio de pagamento.";
     if (!dataPagamento) localErrors.data_pagamento = "Informe a data do pagamento.";
     if (!canal) localErrors.lembrete_canal = "Selecione um canal de lembrete.";
     if (frequencia === "mensal" && !duracao)
       localErrors.duracao = "Selecione a duração.";
+
+    const reciboOk = recibo.find((f) => f.path && !f.uploading && !f.error);
+    if (!reciboOk) localErrors.recibo_path = "Envie o recibo de pagamento.";
 
     if (Object.keys(localErrors).length > 0) {
       setErrors(localErrors);
@@ -110,12 +112,15 @@ export function DonorForm() {
       cpf: cpf.trim(),
       email: email.trim(),
       telefone: telefone.trim(),
+      endereco: endereco.trim(),
+      cep: cep.trim(),
       frequencia,
       duracao: frequencia === "mensal" ? duracao ?? undefined : undefined,
       valor,
-      meio_pagamento: meio as Meio,
       data_pagamento: dataPagamento,
       lembrete_canal: canal as Canal,
+      recibo_path: reciboOk!.path,
+      recibo_nome: reciboOk!.name,
       observacoes: observacoes.trim() || undefined,
     };
 
@@ -137,12 +142,14 @@ export function DonorForm() {
     cpf,
     email,
     telefone,
+    endereco,
+    cep,
     frequencia,
     duracao,
     valor,
-    meio,
     dataPagamento,
     canal,
+    recibo,
     observacoes,
   ]);
 
@@ -186,7 +193,6 @@ export function DonorForm() {
       </p>
 
       <div className="mt-6 space-y-6">
-        {/* Frequência */}
         <div>
           <FieldLabel>Pagamento</FieldLabel>
           <div className="flex flex-wrap gap-2">
@@ -199,7 +205,6 @@ export function DonorForm() {
           </div>
         </div>
 
-        {/* Duração (só mensal) */}
         {frequencia === "mensal" && (
           <div>
             <FieldLabel>Duração</FieldLabel>
@@ -218,7 +223,6 @@ export function DonorForm() {
           </div>
         )}
 
-        {/* Valor */}
         <div>
           <FieldLabel>Valor {frequencia === "mensal" ? "(por mês)" : ""}</FieldLabel>
           <div className="flex flex-wrap items-center gap-2">
@@ -250,24 +254,6 @@ export function DonorForm() {
           <ErrorText msg={errors.valor} />
         </div>
 
-        {/* Meio de pagamento */}
-        <div>
-          <FieldLabel>Meio de pagamento</FieldLabel>
-          <div className="flex flex-wrap gap-2">
-            {MEIO_OPTIONS.map((opt) => (
-              <OptionButton
-                key={opt.value}
-                active={meio === opt.value}
-                onClick={() => setMeio(opt.value)}
-              >
-                {opt.label}
-              </OptionButton>
-            ))}
-          </div>
-          <ErrorText msg={errors.meio_pagamento} />
-        </div>
-
-        {/* Data do pagamento */}
         <div>
           <label htmlFor="donor-data" className="mb-2 block text-sm font-medium text-fg">
             Data do pagamento
@@ -282,7 +268,21 @@ export function DonorForm() {
           <ErrorText msg={errors.data_pagamento} />
         </div>
 
-        {/* Lembrete */}
+        <div>
+          <FieldLabel>Recibo de pagamento</FieldLabel>
+          <p className="mb-2 text-sm text-muted">
+            Após realizar o Pix ou a transferência, envie o comprovante (imagem ou PDF).
+          </p>
+          <FileUpload
+            label="para enviar o recibo de pagamento"
+            category="recibo_pagamento"
+            files={recibo}
+            onChange={setRecibo}
+            required
+            error={errors.recibo_path}
+          />
+        </div>
+
         <div>
           <FieldLabel>Receber lembrete por</FieldLabel>
           <div className="flex flex-wrap gap-2">
@@ -298,7 +298,6 @@ export function DonorForm() {
 
         <hr className="border-border" />
 
-        {/* Identificação */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="donor-nome" className="mb-2 block text-sm font-medium text-fg">
@@ -341,7 +340,7 @@ export function DonorForm() {
             />
             <ErrorText msg={errors.email} />
           </div>
-          <div className="sm:col-span-2">
+          <div>
             <label htmlFor="donor-tel" className="mb-2 block text-sm font-medium text-fg">
               Telefone / WhatsApp
             </label>
@@ -353,6 +352,35 @@ export function DonorForm() {
               className={inputClass}
             />
             <ErrorText msg={errors.telefone} />
+          </div>
+          <div className="sm:col-span-2">
+            <label htmlFor="donor-endereco" className="mb-2 block text-sm font-medium text-fg">
+              Endereço completo
+            </label>
+            <input
+              id="donor-endereco"
+              type="text"
+              value={endereco}
+              onChange={(e) => setEndereco(e.target.value)}
+              placeholder="Rua, número, bairro, cidade — UF"
+              className={inputClass}
+            />
+            <ErrorText msg={errors.endereco} />
+          </div>
+          <div>
+            <label htmlFor="donor-cep" className="mb-2 block text-sm font-medium text-fg">
+              CEP
+            </label>
+            <input
+              id="donor-cep"
+              type="text"
+              inputMode="numeric"
+              value={cep}
+              onChange={(e) => setCep(e.target.value)}
+              placeholder="00000-000"
+              className={inputClass}
+            />
+            <ErrorText msg={errors.cep} />
           </div>
           <div className="sm:col-span-2">
             <label htmlFor="donor-obs" className="mb-2 block text-sm font-medium text-fg">
