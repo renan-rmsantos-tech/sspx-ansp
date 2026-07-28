@@ -14,9 +14,9 @@ push-to-deploy). Este documento cobre só o que é específico do sspx-ansp.
 |---|---|
 | 1. Remoção do Supabase (banco, auth, storage) | **feito** |
 | 2. Dockerização (Dockerfile, compose, health check) | **feito** |
-| 3. Primeira publicação no droplet | pendente — precisa de acesso SSH |
-| 4. Push-to-deploy | pendente — depende da fase 3 |
-| 5. Backup e operação | script pronto (`scripts/backup.sh`), cron pendente |
+| 3. Primeira publicação no droplet | **feito** — no ar em https://ansp.apps.rmsantos.tech |
+| 4. Push-to-deploy | **feito** — hook instalado, `deploy.healthUrl` configurado |
+| 5. Backup e operação | script pronto (`scripts/backup.sh`); **cron e teste de restauração pendentes** |
 
 ## O que mudou (fases 1 e 2)
 
@@ -59,37 +59,59 @@ Traefik aceita os dois nomes no mesmo router (`Host(\`a\`) || Host(\`b\`)`) —
 
 ### 3.2 Criar a database no Postgres compartilhado
 
-O app não sobe banco próprio: usa o `acipec-postgres` (do `sspx-school`) pela
-rede `internal`.
+O app não sobe banco próprio: usa o Postgres compartilhado, que vive em
+`/opt/apps/databases/postgres` (container `postgres-postgres-1`, imagem
+`postgres:17-alpine`). Na rede `internal` ele atende pelo alias **`postgres`**,
+e o superusuário é **`postgres_admin`** — foi assim que a `donation` foi
+configurada.
+
+O ANSP tem database e usuário próprios, sem compartilhar credencial com
+nenhum outro app:
 
 ```bash
-ssh renan@DROPLET
-docker exec -it acipec-postgres psql -U postgres <<'SQL'
-CREATE DATABASE acipec_ansp;
-CREATE USER ansp WITH PASSWORD 'GERE_UMA_SENHA';   -- openssl rand -base64 24
-GRANT ALL PRIVILEGES ON DATABASE acipec_ansp TO ansp;
-\c acipec_ansp
-GRANT ALL ON SCHEMA public TO ansp;
+ssh renan@64.225.15.219
+DBPW=$(openssl rand -hex 24)   # não ecoe este valor
+
+docker exec -i postgres-postgres-1 psql -U postgres_admin -d postgres <<SQL
+CREATE ROLE ansp LOGIN PASSWORD '$DBPW';
+CREATE DATABASE ansp OWNER ansp;
+SQL
+
+docker exec -i postgres-postgres-1 psql -U postgres_admin -d ansp \
+  -c "GRANT ALL ON SCHEMA public TO ansp;"
+
+# Fecha o CONNECT que o Postgres concede a PUBLIC por padrão: sem isto, o
+# usuário de qualquer outro app do droplet consegue abrir conexão nesta base.
+docker exec -i postgres-postgres-1 psql -U postgres_admin -d postgres <<'SQL'
+REVOKE CONNECT ON DATABASE ansp FROM PUBLIC;
+GRANT CONNECT ON DATABASE ansp TO ansp;
 SQL
 ```
 
-> Vale também acrescentar `acipec_ansp` ao `docker/init-databases.sh` do
-> `sspx-school`, para que um droplet recriado do zero já nasça com ela.
+Confira o resultado — só `ansp` e o superusuário devem responder `true`:
+
+```bash
+docker exec postgres-postgres-1 psql -U postgres_admin -d postgres -tAc \
+  "select rolname, has_database_privilege(rolname,'ansp','CONNECT') from pg_roles where rolcanlogin;"
+```
 
 ### 3.3 Clonar e configurar
 
+O droplet autentica no GitHub por chave SSH (`~/.ssh/id_ed25519`), então use a
+URL SSH — a HTTPS pede usuário e falha em sessão não interativa.
+
 ```bash
-sudo mkdir -p /opt/apps/projects && sudo chown renan:renan /opt/apps/projects
-git clone <URL_DO_REPO> /opt/apps/projects/sspx-ansp
+git clone git@github.com:renan-rmsantos-tech/sspx-ansp.git /opt/apps/projects/sspx-ansp
 cd /opt/apps/projects/sspx-ansp
 cp .env.example .env
 nano .env
+chmod 600 .env
 ```
 
 No `.env` de produção:
 
 ```ini
-DATABASE_URL=postgres://ansp:SENHA@acipec-postgres:5432/acipec_ansp
+DATABASE_URL=postgresql://ansp:SENHA@postgres:5432/ansp
 SESSION_SECRET=<openssl rand -base64 48>
 STORAGE_DIR=/data/uploads
 ADMIN_EMAIL=<email do comitê>
@@ -145,13 +167,13 @@ chmod +x .git/hooks/post-receive
 **Na sua máquina, uma vez:**
 
 ```bash
-git remote add production renan@DROPLET:/opt/apps/projects/sspx-ansp
+git remote add production renan@64.225.15.219:/opt/apps/projects/sspx-ansp
 ```
 
 **No dia a dia:** `git push origin main` e depois `git push production main`
 (build + testes + health check, com rollback automático).
 
-O portão de testes fica no `Dockerfile` (`RUN npm test`, 233 testes): se a suíte
+O portão de testes fica no `Dockerfile` (`RUN npm test`, 274 testes): se a suíte
 quebra, a imagem não é gerada, o `compose up` aborta e o container antigo segue
 servindo. Acrescente a linha do sspx-ansp na tabela "Reaproveitando em outros
 projetos" do `sspx-catechism/infra/README.md`.
