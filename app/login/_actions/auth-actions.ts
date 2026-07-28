@@ -17,6 +17,13 @@ export type LoginState = { error: string | null };
 
 const INVALID = "Credenciais inválidas. Verifique seu email e senha.";
 
+// Destino do login. Aponta para a página final, e não para /admin: aquela rota
+// só redireciona para cá, e um redirect encadeado dentro de uma Server Action
+// faz o Next seguir o Location no fetch e devolver HTML onde o roteador espera
+// um payload RSC — a navegação quebra com "An unexpected response was received
+// from the server", mesmo com a sessão já criada.
+const AFTER_LOGIN = "/admin/solicitacoes";
+
 async function startSession(userId: string, email: string) {
   const session = await getSession();
   session.userId = userId;
@@ -60,7 +67,7 @@ export async function loginAction(
   const result = await authenticate(email, password);
 
   if (!result.error) {
-    redirect("/admin");
+    redirect(AFTER_LOGIN);
   }
 
   return result;
@@ -70,7 +77,7 @@ export async function login(email: string, password: string) {
   const result = await authenticate(email, password);
 
   if (!result.error) {
-    redirect("/admin");
+    redirect(AFTER_LOGIN);
   }
 
   return result;
