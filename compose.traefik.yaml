@@ -24,11 +24,11 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=proxy
-      - traefik.http.routers.bolsas.rule=Host(`${APP_HOST}`)
-      - traefik.http.routers.bolsas.entrypoints=websecure
-      - traefik.http.routers.bolsas.tls=true
-      - traefik.http.routers.bolsas.tls.certresolver=letsencrypt
-      - traefik.http.services.bolsas.loadbalancer.server.port=3000
+      - traefik.http.routers.ansp.rule=Host(`${APP_HOST}`)
+      - traefik.http.routers.ansp.entrypoints=websecure
+      - traefik.http.routers.ansp.tls=true
+      - traefik.http.routers.ansp.tls.certresolver=letsencrypt
+      - traefik.http.services.ansp.loadbalancer.server.port=3000
     security_opt:
       - no-new-privileges:true
 

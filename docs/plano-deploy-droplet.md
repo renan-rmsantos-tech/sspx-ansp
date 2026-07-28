@@ -41,14 +41,21 @@ aplicação: `proxy.ts` protege `/admin` e cada server action administrativa cha
 
 ## Fase 3 — Primeira publicação
 
-### 3.1 Definir o hostname
+### 3.1 Hostname
 
-Confira no droplet qual padrão usar (`docker ps | grep traefik` e as labels dos
-outros composes). Em uso hoje: subdomínio interno
-(`catequese.apps.rmsantos.tech`) ou domínio dedicado
-(`ajude-o-colegio-sao-jose.com`). Sugestão: **`bolsas.apps.rmsantos.tech`**, com
-A-record apontando para o IP do droplet. Confirme com `dig +short <HOST>` antes
-de subir — o Let's Encrypt depende do DNS já propagado.
+**`ansp.apps.rmsantos.tech`** — mesmo padrão do `catequese.apps.rmsantos.tech`.
+
+Não há DNS a criar: `*.apps.rmsantos.tech` é um wildcard que aponta para o
+droplet (`64.225.15.219`), então o nome já resolve e o Let's Encrypt emite o
+certificado na primeira subida. Confirme antes de publicar:
+
+```bash
+dig +short ansp.apps.rmsantos.tech    # deve terminar no IP do droplet
+```
+
+Se um dia o formulário passar a ser divulgado num domínio institucional, o
+Traefik aceita os dois nomes no mesmo router (`Host(\`a\`) || Host(\`b\`)`) —
+é editar a label e rodar `compose up -d`, sem downtime nem rebuild.
 
 ### 3.2 Criar a database no Postgres compartilhado
 
@@ -87,7 +94,7 @@ SESSION_SECRET=<openssl rand -base64 48>
 STORAGE_DIR=/data/uploads
 ADMIN_EMAIL=<email do comitê>
 ADMIN_PASSWORD=<senha forte inicial>
-APP_HOST=bolsas.apps.rmsantos.tech
+APP_HOST=ansp.apps.rmsantos.tech
 BACKUP_PASSPHRASE=<openssl rand -base64 32>
 # AUTH_BYPASS deve ficar FORA do .env de produção.
 ```
@@ -107,7 +114,7 @@ decisão/contrato.
 
 | Item | Comando / evidência esperada |
 |---|---|
-| DNS | `dig +short bolsas.apps.rmsantos.tech` devolve o IP do droplet |
+| DNS | `dig +short ansp.apps.rmsantos.tech` devolve o IP do droplet |
 | TLS + Traefik | `curl -I https://<HOST>` com certificado válido |
 | Health | `curl -fsS https://<HOST>/api/health` → `{"status":"ok","database":"ok"}` |
 | Stack | `docker compose -f compose.traefik.yaml ps` → `ansp` Up |
@@ -127,7 +134,7 @@ O `scripts/post-receive.sh` já está no repo, idêntico ao dos outros projetos.
 ```bash
 cd /opt/apps/projects/sspx-ansp
 git config receive.denyCurrentBranch updateInstead
-git config deploy.healthUrl https://bolsas.apps.rmsantos.tech/api/health
+git config deploy.healthUrl https://ansp.apps.rmsantos.tech/api/health
 cp scripts/post-receive.sh .git/hooks/post-receive
 chmod +x .git/hooks/post-receive
 ```
