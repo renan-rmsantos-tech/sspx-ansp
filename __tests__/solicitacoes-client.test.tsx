@@ -269,6 +269,7 @@ describe("SolicitacoesClient", () => {
   it("decided applications show decision info and export button", () => {
     const app = makeApp({
       status: "aprovada",
+      desconto_solicitado: 50,
       desconto_concedido: 40,
       motivo: "Bom histórico",
       data_decisao: "2026-03-15T10:00:00Z",
@@ -276,6 +277,8 @@ describe("SolicitacoesClient", () => {
 
     render(<SolicitacoesClient initialApplications={[app]} />);
     expect(screen.getByTestId("status-badge")).toHaveTextContent("Aprovada");
+    expect(screen.getByText("Desconto: 40%")).toBeInTheDocument();
+    expect(screen.queryByText("Desconto: 50%")).not.toBeInTheDocument();
   });
 
   it("decided application expanded shows decision info and export button instead of actions", async () => {

@@ -246,7 +246,13 @@ export function ApplicationCard({ application, onDecision }: ApplicationCardProp
                 {application.students.length}{" "}
                 {application.students.length === 1 ? "aluno" : "alunos"}
               </span>
-              <span>Desconto: {application.desconto_solicitado}%</span>
+              <span>
+                Desconto:{" "}
+                {application.desconto_concedido != null
+                  ? application.desconto_concedido
+                  : application.desconto_solicitado}
+                %
+              </span>
             </div>
           </button>
 
