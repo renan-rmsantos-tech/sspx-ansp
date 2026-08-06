@@ -242,40 +242,64 @@ export const documents = pgTable(
   ]
 );
 
-export const decisionTemplates = pgTable("decision_templates", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  tipo: text("tipo").$type<"aprovacao" | "rejeicao">().notNull(),
-  cabecalho: text("cabecalho").notNull(),
-  corpo: text("corpo").notNull(),
-  rodape: text("rodape").notNull(),
-  updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" })
-    .notNull()
-    .defaultNow(),
-});
+export const decisionTemplates = pgTable(
+  "decision_templates",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tipo: text("tipo").$type<"aprovacao" | "rejeicao">().notNull(),
+    cabecalho: text("cabecalho").notNull(),
+    corpo: text("corpo").notNull(),
+    rodape: text("rodape").notNull(),
+    updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    // Um modelo por tipo: `saveTemplate` faz upsert em cima desta unicidade.
+    uniqueIndex("decision_templates_tipo_idx").on(t.tipo),
+  ]
+);
 
-export const contractTemplates = pgTable("contract_templates", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  titulo: text("titulo")
-    .notNull()
-    .default("CONTRATO DE CONCESSÃO DE BOLSA DE ESTUDOS"),
-  cabecalho: text("cabecalho").notNull().default(""),
-  clausulas: jsonb("clausulas").$type<ContractClause[]>().notNull().default([]),
-  rodape: text("rodape").notNull().default(""),
-  updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" })
-    .notNull()
-    .defaultNow(),
-});
+export const contractTemplates = pgTable(
+  "contract_templates",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    titulo: text("titulo")
+      .notNull()
+      .default("CONTRATO DE CONCESSÃO DE BOLSA DE ESTUDOS"),
+    cabecalho: text("cabecalho").notNull().default(""),
+    clausulas: jsonb("clausulas")
+      .$type<ContractClause[]>()
+      .notNull()
+      .default([]),
+    rodape: text("rodape").notNull().default(""),
+    updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  () => [
+    // A aplicação trata a tabela como registro único; o índice em (true)
+    // garante o singleton no banco.
+    uniqueIndex("contract_templates_singleton_idx").on(sql`(true)`),
+  ]
+);
 
-export const documentHeader = pgTable("document_header", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  linha1: text("linha1").notNull().default("Arca Nossa Senhora da Providência"),
-  linha2: text("linha2").notNull().default(""),
-  linha3: text("linha3").notNull().default(""),
-  mostrar_selo: boolean("mostrar_selo").notNull().default(true),
-  updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" })
-    .notNull()
-    .defaultNow(),
-});
+export const documentHeader = pgTable(
+  "document_header",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    linha1: text("linha1")
+      .notNull()
+      .default("Arca Nossa Senhora da Providência"),
+    linha2: text("linha2").notNull().default(""),
+    linha3: text("linha3").notNull().default(""),
+    mostrar_selo: boolean("mostrar_selo").notNull().default(true),
+    updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  () => [uniqueIndex("document_header_singleton_idx").on(sql`(true)`)]
+);
 
 export const donorPledges = pgTable(
   "donor_pledges",
