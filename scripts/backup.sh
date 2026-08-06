@@ -40,8 +40,10 @@ WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 
 echo "==> Dump do banco"
+# A imagem precisa acompanhar a versão do Postgres compartilhado do droplet
+# (hoje 17) — pg_dump aborta se for mais antigo que o servidor.
 docker run --rm --network internal -e PGPASSWORD \
-  -e DATABASE_URL="$DATABASE_URL" postgres:16-alpine \
+  -e DATABASE_URL="$DATABASE_URL" postgres:17-alpine \
   pg_dump --clean --if-exists --no-owner "$DATABASE_URL" > "$WORK/db.sql"
 
 echo "==> Documentos do volume uploads"
