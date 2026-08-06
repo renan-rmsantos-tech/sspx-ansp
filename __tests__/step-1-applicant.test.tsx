@@ -4,6 +4,12 @@ import { Step1Applicant } from "@/app/form/_components/step-1-applicant";
 import { INITIAL_FORM_DATA } from "@/app/form/_components/form-types";
 import type { FormData } from "@/app/form/_components/form-types";
 
+vi.mock("@/lib/form/scholarship-uploads", () => ({
+  SCHOLARSHIP_UPLOADS_ENABLED: true,
+  SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE:
+    "O envio de documentos está temporariamente desativado nesta fase de testes.",
+}));
+
 vi.mock("@/app/form/_actions/form-actions", () => ({
   createUploadUrl: vi.fn().mockResolvedValue({
     url: "https://example.com/upload",

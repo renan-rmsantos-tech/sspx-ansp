@@ -7,6 +7,7 @@ import {
   getDocumentUrl,
 } from "../_actions/admin-actions";
 import { PdfPreviewModal } from "./pdf-preview-modal";
+import { prioradoCapelaLabel } from "@/lib/data/priorados-capelas";
 
 export interface DonorPledge {
   id: string;
@@ -16,6 +17,7 @@ export interface DonorPledge {
   telefone?: string | null;
   endereco?: string | null;
   cep?: string | null;
+  priorado_capela?: string | null;
   frequencia: "unica" | "mensal";
   duracao?: "um_ano" | "indeterminado" | null;
   valor: number;
@@ -152,6 +154,11 @@ export function DonorCard({ donor, onDelete }: DonorCardProps) {
             {donor.telefone && <span>{donor.telefone}</span>}
             {donor.endereco && <span>{donor.endereco}</span>}
             {donor.cep && <span>CEP: {donor.cep}</span>}
+            {donor.priorado_capela && (
+              <span>
+                Priorado/Capela: {prioradoCapelaLabel(donor.priorado_capela)}
+              </span>
+            )}
             <span>
               Cadastro: {new Date(donor.created_at).toLocaleDateString("pt-BR")}
             </span>

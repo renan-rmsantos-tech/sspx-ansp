@@ -25,14 +25,7 @@ export function SealLogo({ size = 72, className }: SealLogoProps) {
           <stop offset="100%" stopColor="#0f1729" />
         </radialGradient>
       </defs>
-      <circle
-        cx="110"
-        cy="110"
-        r="106"
-        fill={`url(#${id}-bg)`}
-        stroke="#c9a84c"
-        strokeWidth="3"
-      />
+      <circle cx="110" cy="110" r="106" fill={`url(#${id}-bg)`} />
       <circle
         cx="110"
         cy="110"
@@ -84,6 +77,15 @@ export function SealLogo({ size = 72, className }: SealLogoProps) {
           N. S. DA PROVIDÊNCIA
         </textPath>
       </text>
+      {/* Gold ring painted after text so it sits on top of the arc lettering */}
+      <circle
+        cx="110"
+        cy="110"
+        r="106"
+        fill="none"
+        stroke="#c9a84c"
+        strokeWidth="3"
+      />
     </svg>
   );
 }

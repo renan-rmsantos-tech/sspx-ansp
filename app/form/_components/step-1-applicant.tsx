@@ -5,6 +5,10 @@ import type { FormData, OtherChild } from "./form-types";
 import { FileUpload } from "./file-upload";
 import type { UploadedFile } from "./file-upload";
 import { RequiredMark, FieldError, fieldBorder } from "./field-ui";
+import {
+  SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE,
+  SCHOLARSHIP_UPLOADS_ENABLED,
+} from "@/lib/form/scholarship-uploads";
 
 interface Step1Props {
   data: FormData;
@@ -117,14 +121,16 @@ export function Step1Applicant({ data, onChange, errors }: Step1Props) {
         <div className="mb-5">
           <label className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg">
             Documento do pai (RG ou CPF)
-            <RequiredMark />
+            {SCHOLARSHIP_UPLOADS_ENABLED && <RequiredMark />}
           </label>
           <FileUpload
             label="para enviar foto do RG ou CPF do pai"
             category="rg_pai"
             files={data.doc_pai}
             onChange={(f) => updateFiles("doc_pai", f)}
-            required
+            required={SCHOLARSHIP_UPLOADS_ENABLED}
+            disabled={!SCHOLARSHIP_UPLOADS_ENABLED}
+            disabledMessage={SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE}
             error={errors.doc_pai}
           />
         </div>
@@ -161,14 +167,16 @@ export function Step1Applicant({ data, onChange, errors }: Step1Props) {
         <div className="mb-5">
           <label className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg">
             Documento da mãe (RG ou CPF)
-            <RequiredMark />
+            {SCHOLARSHIP_UPLOADS_ENABLED && <RequiredMark />}
           </label>
           <FileUpload
             label="para enviar foto do RG ou CPF da mãe"
             category="rg_mae"
             files={data.doc_mae}
             onChange={(f) => updateFiles("doc_mae", f)}
-            required
+            required={SCHOLARSHIP_UPLOADS_ENABLED}
+            disabled={!SCHOLARSHIP_UPLOADS_ENABLED}
+            disabledMessage={SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE}
             error={errors.doc_mae}
           />
         </div>
@@ -177,14 +185,17 @@ export function Step1Applicant({ data, onChange, errors }: Step1Props) {
 
         <div className="mb-5">
           <label className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg">
-            Certidão de Casamento<RequiredMark />
+            Certidão de Casamento
+            {SCHOLARSHIP_UPLOADS_ENABLED && <RequiredMark />}
           </label>
           <FileUpload
             label="para enviar a Certidão de Casamento"
             category="certidao"
             files={data.certidao_casamento}
             onChange={(f) => updateFiles("certidao_casamento", f)}
-            required
+            required={SCHOLARSHIP_UPLOADS_ENABLED}
+            disabled={!SCHOLARSHIP_UPLOADS_ENABLED}
+            disabledMessage={SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE}
             error={errors.certidao_casamento}
           />
         </div>
@@ -232,14 +243,17 @@ export function Step1Applicant({ data, onChange, errors }: Step1Props) {
 
         <div className="mb-5">
           <label className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg">
-            Comprovante de Endereço<RequiredMark />
+            Comprovante de Endereço
+            {SCHOLARSHIP_UPLOADS_ENABLED && <RequiredMark />}
           </label>
           <FileUpload
             label="para enviar comprovante de endereço"
             category="comprovante_endereco"
             files={data.comprovante_endereco}
             onChange={(f) => updateFiles("comprovante_endereco", f)}
-            required
+            required={SCHOLARSHIP_UPLOADS_ENABLED}
+            disabled={!SCHOLARSHIP_UPLOADS_ENABLED}
+            disabledMessage={SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE}
             error={errors.comprovante_endereco}
           />
         </div>

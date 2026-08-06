@@ -341,7 +341,7 @@ export default function LandingPage() {
             <stop offset="100%" stopColor="#0f1729" />
           </radialGradient>
           <g id="seal-art">
-            <circle cx="110" cy="110" r="106" fill="url(#seal-navy)" stroke="#c9a84c" strokeWidth="3" />
+            <circle cx="110" cy="110" r="106" fill="url(#seal-navy)" />
             <circle cx="110" cy="110" r="98" fill="none" stroke="#c9a84c" strokeWidth="0.6" opacity="0.35" />
             <image
               href="/base1.png"
@@ -377,6 +377,7 @@ export default function LandingPage() {
                 N. S. DA PROVIDÊNCIA
               </textPath>
             </text>
+            <circle cx="110" cy="110" r="106" fill="none" stroke="#c9a84c" strokeWidth="3" />
           </g>
         </defs>
       </svg>

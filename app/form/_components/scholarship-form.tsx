@@ -15,6 +15,7 @@ import type { FormData } from "./form-types";
 import { MSG_OBRIGATORIO } from "./field-ui";
 import { isValidCPF } from "@/lib/validations/cpf";
 import type { ApplicationSubmission } from "@/lib/validations/application-schema";
+import { SCHOLARSHIP_UPLOADS_ENABLED } from "@/lib/form/scholarship-uploads";
 
 const TOTAL_STEPS = 6;
 
@@ -49,17 +50,19 @@ function validateStep1(data: FormData): Record<string, string> {
     errors.mae_cpf = "CPF inválido";
   }
   if (!data.mae_profissao.trim()) errors.mae_profissao = M;
-  const docPai = docError(data.doc_pai);
-  if (docPai) errors.doc_pai = docPai;
-  const docMae = docError(data.doc_mae);
-  if (docMae) errors.doc_mae = docMae;
-  const docCertidao = docError(data.certidao_casamento);
-  if (docCertidao) errors.certidao_casamento = docCertidao;
+  if (SCHOLARSHIP_UPLOADS_ENABLED) {
+    const docPai = docError(data.doc_pai);
+    if (docPai) errors.doc_pai = docPai;
+    const docMae = docError(data.doc_mae);
+    if (docMae) errors.doc_mae = docMae;
+    const docCertidao = docError(data.certidao_casamento);
+    if (docCertidao) errors.certidao_casamento = docCertidao;
+    const docComprovante = docError(data.comprovante_endereco);
+    if (docComprovante) errors.comprovante_endereco = docComprovante;
+  }
   if (!data.endereco.trim()) errors.endereco = M;
   if (!data.cep.trim()) errors.cep = M;
   if (!data.telefone.trim()) errors.telefone = M;
-  const docComprovante = docError(data.comprovante_endereco);
-  if (docComprovante) errors.comprovante_endereco = docComprovante;
   if (!data.email.trim()) {
     errors.email = M;
   } else if (!EMAIL_RE.test(data.email.trim())) {
@@ -95,10 +98,12 @@ function validateStep2(data: FormData): Record<string, string> {
     }
     if (!a.serie.trim()) errors[`aluno_${i}_serie`] = M;
     if (!a.mensalidade.trim()) errors[`aluno_${i}_mensalidade`] = M;
-    const rgErr = docError(a.docRg);
-    if (rgErr) errors[`aluno_${i}_docRg`] = rgErr;
-    const certErr = docError(a.docCertidao);
-    if (certErr) errors[`aluno_${i}_docCertidao`] = certErr;
+    if (SCHOLARSHIP_UPLOADS_ENABLED) {
+      const rgErr = docError(a.docRg);
+      if (rgErr) errors[`aluno_${i}_docRg`] = rgErr;
+      const certErr = docError(a.docCertidao);
+      if (certErr) errors[`aluno_${i}_docCertidao`] = certErr;
+    }
   }
   const desconto = data.desconto_solicitado.trim();
   if (desconto === "") {
@@ -118,16 +123,21 @@ function validateStep3(data: FormData): Record<string, string> {
   if (!data.pessoas_domicilio || Number(data.pessoas_domicilio) < 1) {
     errors.pessoas_domicilio = M;
   }
-  const irErr = docError(data.extrato_ir);
-  if (irErr) errors.extrato_ir = irErr;
+  if (SCHOLARSHIP_UPLOADS_ENABLED) {
+    const irErr = docError(data.extrato_ir);
+    if (irErr) errors.extrato_ir = irErr;
+  }
   return errors;
 }
 
 function validateStep4(data: FormData): Record<string, string> {
   const errors: Record<string, string> = {};
-  // Os valores de despesa são opcionais; o extrato bancário é obrigatório.
-  const extratoErr = docError(data.extratos_bancarios);
-  if (extratoErr) errors.extratos_bancarios = extratoErr;
+  // Os valores de despesa são opcionais; o extrato bancário é obrigatório
+  // quando os uploads estão habilitados.
+  if (SCHOLARSHIP_UPLOADS_ENABLED) {
+    const extratoErr = docError(data.extratos_bancarios);
+    if (extratoErr) errors.extratos_bancarios = extratoErr;
+  }
   return errors;
 }
 

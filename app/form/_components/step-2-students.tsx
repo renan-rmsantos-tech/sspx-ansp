@@ -6,6 +6,10 @@ import { FileUpload } from "./file-upload";
 import type { UploadedFile } from "./file-upload";
 import { RequiredMark, FieldError, fieldBorder } from "./field-ui";
 import { useMemo } from "react";
+import {
+  SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE,
+  SCHOLARSHIP_UPLOADS_ENABLED,
+} from "@/lib/form/scholarship-uploads";
 
 interface Step2Props {
   data: FormData;
@@ -180,27 +184,33 @@ export function Step2Students({ data, onChange, errors }: Step2Props) {
               <div className="grid grid-cols-2 gap-3.5 max-sm:grid-cols-1">
                 <div>
                   <label className="mb-1 block text-xs font-medium tracking-wide text-muted">
-                    RG ou CPF do aluno<RequiredMark />
+                    RG ou CPF do aluno
+                    {SCHOLARSHIP_UPLOADS_ENABLED && <RequiredMark />}
                   </label>
                   <FileUpload
                     label="RG ou CPF do aluno"
                     category={`rg_aluno_${i}`}
                     files={aluno.docRg}
                     onChange={(f) => updateStudent(i, "docRg", f)}
-                    required
+                    required={SCHOLARSHIP_UPLOADS_ENABLED}
+                    disabled={!SCHOLARSHIP_UPLOADS_ENABLED}
+                    disabledMessage={SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE}
                     error={errors[`aluno_${i}_docRg`]}
                   />
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-medium tracking-wide text-muted">
-                    Certidão de Nascimento<RequiredMark />
+                    Certidão de Nascimento
+                    {SCHOLARSHIP_UPLOADS_ENABLED && <RequiredMark />}
                   </label>
                   <FileUpload
                     label="Certidão de Nascimento"
                     category={`certidao_nascimento_${i}`}
                     files={aluno.docCertidao}
                     onChange={(f) => updateStudent(i, "docCertidao", f)}
-                    required
+                    required={SCHOLARSHIP_UPLOADS_ENABLED}
+                    disabled={!SCHOLARSHIP_UPLOADS_ENABLED}
+                    disabledMessage={SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE}
                     error={errors[`aluno_${i}_docCertidao`]}
                   />
                 </div>

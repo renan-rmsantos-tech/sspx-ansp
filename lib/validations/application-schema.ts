@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isValidCPF } from "./cpf";
+import { SCHOLARSHIP_UPLOADS_ENABLED } from "@/lib/form/scholarship-uploads";
 
 const cpfSchema = z
   .string()
@@ -30,12 +31,17 @@ const requiredFileArray = z
   .array(uploadedPath)
   .min(1, "Envie pelo menos um arquivo");
 
+// Em fase de testes, documentos ficam opcionais (lista vazia permitida).
+const docsField = SCHOLARSHIP_UPLOADS_ENABLED
+  ? requiredFileArray
+  : filePathArray;
+
 const studentSchema = z.object({
   nome: z.string().min(1, "Nome do aluno é obrigatório"),
   cpf: optionalCpfSchema,
   serie: z.string().min(1, "Série é obrigatória"),
   mensalidade: nonNegativeNumber,
-  documentos: requiredFileArray,
+  documentos: docsField,
 });
 
 const otherChildSchema = z.object({
@@ -81,14 +87,14 @@ export const applicationSubmissionSchema = z.object({
     rg: z.string().min(1, "RG do pai é obrigatório"),
     cpf: cpfSchema,
     profissao: z.string().optional(),
-    documentos: requiredFileArray,
+    documentos: docsField,
   }),
 
   mae: z.object({
     nome: z.string().min(1, "Nome da mãe é obrigatório"),
     cpf: cpfSchema,
     profissao: z.string().optional(),
-    documentos: requiredFileArray,
+    documentos: docsField,
   }),
 
   certidao_casamento: filePathArray.optional(),
@@ -96,7 +102,7 @@ export const applicationSubmissionSchema = z.object({
   cep: z.string().optional(),
   telefone: z.string().min(1, "Telefone é obrigatório"),
   email: z.string().email("Email inválido").optional().or(z.literal("")),
-  comprovante_endereco: requiredFileArray,
+  comprovante_endereco: docsField,
 
   outros_filhos: z.array(otherChildSchema).default([]),
 
@@ -116,7 +122,7 @@ export const applicationSubmissionSchema = z.object({
     pessoas: z.number().int().positive("Número de pessoas deve ser positivo"),
   }),
 
-  extrato_ir: requiredFileArray,
+  extrato_ir: docsField,
 
   despesas: z.object({
     aluguel: optionalNonNegative,
@@ -127,7 +133,7 @@ export const applicationSubmissionSchema = z.object({
     internet: optionalNonNegative,
   }),
 
-  extratos_bancarios: requiredFileArray,
+  extratos_bancarios: docsField,
 
   veiculos: z.array(vehicleSchema).default([]),
 

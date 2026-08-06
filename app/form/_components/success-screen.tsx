@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export function SuccessScreen() {
   return (
     <div className="px-5 py-16 text-center" data-testid="success-screen">
@@ -23,6 +25,12 @@ export function SuccessScreen() {
         Sua solicitação de bolsa foi recebida com sucesso. A direção da escola
         analisará o pedido e entrará em contato.
       </p>
+      <Link
+        href="/"
+        className="mt-6 inline-block rounded-md border border-accent px-5 py-2.5 text-sm font-medium text-accent hover:bg-bg"
+      >
+        Voltar à página principal
+      </Link>
     </div>
   );
 }

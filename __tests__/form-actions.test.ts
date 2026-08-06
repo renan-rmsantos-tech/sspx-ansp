@@ -6,6 +6,12 @@ vi.mock("@/lib/db", async () => ({
   db: (await import("./helpers/fake-db")).fakeDb,
 }));
 
+vi.mock("@/lib/form/scholarship-uploads", () => ({
+  SCHOLARSHIP_UPLOADS_ENABLED: true,
+  SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE:
+    "O envio de documentos está temporariamente desativado nesta fase de testes.",
+}));
+
 import { verifyTicket } from "@/lib/storage/tickets";
 import {
   createUploadUrl,

@@ -6,6 +6,10 @@ import { FileUpload } from "./file-upload";
 import type { UploadedFile } from "./file-upload";
 import { RequiredMark } from "./field-ui";
 import { useMemo } from "react";
+import {
+  SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE,
+  SCHOLARSHIP_UPLOADS_ENABLED,
+} from "@/lib/form/scholarship-uploads";
 
 interface Step4Props {
   data: FormData;
@@ -75,7 +79,7 @@ export function Step4Expenses({ data, onChange, errors }: Step4Props) {
         <div className="mb-5">
           <label className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg">
             Extrato bancário dos últimos 3 meses
-            <RequiredMark />
+            {SCHOLARSHIP_UPLOADS_ENABLED && <RequiredMark />}
           </label>
           <p className="mb-2 text-xs text-muted">
             Envie o extrato de todas as contas bancárias da família (pode enviar
@@ -90,7 +94,9 @@ export function Step4Expenses({ data, onChange, errors }: Step4Props) {
               onChange({ extratos_bancarios: f })
             }
             multiple
-            required
+            required={SCHOLARSHIP_UPLOADS_ENABLED}
+            disabled={!SCHOLARSHIP_UPLOADS_ENABLED}
+            disabledMessage={SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE}
             error={errors.extratos_bancarios}
           />
         </div>

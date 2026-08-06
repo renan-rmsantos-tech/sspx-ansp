@@ -12,6 +12,13 @@ import { SERIES_OPTIONS } from "@/app/form/_components/form-types";
 
 const mockSubmitApplication = vi.fn();
 
+// Testes do fluxo completo assumem uploads habilitados.
+vi.mock("@/lib/form/scholarship-uploads", () => ({
+  SCHOLARSHIP_UPLOADS_ENABLED: true,
+  SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE:
+    "O envio de documentos está temporariamente desativado nesta fase de testes.",
+}));
+
 vi.mock("@/app/form/_actions/form-actions", () => ({
   createUploadUrl: vi.fn().mockResolvedValue({
     url: "https://example.com/upload",

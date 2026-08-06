@@ -7,6 +7,10 @@ import { FileUpload } from "./file-upload";
 import type { UploadedFile } from "./file-upload";
 import { RequiredMark, FieldError, fieldBorder } from "./field-ui";
 import { useMemo } from "react";
+import {
+  SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE,
+  SCHOLARSHIP_UPLOADS_ENABLED,
+} from "@/lib/form/scholarship-uploads";
 
 interface Step3Props {
   data: FormData;
@@ -89,7 +93,8 @@ export function Step3Income({ data, onChange, errors }: Step3Props) {
 
         <div className="mb-5">
           <label className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg">
-            Extrato do Imposto de Renda<RequiredMark />
+            Extrato do Imposto de Renda
+            {SCHOLARSHIP_UPLOADS_ENABLED && <RequiredMark />}
           </label>
           <p className="mb-2 text-xs text-muted">
             Para comprovação dos dependentes e renda declarada.
@@ -100,7 +105,9 @@ export function Step3Income({ data, onChange, errors }: Step3Props) {
             files={data.extrato_ir}
             onChange={(f: UploadedFile[]) => onChange({ extrato_ir: f })}
             multiple
-            required
+            required={SCHOLARSHIP_UPLOADS_ENABLED}
+            disabled={!SCHOLARSHIP_UPLOADS_ENABLED}
+            disabledMessage={SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE}
             error={errors.extrato_ir}
           />
         </div>

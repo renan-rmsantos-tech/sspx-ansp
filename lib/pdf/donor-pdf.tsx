@@ -11,6 +11,7 @@ import {
   resolveDocumentHeader,
   type DocumentHeaderData,
 } from "./document-header";
+import { prioradoCapelaLabel } from "@/lib/data/priorados-capelas";
 
 // Dados do cadastro de benfeitor, já carregados do banco.
 export interface DonorPdfData {
@@ -21,6 +22,7 @@ export interface DonorPdfData {
   telefone?: string | null;
   endereco?: string | null;
   cep?: string | null;
+  priorado_capela?: string | null;
   frequencia: "unica" | "mensal";
   duracao?: "um_ano" | "indeterminado" | null;
   valor: number;
@@ -157,6 +159,10 @@ function DonorDocument({ data }: { data: DonorPdfData }) {
           <Field label="Telefone" value={data.telefone} />
           <Field label="Endereço" value={data.endereco} />
           <Field label="CEP" value={data.cep} />
+          <Field
+            label="Priorado/Capela"
+            value={prioradoCapelaLabel(data.priorado_capela)}
+          />
           <Field
             label="Data do cadastro"
             value={fmtDate(data.created_at)}

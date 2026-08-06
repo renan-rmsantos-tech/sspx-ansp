@@ -9,10 +9,18 @@ import {
   FileUpload,
   type UploadedFile,
 } from "@/app/form/_components/file-upload";
+import {
+  PRIORADO_NENHUMA,
+  PRIORADOS_CAPELAS_GROUPS,
+} from "@/lib/data/priorados-capelas";
+import {
+  formatAddressFromViaCep,
+  formatCep,
+  lookupCep,
+} from "@/lib/cep/viacep";
 
 type Frequencia = "unica" | "mensal";
 type Duracao = "um_ano" | "indeterminado";
-type Canal = "whatsapp" | "email";
 
 const VALOR_PRESETS = [40, 80, 160] as const;
 
@@ -59,21 +67,22 @@ export function DonorForm() {
   const [valorPreset, setValorPreset] = useState<number | "outro">(80);
   const [valorOutro, setValorOutro] = useState("");
   const [dataPagamento, setDataPagamento] = useState("");
-  const [canal, setCanal] = useState<Canal | null>(null);
+  const [lembreteEmail, setLembreteEmail] = useState(false);
   const [nome, setNome] = useState("");
   const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
   const [telefone, setTelefone] = useState("");
   const [endereco, setEndereco] = useState("");
   const [cep, setCep] = useState("");
+  const [cepLoading, setCepLoading] = useState(false);
+  const [cepHint, setCepHint] = useState<string | null>(null);
+  const [prioradoCapela, setPrioradoCapela] = useState("");
   const [recibo, setRecibo] = useState<UploadedFile[]>([]);
   const [observacoes, setObservacoes] = useState("");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
-  // Guarda síncrona contra duplo clique: `submitting` só desabilita o botão
-  // após o re-render, tarde demais para uma segunda chamada imediata.
   const submittingRef = useRef(false);
 
   const valor = useMemo(() => {
@@ -84,6 +93,31 @@ export function DonorForm() {
     return valorPreset;
   }, [valorPreset, valorOutro]);
 
+  const handleCepBlur = useCallback(async () => {
+    const digits = cep.replace(/\D/g, "");
+    if (digits.length !== 8) {
+      setCepHint(null);
+      return;
+    }
+
+    setCepLoading(true);
+    setCepHint(null);
+    const result = await lookupCep(digits);
+    setCepLoading(false);
+
+    if (!result.ok) {
+      setCepHint(result.error);
+      return;
+    }
+
+    setCep(formatCep(result.address.cep));
+    const suggestion = formatAddressFromViaCep(result.address);
+    if (suggestion) {
+      setEndereco((prev) => (prev.trim() ? prev : suggestion));
+      setCepHint("Endereço preenchido pelo CEP. Complete com o número, se necessário.");
+    }
+  }, [cep]);
+
   const handleSubmit = useCallback(async () => {
     const localErrors: Record<string, string> = {};
     if (!nome.trim()) localErrors.nome = "Informe seu nome.";
@@ -93,14 +127,16 @@ export function DonorForm() {
     if (!telefone.trim()) localErrors.telefone = "Informe seu telefone.";
     if (!endereco.trim()) localErrors.endereco = "Informe seu endereço.";
     if (!cep.trim()) localErrors.cep = "Informe seu CEP.";
+    if (!prioradoCapela) localErrors.priorado_capela = "Selecione o priorado ou capela.";
     if (valor <= 0) localErrors.valor = "Informe um valor maior que zero.";
-    if (!dataPagamento) localErrors.data_pagamento = "Informe a data do pagamento.";
-    if (!canal) localErrors.lembrete_canal = "Selecione um canal de lembrete.";
     if (frequencia === "mensal" && !duracao)
       localErrors.duracao = "Selecione a duração.";
+    if (frequencia === "unica" && !dataPagamento)
+      localErrors.data_pagamento = "Informe a data do pagamento.";
 
     const reciboOk = recibo.find((f) => f.path && !f.uploading && !f.error);
-    if (!reciboOk) localErrors.recibo_path = "Envie o recibo de pagamento.";
+    if (frequencia === "unica" && !reciboOk)
+      localErrors.recibo_path = "Envie o recibo de pagamento.";
 
     if (Object.keys(localErrors).length > 0) {
       setErrors(localErrors);
@@ -120,13 +156,15 @@ export function DonorForm() {
       telefone: telefone.trim(),
       endereco: endereco.trim(),
       cep: cep.trim(),
+      priorado_capela: prioradoCapela,
       frequencia,
       duracao: frequencia === "mensal" ? duracao ?? undefined : undefined,
       valor,
-      data_pagamento: dataPagamento,
-      lembrete_canal: canal as Canal,
-      recibo_path: reciboOk!.path,
-      recibo_nome: reciboOk!.name,
+      data_pagamento: frequencia === "unica" ? dataPagamento : undefined,
+      lembrete_canal:
+        frequencia === "mensal" && lembreteEmail ? "email" : null,
+      recibo_path: frequencia === "unica" ? reciboOk?.path : undefined,
+      recibo_nome: frequencia === "unica" ? reciboOk?.name : undefined,
       observacoes: observacoes.trim() || undefined,
     };
 
@@ -156,11 +194,12 @@ export function DonorForm() {
     telefone,
     endereco,
     cep,
+    prioradoCapela,
     frequencia,
     duracao,
     valor,
     dataPagamento,
-    canal,
+    lembreteEmail,
     recibo,
     observacoes,
   ]);
@@ -175,9 +214,9 @@ export function DonorForm() {
           Que Deus o recompense!
         </h2>
         <p className="mx-auto mt-3 max-w-[46ch] text-[15px] text-muted-foreground">
-          Recebemos seu cadastro de benfeitor. Em breve entraremos em contato pelo canal informado para
-          combinar os detalhes da sua doação. Saiba que você já está incluído na missa mensal rezada por
-          nossos benfeitores.
+          Recebemos seu cadastro de benfeitor. Em breve entraremos em contato para
+          combinar os detalhes da sua doação. Saiba que você já está incluído na missa
+          mensal rezada por nossos benfeitores.
         </p>
         <Link
           href="/"
@@ -201,17 +240,23 @@ export function DonorForm() {
     >
       <h2 className="font-display text-[20px] font-semibold text-fg">Seja um benfeitor</h2>
       <p className="mt-1 text-sm text-muted">
-        Preencha os dados abaixo. Um lembrete será enviado todo mês, próximo à data de pagamento.
+        Preencha os dados abaixo. Campos marcados são obrigatórios, exceto observações.
       </p>
 
       <div className="mt-6 space-y-6">
         <div>
           <FieldLabel>Pagamento</FieldLabel>
           <div className="flex flex-wrap gap-2">
-            <OptionButton active={frequencia === "unica"} onClick={() => setFrequencia("unica")}>
+            <OptionButton
+              active={frequencia === "unica"}
+              onClick={() => setFrequencia("unica")}
+            >
               Uma vez
             </OptionButton>
-            <OptionButton active={frequencia === "mensal"} onClick={() => setFrequencia("mensal")}>
+            <OptionButton
+              active={frequencia === "mensal"}
+              onClick={() => setFrequencia("mensal")}
+            >
               Mensal
             </OptionButton>
           </div>
@@ -266,47 +311,58 @@ export function DonorForm() {
           <ErrorText msg={errors.valor} />
         </div>
 
-        <div>
-          <label htmlFor="donor-data" className="mb-2 block text-sm font-medium text-fg">
-            Data do pagamento
-          </label>
-          <input
-            id="donor-data"
-            type="date"
-            value={dataPagamento}
-            onChange={(e) => setDataPagamento(e.target.value)}
-            className={`${inputClass} max-w-[220px]`}
-          />
-          <ErrorText msg={errors.data_pagamento} />
-        </div>
+        {frequencia === "unica" && (
+          <>
+            <div>
+              <label htmlFor="donor-data" className="mb-2 block text-sm font-medium text-fg">
+                Data do pagamento
+              </label>
+              <input
+                id="donor-data"
+                type="date"
+                value={dataPagamento}
+                onChange={(e) => setDataPagamento(e.target.value)}
+                className={`${inputClass} max-w-[220px]`}
+              />
+              <ErrorText msg={errors.data_pagamento} />
+            </div>
 
-        <div>
-          <FieldLabel>Recibo de pagamento</FieldLabel>
-          <p className="mb-2 text-sm text-muted">
-            Após realizar o Pix ou a transferência, envie o comprovante (imagem ou PDF).
-          </p>
-          <FileUpload
-            label="para enviar o recibo de pagamento"
-            category="recibo_pagamento"
-            files={recibo}
-            onChange={setRecibo}
-            required
-            error={errors.recibo_path}
-          />
-        </div>
+            <div>
+              <FieldLabel>Comprovante de pagamento</FieldLabel>
+              <p className="mb-2 text-sm text-muted">
+                Após realizar o Pix ou a transferência, envie o comprovante (imagem ou PDF).
+              </p>
+              <FileUpload
+                label="para enviar o comprovante de pagamento"
+                category="recibo_pagamento"
+                files={recibo}
+                onChange={setRecibo}
+                required
+                error={errors.recibo_path}
+              />
+            </div>
+          </>
+        )}
 
-        <div>
-          <FieldLabel>Receber lembrete por</FieldLabel>
-          <div className="flex flex-wrap gap-2">
-            <OptionButton active={canal === "whatsapp"} onClick={() => setCanal("whatsapp")}>
-              WhatsApp
-            </OptionButton>
-            <OptionButton active={canal === "email"} onClick={() => setCanal("email")}>
-              E-mail
-            </OptionButton>
+        {frequencia === "mensal" && (
+          <div>
+            <label className="flex cursor-pointer items-start gap-2.5">
+              <input
+                type="checkbox"
+                checked={lembreteEmail}
+                onChange={(e) => setLembreteEmail(e.target.checked)}
+                className="mt-1"
+                data-testid="donor-lembrete-email"
+              />
+              <span className="text-sm text-fg">
+                Receber lembrete mensal por e-mail
+                <span className="mt-0.5 block text-muted">
+                  Enviaremos um aviso próximo à data da contribuição. WhatsApp em breve.
+                </span>
+              </span>
+            </label>
           </div>
-          <ErrorText msg={errors.lembrete_canal} />
-        </div>
+        )}
 
         <hr className="border-border" />
 
@@ -354,7 +410,7 @@ export function DonorForm() {
           </div>
           <div>
             <label htmlFor="donor-tel" className="mb-2 block text-sm font-medium text-fg">
-              Telefone / WhatsApp
+              Telefone
             </label>
             <input
               id="donor-tel"
@@ -364,6 +420,32 @@ export function DonorForm() {
               className={inputClass}
             />
             <ErrorText msg={errors.telefone} />
+          </div>
+          <div>
+            <label htmlFor="donor-cep" className="mb-2 block text-sm font-medium text-fg">
+              CEP
+            </label>
+            <input
+              id="donor-cep"
+              type="text"
+              inputMode="numeric"
+              value={cep}
+              onChange={(e) => {
+                setCep(formatCep(e.target.value));
+                setCepHint(null);
+              }}
+              onBlur={() => void handleCepBlur()}
+              placeholder="00000-000"
+              className={inputClass}
+              data-testid="donor-cep"
+            />
+            {cepLoading && (
+              <p className="mt-1 text-xs text-muted">Consultando CEP…</p>
+            )}
+            {cepHint && !errors.cep && (
+              <p className="mt-1 text-xs text-muted">{cepHint}</p>
+            )}
+            <ErrorText msg={errors.cep} />
           </div>
           <div className="sm:col-span-2">
             <label htmlFor="donor-endereco" className="mb-2 block text-sm font-medium text-fg">
@@ -379,20 +461,30 @@ export function DonorForm() {
             />
             <ErrorText msg={errors.endereco} />
           </div>
-          <div>
-            <label htmlFor="donor-cep" className="mb-2 block text-sm font-medium text-fg">
-              CEP
+          <div className="sm:col-span-2">
+            <label htmlFor="donor-priorado" className="mb-2 block text-sm font-medium text-fg">
+              Priorado / Capela que frequenta
             </label>
-            <input
-              id="donor-cep"
-              type="text"
-              inputMode="numeric"
-              value={cep}
-              onChange={(e) => setCep(e.target.value)}
-              placeholder="00000-000"
+            <select
+              id="donor-priorado"
+              value={prioradoCapela}
+              onChange={(e) => setPrioradoCapela(e.target.value)}
               className={inputClass}
-            />
-            <ErrorText msg={errors.cep} />
+              data-testid="donor-priorado"
+            >
+              <option value="">Selecione…</option>
+              <option value={PRIORADO_NENHUMA}>Nenhuma</option>
+              {PRIORADOS_CAPELAS_GROUPS.map((group) => (
+                <optgroup key={group.estado} label={group.estado}>
+                  {group.options.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            <ErrorText msg={errors.priorado_capela} />
           </div>
           <div className="sm:col-span-2">
             <label htmlFor="donor-obs" className="mb-2 block text-sm font-medium text-fg">

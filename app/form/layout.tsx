@@ -1,4 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import {
+  SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE,
+  SCHOLARSHIP_UPLOADS_ENABLED,
+} from "@/lib/form/scholarship-uploads";
 
 export const metadata: Metadata = {
   title: "Solicitação de Bolsa — Arca N. S. da Providência",
@@ -14,6 +19,16 @@ export default function FormLayout({
   return (
     <div className="min-h-screen bg-bg">
       <div className="mx-auto max-w-[720px] px-4 py-8 pb-16 max-sm:px-3 max-sm:py-5">
+        <div className="mb-6">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-accent transition-colors hover:text-accent/80"
+            data-testid="form-back-home"
+          >
+            <span aria-hidden="true">←</span> Voltar à página principal
+          </Link>
+        </div>
+
         <header className="mb-10 text-center">
           <svg
             width="64"
@@ -34,14 +49,7 @@ export default function FormLayout({
                 <stop offset="100%" stopColor="#0f1729" />
               </radialGradient>
             </defs>
-            <circle
-              cx="110"
-              cy="110"
-              r="106"
-              fill="url(#form-bg)"
-              stroke="#c9a84c"
-              strokeWidth="3"
-            />
+            <circle cx="110" cy="110" r="106" fill="url(#form-bg)" />
             <circle
               cx="110"
               cy="110"
@@ -101,6 +109,14 @@ export default function FormLayout({
                 N. S. DA PROVIDÊNCIA
               </textPath>
             </text>
+            <circle
+              cx="110"
+              cy="110"
+              r="106"
+              fill="none"
+              stroke="#c9a84c"
+              strokeWidth="3"
+            />
           </svg>
           <p className="mb-1.5 text-xs font-medium uppercase tracking-widest text-muted">
             Arca N. S. da Providência
@@ -170,6 +186,21 @@ export default function FormLayout({
             </p>
           </div>
         </section>
+
+        {!SCHOLARSHIP_UPLOADS_ENABLED && (
+          <aside
+            className="mb-8 rounded-xl border border-gold/40 bg-gold/10 p-5"
+            role="status"
+            data-testid="uploads-disabled-banner"
+          >
+            <h2 className="font-display text-[17px] font-semibold text-accent">
+              Envio de documentos desativado
+            </h2>
+            <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
+              {SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE}
+            </p>
+          </aside>
+        )}
 
         {children}
       </div>

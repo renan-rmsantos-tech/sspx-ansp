@@ -26,26 +26,35 @@ export async function registerDonorPledge(
   }
 
   const data = result.data;
-
-  if (!data.recibo_path.startsWith("pending/")) {
-    return {
-      success: false,
-      errors: { recibo_path: ["Arquivo de recibo inválido. Envie novamente."] },
-    };
-  }
-
+  const isUnica = data.frequencia === "unica";
   const pledgeId = randomUUID();
-  const filename = data.recibo_path.split("/").pop() || "recibo";
-  const finalPath = `donors/${pledgeId}/recibo/${filename}`;
   const storage = getStorage();
 
-  try {
-    await storage.move(data.recibo_path, finalPath);
-  } catch {
-    return {
-      success: false,
-      errors: { _form: ["Erro ao registrar sua doação. Tente novamente."] },
-    };
+  let finalReciboPath: string | null = null;
+  let finalReciboNome: string | null = null;
+  let pendingReciboPath: string | null = null;
+
+  if (isUnica) {
+    if (!data.recibo_path?.startsWith("pending/")) {
+      return {
+        success: false,
+        errors: { recibo_path: ["Arquivo de recibo inválido. Envie novamente."] },
+      };
+    }
+
+    pendingReciboPath = data.recibo_path;
+    const filename = data.recibo_path.split("/").pop() || "recibo";
+    finalReciboPath = `donors/${pledgeId}/recibo/${filename}`;
+    finalReciboNome = data.recibo_nome || filename;
+
+    try {
+      await storage.move(data.recibo_path, finalReciboPath);
+    } catch {
+      return {
+        success: false,
+        errors: { _form: ["Erro ao registrar sua doação. Tente novamente."] },
+      };
+    }
   }
 
   try {
@@ -57,14 +66,18 @@ export async function registerDonorPledge(
       telefone: data.telefone || null,
       endereco: data.endereco,
       cep: data.cep,
+      priorado_capela: data.priorado_capela,
       frequencia: data.frequencia,
       duracao: data.frequencia === "mensal" ? data.duracao ?? null : null,
       valor: data.valor,
       meio_pagamento: null,
-      data_pagamento: data.data_pagamento || null,
-      lembrete_canal: data.lembrete_canal || null,
-      recibo_path: finalPath,
-      recibo_nome: data.recibo_nome,
+      data_pagamento: isUnica ? data.data_pagamento || null : null,
+      lembrete_canal:
+        data.frequencia === "mensal" && data.lembrete_canal === "email"
+          ? "email"
+          : null,
+      recibo_path: finalReciboPath,
+      recibo_nome: finalReciboNome,
       observacoes: data.observacoes || null,
     });
   } catch (error) {
@@ -73,13 +86,12 @@ export async function registerDonorPledge(
       error instanceof Error ? error.message : error
     );
 
-    // Devolve o recibo para pending/ para que o reenvio do formulário
-    // (que referencia o caminho original) continue funcionando.
-    try {
-      await storage.move(finalPath, data.recibo_path);
-    } catch {
-      // Se nem o move de volta funcionar, o arquivo fica em donors/ órfão —
-      // preferível a perder o recibo.
+    if (finalReciboPath && pendingReciboPath) {
+      try {
+        await storage.move(finalReciboPath, pendingReciboPath);
+      } catch {
+        // Preferível deixar o recibo em donors/ órfão a perdê-lo.
+      }
     }
 
     return {

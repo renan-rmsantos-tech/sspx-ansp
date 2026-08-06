@@ -19,6 +19,7 @@ import {
   applicationSubmissionSchema,
   type ApplicationSubmission,
 } from "@/lib/validations/application-schema";
+import { SCHOLARSHIP_UPLOADS_ENABLED } from "@/lib/form/scholarship-uploads";
 
 interface SchoolYear {
   id: string;
@@ -67,6 +68,15 @@ export async function createUploadUrl(
   category: string
 ): Promise<{ url: string; path: string } | { error: string }> {
   try {
+    // Uploads do formulário de bolsa ficam desativados na fase de testes;
+    // o comprovante de benfeitor continua permitido.
+    if (!SCHOLARSHIP_UPLOADS_ENABLED && category !== "recibo_pagamento") {
+      return {
+        error:
+          "O envio de documentos está temporariamente desativado nesta fase de testes.",
+      };
+    }
+
     const uuid = randomUUID();
     const sanitized = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
     const path = `pending/${uuid}/${category}/${sanitized}`;

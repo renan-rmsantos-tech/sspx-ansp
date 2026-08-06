@@ -322,6 +322,7 @@ export const donorPledges = pgTable(
     telefone: text("telefone"),
     endereco: text("endereco"),
     cep: text("cep"),
+    priorado_capela: text("priorado_capela"),
     recibo_path: text("recibo_path"),
     recibo_nome: text("recibo_nome"),
     observacoes: text("observacoes"),

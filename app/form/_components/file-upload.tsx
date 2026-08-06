@@ -23,6 +23,9 @@ interface FileUploadProps {
   onChange: (files: UploadedFile[]) => void;
   required?: boolean;
   error?: string;
+  /** Quando true, oculta a área de upload e mostra a mensagem. */
+  disabled?: boolean;
+  disabledMessage?: string;
 }
 
 let uploadSeq = 0;
@@ -40,10 +43,24 @@ export function FileUpload({
   onChange,
   required,
   error,
+  disabled = false,
+  disabledMessage = "Envio de arquivos temporariamente desativado.",
 }: FileUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const inputId = useId();
   const [dragOver, setDragOver] = useState(false);
+
+  if (disabled) {
+    return (
+      <div
+        className="rounded-md border border-dashed border-border bg-bg px-3 py-3 text-[13px] text-muted"
+        data-testid="upload-disabled"
+        role="status"
+      >
+        {disabledMessage}
+      </div>
+    );
+  }
 
   // Uploads são assíncronos: cada conclusão atualiza a lista a partir do
   // estado mais recente (via ref), não do snapshot da closure — remover um
