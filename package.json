@@ -14,7 +14,8 @@
     "db:stop": "docker compose -f docker-compose.dev.yml down",
     "db:migrate": "drizzle-kit migrate",
     "db:generate": "drizzle-kit generate",
-    "db:bootstrap": "tsx scripts/bootstrap.ts"
+    "db:bootstrap": "tsx scripts/bootstrap.ts",
+    "storage:cleanup": "tsx scripts/cleanup-pending.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
