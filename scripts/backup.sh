@@ -59,5 +59,23 @@ tar -cz -C "$WORK" db.sql uploads.tar |
 echo "==> Removendo backups com mais de $RETENTION_DAYS dias"
 find "$BACKUP_DIR" -name 'ansp-*.tar.gz.gpg' -mtime "+$RETENTION_DAYS" -delete
 
+# Cópia off-site no DigitalOcean Spaces (protocolo S3), se configurado no .env.
+# O arquivo já sai cifrado daqui, então o bucket só guarda o pacote trancado.
+# Usa o CLI da AWS via Docker para não instalar nada no droplet; a retenção
+# remota é uma lifecycle rule no próprio bucket (expira ansp/ após 90 dias).
+if [ -n "${SPACES_KEY:-}" ] && [ -n "${SPACES_SECRET:-}" ] \
+    && [ -n "${SPACES_BUCKET:-}" ] && [ -n "${SPACES_REGION:-}" ]; then
+  echo "==> Enviando ao Spaces (s3://$SPACES_BUCKET/ansp/)"
+  docker run --rm \
+    -e AWS_ACCESS_KEY_ID="$SPACES_KEY" \
+    -e AWS_SECRET_ACCESS_KEY="$SPACES_SECRET" \
+    -v "$BACKUP_DIR:/backup:ro" \
+    amazon/aws-cli s3 cp "/backup/ansp-$STAMP.tar.gz.gpg" \
+    "s3://$SPACES_BUCKET/ansp/ansp-$STAMP.tar.gz.gpg" \
+    --endpoint-url "https://$SPACES_REGION.digitaloceanspaces.com"
+else
+  echo "==> SPACES_* não configurado; pulando cópia off-site"
+fi
+
 echo "==> Concluído: $BACKUP_DIR/ansp-$STAMP.tar.gz.gpg"
 ls -lh "$BACKUP_DIR/ansp-$STAMP.tar.gz.gpg"
