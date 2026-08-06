@@ -39,12 +39,19 @@ const query = new Proxy(
   { get: (_target, table: string) => tableQuery(table) }
 ) as Record<string, TableQueryMocks>;
 
-/** Promise com `.returning()` acoplado, como a cadeia do Drizzle. */
+/**
+ * Promise com `.returning()` e `.onConflictDoUpdate()/.onConflictDoNothing()`
+ * acoplados, como a cadeia do Drizzle.
+ */
 function writeChain(returningValue: unknown[]) {
   const promise = Promise.resolve<unknown[]>([]) as Promise<unknown[]> & {
     returning: Mock;
+    onConflictDoUpdate: Mock;
+    onConflictDoNothing: Mock;
   };
   promise.returning = vi.fn().mockResolvedValue(returningValue);
+  promise.onConflictDoUpdate = vi.fn(() => writeChain(returningValue));
+  promise.onConflictDoNothing = vi.fn(() => writeChain(returningValue));
   return promise;
 }
 
@@ -91,10 +98,10 @@ const writeApi = {
 
   update: vi.fn((table: unknown) => ({
     set: vi.fn((values: unknown) => ({
-      where: vi.fn(async () => {
+      where: vi.fn(() => {
         guard();
         updated.push({ table, values });
-        return [];
+        return writeChain(nextReturning(table));
       }),
     })),
   })),

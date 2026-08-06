@@ -41,7 +41,14 @@ export async function registerDonorPledge(
 
   try {
     await storage.move(data.recibo_path, finalPath);
+  } catch {
+    return {
+      success: false,
+      errors: { _form: ["Erro ao registrar sua doação. Tente novamente."] },
+    };
+  }
 
+  try {
     await db.insert(donorPledges).values({
       id: pledgeId,
       nome: data.nome,
@@ -60,7 +67,21 @@ export async function registerDonorPledge(
       recibo_nome: data.recibo_nome,
       observacoes: data.observacoes || null,
     });
-  } catch {
+  } catch (error) {
+    console.error(
+      "[registerDonorPledge] falha ao salvar:",
+      error instanceof Error ? error.message : error
+    );
+
+    // Devolve o recibo para pending/ para que o reenvio do formulário
+    // (que referencia o caminho original) continue funcionando.
+    try {
+      await storage.move(finalPath, data.recibo_path);
+    } catch {
+      // Se nem o move de volta funcionar, o arquivo fica em donors/ órfão —
+      // preferível a perder o recibo.
+    }
+
     return {
       success: false,
       errors: { _form: ["Erro ao registrar sua doação. Tente novamente."] },

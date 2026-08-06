@@ -77,7 +77,9 @@ export function DocumentPreview({ documents }: DocumentPreviewProps) {
     } else {
       setError(result.error);
     }
-    setLoading(null);
+    // Só limpa se ainda for o loading deste documento — outra ação pode
+    // ter começado enquanto esta aguardava o servidor.
+    setLoading((prev) => (prev === doc.id ? null : prev));
   }, []);
 
   const handleDownload = useCallback(async (doc: Document) => {
@@ -93,7 +95,7 @@ export function DocumentPreview({ documents }: DocumentPreviewProps) {
     } else {
       setError(result.error);
     }
-    setLoading(null);
+    setLoading((prev) => (prev === doc.id ? null : prev));
   }, []);
 
   return (

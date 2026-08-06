@@ -37,6 +37,7 @@ import {
   queryFor,
   resetFakeDb,
   setReturning,
+  updated,
 } from "./helpers/fake-db";
 
 function validInput() {
@@ -88,7 +89,11 @@ beforeEach(() => {
   vi.clearAllMocks();
   resetFakeDb();
 
-  queryFor("schoolYears").findFirst.mockResolvedValue({ id: "year-1" });
+  queryFor("schoolYears").findFirst.mockResolvedValue({
+    id: "year-1",
+    data_inicio: "2000-01-01",
+    data_fim: "2999-12-31",
+  });
   setReturning(applications, [{ id: "app-1" }]);
   setReturning(students, [{ id: "student-1", nome: "Ana Silva" }]);
   mockMove.mockResolvedValue(undefined);
@@ -147,9 +152,15 @@ describe("submitApplication", () => {
       "applications/app-1/rg_pai/rg.pdf"
     );
 
-    const rows = insertedFor(documents) as Array<{ storage_path: string }>;
+    // O insert acontece antes do move (dentro da transação), com o caminho
+    // pending/; depois do commit cada linha é atualizada para o caminho final.
+    const updates = updated
+      .filter((row) => row.table === documents)
+      .map((row) => (row.values as { storage_path: string }).storage_path);
+
+    expect(updates.length).toBeGreaterThan(0);
     expect(
-      rows.every((row) => row.storage_path.startsWith("applications/app-1/"))
+      updates.every((path) => path.startsWith("applications/app-1/"))
     ).toBe(true);
   });
 
@@ -163,12 +174,41 @@ describe("submitApplication", () => {
   it("keeps the pending path when the file cannot be moved", async () => {
     mockMove.mockRejectedValue(new Error("ENOENT"));
 
-    await submitApplication(validInput());
+    const result = await submitApplication(validInput());
+
+    // A submissão continua bem-sucedida e nenhuma linha é atualizada para um
+    // caminho que não existe.
+    expect(result.success).toBe(true);
+    expect(updated.filter((row) => row.table === documents)).toHaveLength(0);
 
     const rows = insertedFor(documents) as Array<{ storage_path: string }>;
     expect(rows.every((row) => row.storage_path.startsWith("pending/"))).toBe(
       true
     );
+  });
+
+  it("returns an error when the active school year window is closed", async () => {
+    queryFor("schoolYears").findFirst.mockResolvedValue({
+      id: "year-1",
+      data_inicio: "2000-01-01",
+      data_fim: "2000-12-31",
+    });
+
+    const result = await submitApplication(validInput());
+
+    expect(result.success).toBe(false);
+    expect(result.errors?._form).toBeDefined();
+    expect(inserted).toHaveLength(0);
+  });
+
+  it("rejects document paths outside pending/", async () => {
+    const data = validInput();
+    data.pai.documentos = ["applications/other-app/rg_pai/rg.pdf"];
+
+    const result = await submitApplication(data);
+
+    expect(result.success).toBe(false);
+    expect(inserted).toHaveLength(0);
   });
 
   it("returns Zod errors without touching the database", async () => {

@@ -1,9 +1,13 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createUploadUrl } from "../_actions/form-actions";
 
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+
 export interface UploadedFile {
+  /** Identificador estável do item na lista, gerado no cliente. */
+  id?: string;
   name: string;
   path: string;
   uploading?: boolean;
@@ -21,6 +25,12 @@ interface FileUploadProps {
   error?: string;
 }
 
+let uploadSeq = 0;
+function nextUploadId() {
+  uploadSeq += 1;
+  return `upload-${uploadSeq}`;
+}
+
 export function FileUpload({
   label,
   category,
@@ -32,36 +42,66 @@ export function FileUpload({
   error,
 }: FileUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const inputId = useId();
   const [dragOver, setDragOver] = useState(false);
+
+  // Uploads são assíncronos: cada conclusão atualiza a lista a partir do
+  // estado mais recente (via ref), não do snapshot da closure — remover um
+  // arquivo ou anexar outro durante um envio não é sobrescrito.
+  const filesRef = useRef(files);
+  useEffect(() => {
+    filesRef.current = files;
+  }, [files]);
+
+  const patchFiles = useCallback(
+    (updater: (prev: UploadedFile[]) => UploadedFile[]) => {
+      const next = updater(filesRef.current);
+      filesRef.current = next;
+      onChange(next);
+    },
+    [onChange]
+  );
 
   const uploadFiles = useCallback(
     async (fileList: FileList) => {
-      const newFiles: UploadedFile[] = [];
+      const selected = Array.from(fileList).map((file) => ({
+        file,
+        id: nextUploadId(),
+      }));
 
-      for (const file of Array.from(fileList)) {
-        const placeholder: UploadedFile = {
+      patchFiles((prev) => {
+        const placeholders = selected.map(({ file, id }) => ({
+          id,
           name: file.name,
           path: "",
           uploading: true,
-        };
-        newFiles.push(placeholder);
-      }
+        }));
+        return multiple ? [...prev, ...placeholders] : placeholders;
+      });
 
-      const updated = multiple ? [...files, ...newFiles] : [...newFiles];
-      onChange(updated);
+      const settle = (id: string, patch: Partial<UploadedFile>) => {
+        patchFiles((prev) =>
+          prev.map((f) =>
+            f.id === id ? { ...f, uploading: false, ...patch } : f
+          )
+        );
+      };
 
-      const results: UploadedFile[] = multiple ? [...files] : [];
+      for (const { file, id } of selected) {
+        if (file.size > MAX_UPLOAD_BYTES) {
+          settle(id, { error: "Arquivo excede o limite de 10 MB." });
+          continue;
+        }
 
-      for (let i = 0; i < newFiles.length; i++) {
-        const file = Array.from(fileList)[i];
+        if (file.size === 0) {
+          settle(id, { error: "Arquivo vazio." });
+          continue;
+        }
+
         const result = await createUploadUrl(file.name, category);
 
         if ("error" in result) {
-          results.push({
-            name: file.name,
-            path: "",
-            error: result.error,
-          });
+          settle(id, { error: result.error });
           continue;
         }
 
@@ -74,19 +114,13 @@ export function FileUpload({
 
           if (!res.ok) throw new Error("Upload falhou");
 
-          results.push({ name: file.name, path: result.path });
+          settle(id, { path: result.path });
         } catch {
-          results.push({
-            name: file.name,
-            path: "",
-            error: "Erro ao enviar arquivo",
-          });
+          settle(id, { error: "Erro ao enviar arquivo" });
         }
       }
-
-      onChange(results);
     },
-    [files, multiple, onChange, category]
+    [category, multiple, patchFiles]
   );
 
   const handleDrop = useCallback(
@@ -105,21 +139,26 @@ export function FileUpload({
       if (e.target.files && e.target.files.length > 0) {
         uploadFiles(e.target.files);
       }
+      // Permite reenviar o mesmo arquivo após removê-lo.
+      e.target.value = "";
     },
     [uploadFiles]
   );
 
   const removeFile = useCallback(
     (index: number) => {
-      onChange(files.filter((_, i) => i !== index));
+      patchFiles((prev) => prev.filter((_, i) => i !== index));
     },
-    [files, onChange]
+    [patchFiles]
   );
 
   return (
     <div className="space-y-1">
       <div
-        className={`relative cursor-pointer rounded-md border-[1.5px] border-dashed p-4 text-center transition-colors ${
+        role="button"
+        tabIndex={0}
+        aria-label={`Enviar arquivo: ${label}`}
+        className={`relative cursor-pointer rounded-md border-[1.5px] border-dashed p-4 text-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
           dragOver
             ? "border-gold bg-gold/10"
             : error
@@ -140,15 +179,24 @@ export function FileUpload({
         }}
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
         data-testid="upload-area"
       >
         <input
           ref={inputRef}
+          id={inputId}
           type="file"
           accept={accept}
           multiple={multiple}
           onChange={handleFileChange}
           className="hidden"
+          tabIndex={-1}
+          aria-hidden="true"
           data-testid="upload-input"
         />
         <p className="text-[13px] text-muted">
@@ -160,7 +208,7 @@ export function FileUpload({
         <div className="flex flex-wrap gap-2 pt-1" data-testid="upload-preview">
           {files.map((file, i) => (
             <span
-              key={`${file.name}-${i}`}
+              key={file.id ?? `${file.name}-${i}`}
               className={`inline-flex items-center gap-1.5 rounded px-2.5 py-1 text-xs ${
                 file.error
                   ? "bg-danger/10 text-danger"
@@ -170,6 +218,7 @@ export function FileUpload({
               }`}
             >
               {file.uploading ? "Enviando..." : file.name}
+              {file.error ? ` — ${file.error}` : null}
               {!file.uploading && (
                 <button
                   type="button"
@@ -179,6 +228,7 @@ export function FileUpload({
                   }}
                   className="text-sm leading-none text-muted hover:text-danger"
                   title="Remover"
+                  aria-label={`Remover arquivo ${file.name}`}
                   data-testid="remove-file"
                 >
                   &times;

@@ -72,6 +72,7 @@ import {
   inserted,
   queryFor,
   resetFakeDb,
+  setReturning,
   updated,
 } from "./helpers/fake-db";
 
@@ -224,6 +225,8 @@ describe("approveApplication", () => {
   });
 
   it("updates status, discount, reason and decided_by", async () => {
+    setReturning(applications, [{ id: "app-1" }]);
+
     const result = await approveApplication("app-1", 75, "Bom candidato");
 
     expect(result.success).toBe(true);
@@ -234,6 +237,14 @@ describe("approveApplication", () => {
       motivo: "Bom candidato",
       decided_by: "user-123",
     });
+  });
+
+  it("fails when the application does not exist or was already decided", async () => {
+    // Nenhum setReturning: o update condicional não afeta linha alguma.
+    const result = await approveApplication("app-1", 75);
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("já decidida");
   });
 
   it("reports an error when the update fails", async () => {
@@ -248,6 +259,8 @@ describe("approveApplication", () => {
 
 describe("rejectApplication", () => {
   it("updates status, reason and decided_by", async () => {
+    setReturning(applications, [{ id: "app-1" }]);
+
     const result = await rejectApplication("app-1", "Renda incompatível");
 
     expect(result.success).toBe(true);
@@ -256,6 +269,13 @@ describe("rejectApplication", () => {
       motivo: "Renda incompatível",
       decided_by: "user-123",
     });
+  });
+
+  it("fails when the application was already decided", async () => {
+    const result = await rejectApplication("app-1");
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("já decidida");
   });
 });
 
@@ -275,6 +295,15 @@ describe("createSchoolYear", () => {
   });
 
   it("creates an inactive school year with valid dates", async () => {
+    const created = {
+      id: "year-9",
+      nome: "2026",
+      data_inicio: "2026-02-01",
+      data_fim: "2026-12-15",
+      ativo: false,
+    };
+    setReturning(schoolYears, [created]);
+
     const result = await createSchoolYear({
       nome: "2026",
       data_inicio: "2026-02-01",
@@ -282,6 +311,8 @@ describe("createSchoolYear", () => {
     });
 
     expect(result.success).toBe(true);
+    // Devolve a linha persistida: o cliente usa o ID real na lista.
+    expect(result.data).toEqual(created);
     expect(inserted[0].table).toBe(schoolYears);
     expect(inserted[0].values).toMatchObject({ nome: "2026", ativo: false });
   });
@@ -336,9 +367,7 @@ describe("deleteDonorPledge", () => {
 // --- Decision Templates ---
 
 describe("saveTemplate and getTemplates", () => {
-  it("updates the template when one already exists", async () => {
-    queryFor("decisionTemplates").findFirst.mockResolvedValue({ id: "tmpl-1" });
-
+  it("upserts the template over the tipo uniqueness", async () => {
     const result = await saveTemplate({
       tipo: "aprovacao",
       cabecalho: "Header",
@@ -347,12 +376,15 @@ describe("saveTemplate and getTemplates", () => {
     });
 
     expect(result.success).toBe(true);
-    expect(updated[0].table).toBe(decisionTemplates);
-    expect(inserted).toHaveLength(0);
+    expect(inserted[0].table).toBe(decisionTemplates);
+    expect(inserted[0].values).toMatchObject({
+      tipo: "aprovacao",
+      corpo: "Body {aluno}",
+    });
   });
 
-  it("creates the template when none exists", async () => {
-    queryFor("decisionTemplates").findFirst.mockResolvedValue(undefined);
+  it("reports an error when the write fails", async () => {
+    failWrites();
 
     const result = await saveTemplate({
       tipo: "rejeicao",
@@ -361,8 +393,8 @@ describe("saveTemplate and getTemplates", () => {
       rodape: "R",
     });
 
-    expect(result.success).toBe(true);
-    expect(inserted[0].values).toMatchObject({ tipo: "rejeicao" });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("Erro ao salvar");
   });
 
   it("returns the templates ordered by type", async () => {

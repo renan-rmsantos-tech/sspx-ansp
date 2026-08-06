@@ -151,9 +151,32 @@ export const SERIES_OPTIONS = [
   "3º EM",
 ];
 
+// Aceita os formatos comuns em pt-BR: "1.234,56", "1234,56", "1234.56".
+// O último separador (vírgula ou ponto) é tratado como decimal; os demais são
+// separadores de milhar e são descartados.
 export function parseMoney(value: string): number {
   if (!value) return 0;
-  return parseFloat(value.replace(/[^\d,.-]/g, "").replace(",", ".")) || 0;
+
+  const cleaned = value.replace(/[^\d,.-]/g, "");
+  const lastComma = cleaned.lastIndexOf(",");
+  const lastDot = cleaned.lastIndexOf(".");
+  const decimalIndex = Math.max(lastComma, lastDot);
+
+  // Sem separador, ou um "." seguido de exatamente 3 dígitos no fim ("1.500"):
+  // em pt-BR isso é milhar, não decimal.
+  const isThousandsDot =
+    decimalIndex === lastDot &&
+    lastComma === -1 &&
+    cleaned.length - lastDot === 4;
+
+  if (decimalIndex === -1 || isThousandsDot) {
+    return parseFloat(cleaned.replace(/[.,]/g, "")) || 0;
+  }
+
+  const integerPart = cleaned.slice(0, decimalIndex).replace(/[.,]/g, "");
+  const decimalPart = cleaned.slice(decimalIndex + 1);
+
+  return parseFloat(`${integerPart}.${decimalPart}`) || 0;
 }
 
 export function formatMoney(value: number): string {

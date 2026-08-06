@@ -15,14 +15,27 @@ const nonNegativeNumber = z.number().min(0, "Valor não pode ser negativo");
 
 const optionalNonNegative = nonNegativeNumber.optional();
 
-const filePathArray = z.array(z.string().min(1)).default([]);
+// Só aceita caminhos gerados por `createUploadUrl` (pending/{uuid}/...): uma
+// submissão não pode referenciar arquivos de outros namespaces do storage.
+const uploadedPath = z
+  .string()
+  .min(1)
+  .refine((p) => p.startsWith("pending/") && !p.includes(".."), {
+    message: "Caminho de arquivo inválido",
+  });
+
+const filePathArray = z.array(uploadedPath).default([]);
+
+const requiredFileArray = z
+  .array(uploadedPath)
+  .min(1, "Envie pelo menos um arquivo");
 
 const studentSchema = z.object({
   nome: z.string().min(1, "Nome do aluno é obrigatório"),
   cpf: optionalCpfSchema,
   serie: z.string().min(1, "Série é obrigatória"),
   mensalidade: nonNegativeNumber,
-  documentos: filePathArray,
+  documentos: requiredFileArray,
 });
 
 const otherChildSchema = z.object({
@@ -68,14 +81,14 @@ export const applicationSubmissionSchema = z.object({
     rg: z.string().min(1, "RG do pai é obrigatório"),
     cpf: cpfSchema,
     profissao: z.string().optional(),
-    documentos: filePathArray,
+    documentos: requiredFileArray,
   }),
 
   mae: z.object({
     nome: z.string().min(1, "Nome da mãe é obrigatório"),
     cpf: cpfSchema,
     profissao: z.string().optional(),
-    documentos: filePathArray,
+    documentos: requiredFileArray,
   }),
 
   certidao_casamento: filePathArray.optional(),
@@ -83,7 +96,7 @@ export const applicationSubmissionSchema = z.object({
   cep: z.string().optional(),
   telefone: z.string().min(1, "Telefone é obrigatório"),
   email: z.string().email("Email inválido").optional().or(z.literal("")),
-  comprovante_endereco: filePathArray,
+  comprovante_endereco: requiredFileArray,
 
   outros_filhos: z.array(otherChildSchema).default([]),
 
@@ -103,7 +116,7 @@ export const applicationSubmissionSchema = z.object({
     pessoas: z.number().int().positive("Número de pessoas deve ser positivo"),
   }),
 
-  extrato_ir: filePathArray,
+  extrato_ir: requiredFileArray,
 
   despesas: z.object({
     aluguel: optionalNonNegative,
@@ -114,7 +127,7 @@ export const applicationSubmissionSchema = z.object({
     internet: optionalNonNegative,
   }),
 
-  extratos_bancarios: filePathArray,
+  extratos_bancarios: requiredFileArray,
 
   veiculos: z.array(vehicleSchema).default([]),
 

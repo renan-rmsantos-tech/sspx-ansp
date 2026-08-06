@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { registerDonorPledge } from "../_actions/donor-actions";
 import type { DonorPledge } from "@/lib/validations/donor-schema";
@@ -72,6 +72,9 @@ export function DonorForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  // Guarda síncrona contra duplo clique: `submitting` só desabilita o botão
+  // após o re-render, tarde demais para uma segunda chamada imediata.
+  const submittingRef = useRef(false);
 
   const valor = useMemo(() => {
     if (valorPreset === "outro") {
@@ -104,6 +107,9 @@ export function DonorForm() {
       return;
     }
 
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+
     setSubmitting(true);
     setErrors({});
 
@@ -124,19 +130,25 @@ export function DonorForm() {
       observacoes: observacoes.trim() || undefined,
     };
 
-    const result = await registerDonorPledge(payload);
-    setSubmitting(false);
+    try {
+      const result = await registerDonorPledge(payload);
 
-    if (result.success) {
-      setDone(true);
-      return;
-    }
+      if (result.success) {
+        setDone(true);
+        return;
+      }
 
-    const flat: Record<string, string> = {};
-    for (const [key, msgs] of Object.entries(result.errors ?? {})) {
-      flat[key] = msgs[0];
+      const flat: Record<string, string> = {};
+      for (const [key, msgs] of Object.entries(result.errors ?? {})) {
+        flat[key] = msgs[0];
+      }
+      setErrors(flat);
+    } catch {
+      setErrors({ _form: "Erro de conexão ao enviar. Tente novamente." });
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
     }
-    setErrors(flat);
   }, [
     nome,
     cpf,

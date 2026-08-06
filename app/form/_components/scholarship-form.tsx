@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { ProgressBar } from "./progress-bar";
 import { Step1Applicant } from "./step-1-applicant";
 import { Step2Students } from "./step-2-students";
@@ -20,6 +20,17 @@ const TOTAL_STEPS = 6;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const M = MSG_OBRIGATORIO;
+const MSG_ENVIANDO = "Aguarde o envio do arquivo terminar";
+
+// Um campo de documentos só é válido com ao menos um upload CONCLUÍDO —
+// placeholder "Enviando..." ou item com erro não contam como arquivo enviado.
+function docError(files: { path: string; uploading?: boolean; error?: string }[]):
+  | string
+  | null {
+  if (files.some((f) => f.uploading)) return MSG_ENVIANDO;
+  if (files.some((f) => f.path && !f.error)) return null;
+  return M;
+}
 
 function validateStep1(data: FormData): Record<string, string> {
   const errors: Record<string, string> = {};
@@ -38,13 +49,17 @@ function validateStep1(data: FormData): Record<string, string> {
     errors.mae_cpf = "CPF inválido";
   }
   if (!data.mae_profissao.trim()) errors.mae_profissao = M;
-  if (data.doc_pai.length === 0) errors.doc_pai = M;
-  if (data.doc_mae.length === 0) errors.doc_mae = M;
-  if (data.certidao_casamento.length === 0) errors.certidao_casamento = M;
+  const docPai = docError(data.doc_pai);
+  if (docPai) errors.doc_pai = docPai;
+  const docMae = docError(data.doc_mae);
+  if (docMae) errors.doc_mae = docMae;
+  const docCertidao = docError(data.certidao_casamento);
+  if (docCertidao) errors.certidao_casamento = docCertidao;
   if (!data.endereco.trim()) errors.endereco = M;
   if (!data.cep.trim()) errors.cep = M;
   if (!data.telefone.trim()) errors.telefone = M;
-  if (data.comprovante_endereco.length === 0) errors.comprovante_endereco = M;
+  const docComprovante = docError(data.comprovante_endereco);
+  if (docComprovante) errors.comprovante_endereco = docComprovante;
   if (!data.email.trim()) {
     errors.email = M;
   } else if (!EMAIL_RE.test(data.email.trim())) {
@@ -80,8 +95,10 @@ function validateStep2(data: FormData): Record<string, string> {
     }
     if (!a.serie.trim()) errors[`aluno_${i}_serie`] = M;
     if (!a.mensalidade.trim()) errors[`aluno_${i}_mensalidade`] = M;
-    if (a.docRg.length === 0) errors[`aluno_${i}_docRg`] = M;
-    if (a.docCertidao.length === 0) errors[`aluno_${i}_docCertidao`] = M;
+    const rgErr = docError(a.docRg);
+    if (rgErr) errors[`aluno_${i}_docRg`] = rgErr;
+    const certErr = docError(a.docCertidao);
+    if (certErr) errors[`aluno_${i}_docCertidao`] = certErr;
   }
   const desconto = data.desconto_solicitado.trim();
   if (desconto === "") {
@@ -101,18 +118,16 @@ function validateStep3(data: FormData): Record<string, string> {
   if (!data.pessoas_domicilio || Number(data.pessoas_domicilio) < 1) {
     errors.pessoas_domicilio = M;
   }
-  if (data.extrato_ir.length === 0) {
-    errors.extrato_ir = M;
-  }
+  const irErr = docError(data.extrato_ir);
+  if (irErr) errors.extrato_ir = irErr;
   return errors;
 }
 
 function validateStep4(data: FormData): Record<string, string> {
   const errors: Record<string, string> = {};
   // Os valores de despesa são opcionais; o extrato bancário é obrigatório.
-  if (data.extratos_bancarios.length === 0) {
-    errors.extratos_bancarios = M;
-  }
+  const extratoErr = docError(data.extratos_bancarios);
+  if (extratoErr) errors.extratos_bancarios = extratoErr;
   return errors;
 }
 
@@ -151,6 +166,9 @@ export function ScholarshipForm() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  // Guarda síncrona: `submitting` só bloqueia o botão após o re-render, e um
+  // duplo clique rápido dispararia duas submissões (e duas solicitações).
+  const submittingRef = useRef(false);
 
   const updateFormData = useCallback((partial: Partial<FormData>) => {
     setFormData((prev) => ({ ...prev, ...partial }));
@@ -204,6 +222,9 @@ export function ScholarshipForm() {
       setTimeout(() => setAcceptError(false), 2000);
       return;
     }
+
+    if (submittingRef.current) return;
+    submittingRef.current = true;
 
     setSubmitting(true);
     setSubmitError("");
@@ -295,24 +316,31 @@ export function ScholarshipForm() {
       ),
     };
 
-    const result = await submitApplication(payload);
+    try {
+      const result = await submitApplication(payload);
 
-    setSubmitting(false);
-
-    if (result.success) {
-      setSubmitted(true);
-    } else if (result.errors?._form?.[0]) {
-      setSubmitError(result.errors._form[0]);
-    } else if (result.errors) {
-      // Campos inválidos detectados pelo servidor: lista quais para não esconder o erro.
-      const campos = Object.values(result.errors).flat();
-      setSubmitError(
-        campos.length > 0
-          ? `Dados inválidos: ${[...new Set(campos)].join("; ")}.`
-          : "Erro ao enviar. Verifique os dados e tente novamente."
-      );
-    } else {
-      setSubmitError("Erro ao enviar. Verifique os dados e tente novamente.");
+      if (result.success) {
+        setSubmitted(true);
+      } else if (result.errors?._form?.[0]) {
+        setSubmitError(result.errors._form[0]);
+      } else if (result.errors) {
+        // Campos inválidos detectados pelo servidor: lista quais para não esconder o erro.
+        const campos = Object.values(result.errors).flat();
+        setSubmitError(
+          campos.length > 0
+            ? `Dados inválidos: ${[...new Set(campos)].join("; ")}.`
+            : "Erro ao enviar. Verifique os dados e tente novamente."
+        );
+      } else {
+        setSubmitError("Erro ao enviar. Verifique os dados e tente novamente.");
+      }
+    } catch {
+      // Falha de rede/runtime na Server Action: sem isso o botão ficaria
+      // preso em "Enviando..." para sempre.
+      setSubmitError("Erro de conexão ao enviar. Tente novamente.");
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
     }
   }, [accepted, formData]);
 
@@ -377,7 +405,9 @@ export function ScholarshipForm() {
         )}
 
         {submitError && (
-          <p className="mt-4 text-center text-sm text-danger">{submitError}</p>
+          <p className="mt-4 text-center text-sm text-danger" role="alert">
+            {submitError}
+          </p>
         )}
 
         <div className="mt-8 flex justify-between gap-3 max-sm:flex-col">

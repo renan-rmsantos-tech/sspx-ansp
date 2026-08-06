@@ -30,6 +30,19 @@ interface SchoolYear {
 
 const UPLOAD_TICKET_TTL_SECONDS = 30 * 60;
 
+// Data de hoje em São Paulo como "YYYY-MM-DD". O container roda em UTC; sem o
+// fuso explícito a janela de inscrição fecharia 3 horas mais cedo no último dia.
+function todayInSaoPaulo(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+  }).format(new Date());
+}
+
+function isWithinWindow(year: { data_inicio: string; data_fim: string }) {
+  const today = todayInSaoPaulo();
+  return today >= year.data_inicio && today <= year.data_fim;
+}
+
 export async function getActiveSchoolYear(): Promise<{
   open: boolean;
   year?: SchoolYear;
@@ -38,15 +51,7 @@ export async function getActiveSchoolYear(): Promise<{
     where: eq(schoolYears.ativo, true),
   });
 
-  if (!year) {
-    return { open: false };
-  }
-
-  const now = new Date();
-  const start = new Date(year.data_inicio + "T00:00:00");
-  const end = new Date(year.data_fim + "T23:59:59");
-
-  if (now < start || now > end) {
+  if (!year || !isWithinWindow(year)) {
     return { open: false };
   }
 
@@ -91,11 +96,13 @@ export async function submitApplication(
   const data = result.data;
 
   const activeYear = await db.query.schoolYears.findFirst({
-    columns: { id: true },
+    columns: { id: true, data_inicio: true, data_fim: true },
     where: eq(schoolYears.ativo, true),
   });
 
-  if (!activeYear) {
+  // Revalida a janela aqui: a Server Action pode ser chamada diretamente,
+  // sem passar pela página que já faz essa checagem.
+  if (!activeYear || !isWithinWindow(activeYear)) {
     return {
       success: false,
       errors: {
@@ -105,7 +112,7 @@ export async function submitApplication(
   }
 
   try {
-    const appId = await db.transaction(async (tx) => {
+    const saved = await db.transaction(async (tx) => {
       const [application] = await tx
         .insert(applications)
         .values({
@@ -195,17 +202,25 @@ export async function submitApplication(
       }
 
       const documentRows = collectDocumentRows(data, id, insertedStudents);
-      await moveFilesToApplication(documentRows, id);
+      await fillDocumentSizes(documentRows);
 
       if (documentRows.length > 0) {
         await tx.insert(documents).values(documentRows);
       }
 
-      return id;
+      return { id, documentRows };
     });
 
-    return { success: true, id: appId };
-  } catch {
+    // Só depois do commit os arquivos saem de pending/: se a transação
+    // falhar, nada foi movido e não sobram arquivos órfãos.
+    await moveFilesToApplication(saved.documentRows, saved.id);
+
+    return { success: true, id: saved.id };
+  } catch (error) {
+    console.error(
+      "[submitApplication] falha ao salvar:",
+      error instanceof Error ? error.message : error
+    );
     return {
       success: false,
       errors: {
@@ -257,18 +272,28 @@ function collectDocumentRows(
   addDocs(data.extrato_ir, "extrato_ir");
   addDocs(data.extratos_bancarios, "extrato_bancario");
 
-  for (const aluno of data.alunos) {
-    const match = students.find((s) => s.nome === aluno.nome);
-    addDocs(aluno.documentos, "rg_aluno", match?.id ?? null);
-  }
+  // `RETURNING` preserva a ordem do insert, então o aluno i corresponde a
+  // students[i] — casar por nome vincularia errado alunos homônimos.
+  data.alunos.forEach((aluno, i) => {
+    addDocs(aluno.documentos, "rg_aluno", students[i]?.id ?? null);
+  });
 
   return rows;
 }
 
+async function fillDocumentSizes(documentRows: DocumentRow[]) {
+  const storage = getStorage();
+
+  for (const doc of documentRows) {
+    doc.tamanho_bytes = (await storage.size(doc.storage_path)) ?? 0;
+  }
+}
+
 /**
- * Move os arquivos de `pending/{uuid}/` para `applications/{id}/`. Se um move
- * falhar, a linha mantém o caminho original — o banco nunca aponta para um
- * arquivo que não existe.
+ * Move os arquivos de `pending/{uuid}/` para `applications/{id}/` depois do
+ * commit e atualiza a linha correspondente. Se um move ou update falhar, a
+ * linha mantém o caminho `pending/` — `getDocumentUrl` no admin resolve os
+ * dois caminhos, então o documento segue acessível.
  */
 async function moveFilesToApplication(
   documentRows: DocumentRow[],
@@ -277,20 +302,22 @@ async function moveFilesToApplication(
   const storage = getStorage();
 
   for (const doc of documentRows) {
-    if (doc.storage_path.startsWith("pending/")) {
-      const newPath = doc.storage_path.replace(
-        /^pending\/[^/]+/,
-        `applications/${appId}`
-      );
+    if (!doc.storage_path.startsWith("pending/")) continue;
 
-      try {
-        await storage.move(doc.storage_path, newPath);
-        doc.storage_path = newPath;
-      } catch {
-        // Mantém o caminho de origem: o documento segue acessível de lá.
-      }
+    const newPath = doc.storage_path.replace(
+      /^pending\/[^/]+/,
+      `applications/${appId}`
+    );
+
+    try {
+      await storage.move(doc.storage_path, newPath);
+      await db
+        .update(documents)
+        .set({ storage_path: newPath })
+        .where(eq(documents.storage_path, doc.storage_path));
+      doc.storage_path = newPath;
+    } catch {
+      // Mantém o caminho de origem: o documento segue acessível de lá.
     }
-
-    doc.tamanho_bytes = (await storage.size(doc.storage_path)) ?? 0;
   }
 }

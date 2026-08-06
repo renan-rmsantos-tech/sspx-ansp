@@ -10,12 +10,15 @@ import {
 } from "@/lib/auth/bypass";
 import { verifyPassword } from "@/lib/auth/password";
 import { getSession } from "@/lib/auth/session";
+import { clearFailures, lockedFor, recordFailure } from "@/lib/auth/throttle";
 import { db } from "@/lib/db";
 import { adminUsers } from "@/lib/db/schema";
 
 export type LoginState = { error: string | null };
 
 const INVALID = "Credenciais inválidas. Verifique seu email e senha.";
+const LOCKED =
+  "Muitas tentativas de login. Aguarde alguns minutos e tente novamente.";
 
 // Destino do login. Aponta para a página final, e não para /admin: aquela rota
 // só redireciona para cá, e um redirect encadeado dentro de uma Server Action
@@ -35,24 +38,32 @@ async function authenticate(
   email: string,
   password: string
 ): Promise<LoginState> {
+  const normalized = (email ?? "").trim().toLowerCase();
+
+  if (lockedFor(normalized) > 0) {
+    return { error: LOCKED };
+  }
+
   if (isAuthBypass()) {
     if (email === BYPASS_EMAIL && password === BYPASS_PASSWORD) {
+      clearFailures(normalized);
       await startSession(BYPASS_USER.id, BYPASS_USER.email);
       return { error: null };
     }
+    recordFailure(normalized);
     return { error: INVALID };
   }
-
-  const normalized = (email ?? "").trim().toLowerCase();
 
   const user = await db.query.adminUsers.findFirst({
     where: eq(adminUsers.email, normalized),
   });
 
   if (!user || !(await verifyPassword(password ?? "", user.password_hash))) {
+    recordFailure(normalized);
     return { error: INVALID };
   }
 
+  clearFailures(normalized);
   await startSession(user.id, user.email);
 
   return { error: null };

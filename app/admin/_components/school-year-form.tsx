@@ -42,19 +42,15 @@ export function SchoolYearForm({ onCreated }: SchoolYearFormProps) {
         data_fim: dataFim,
       });
 
-      if (!result.success) {
+      if (!result.success || !result.data) {
         setError(result.error ?? "Erro ao criar ano letivo.");
         setLoading(false);
         return;
       }
 
-      onCreated({
-        id: crypto.randomUUID(),
-        nome: nome.trim(),
-        data_inicio: dataInicio,
-        data_fim: dataFim,
-        ativo: false,
-      });
+      // Usa a linha persistida: um ID inventado no cliente quebraria
+      // ativar/excluir até a página ser recarregada.
+      onCreated(result.data);
 
       setNome("");
       setDataInicio("");

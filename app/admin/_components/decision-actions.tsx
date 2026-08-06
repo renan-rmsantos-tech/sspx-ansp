@@ -38,27 +38,44 @@ export function DecisionActions({
 
     setSubmitting(true);
     setError(null);
-    onDecision(applicationId, "aprovada", discountNum);
 
-    const result = await approveApplication(applicationId, discountNum, reason || undefined);
-    if (!result.success) {
-      setError(result.error ?? "Erro ao aprovar.");
-      onDecision(applicationId, "pendente");
+    // A lista só é atualizada após o servidor confirmar: o update otimista
+    // anterior deixava desconto e data de decisão fantasmas quando a action
+    // falhava.
+    try {
+      const result = await approveApplication(
+        applicationId,
+        discountNum,
+        reason || undefined
+      );
+      if (result.success) {
+        onDecision(applicationId, "aprovada", discountNum);
+      } else {
+        setError(result.error ?? "Erro ao aprovar.");
+      }
+    } catch {
+      setError("Erro de conexão. Tente novamente.");
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   }, [applicationId, discount, reason, onDecision]);
 
   const handleReject = useCallback(async () => {
     setSubmitting(true);
     setError(null);
-    onDecision(applicationId, "rejeitada");
 
-    const result = await rejectApplication(applicationId, reason || undefined);
-    if (!result.success) {
-      setError(result.error ?? "Erro ao rejeitar.");
-      onDecision(applicationId, "pendente");
+    try {
+      const result = await rejectApplication(applicationId, reason || undefined);
+      if (result.success) {
+        onDecision(applicationId, "rejeitada");
+      } else {
+        setError(result.error ?? "Erro ao rejeitar.");
+      }
+    } catch {
+      setError("Erro de conexão. Tente novamente.");
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   }, [applicationId, reason, onDecision]);
 
   if (mode === "idle") {

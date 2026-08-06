@@ -24,6 +24,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 import { hashPassword } from "@/lib/auth/password";
+import { resetThrottle } from "@/lib/auth/throttle";
 import { login, logout } from "@/app/login/_actions/auth-actions";
 import { queryFor, resetFakeDb } from "./helpers/fake-db";
 
@@ -32,6 +33,7 @@ const INVALID = "Credenciais inválidas. Verifique seu email e senha.";
 beforeEach(() => {
   vi.clearAllMocks();
   resetFakeDb();
+  resetThrottle();
   vi.stubEnv("AUTH_BYPASS", "");
   mockSession.userId = undefined;
   mockSession.email = undefined;
@@ -101,6 +103,34 @@ describe("login with AUTH_BYPASS", () => {
 
   it("still rejects anything else", async () => {
     expect(await login("admin@admin.com", "wrong")).toEqual({ error: INVALID });
+  });
+
+  it("is ignored in production even when the variable is set", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    queryFor("adminUsers").findFirst.mockResolvedValue(undefined);
+
+    // Com o bypass ignorado, as credenciais fixas caem na consulta normal
+    // ao banco — e falham, porque o usuário não existe.
+    expect(await login("admin@admin.com", "admin123")).toEqual({
+      error: INVALID,
+    });
+    expect(queryFor("adminUsers").findFirst).toHaveBeenCalled();
+    expect(mockSession.save).not.toHaveBeenCalled();
+  });
+});
+
+describe("login throttling", () => {
+  it("locks the account after repeated failures", async () => {
+    queryFor("adminUsers").findFirst.mockResolvedValue(undefined);
+
+    for (let i = 0; i < 8; i++) {
+      await login("brute@force.com", "wrong");
+    }
+
+    const result = await login("brute@force.com", "wrong");
+    expect(result.error).toContain("Muitas tentativas");
+    // Bloqueado, nem consulta o banco.
+    expect(queryFor("adminUsers").findFirst).toHaveBeenCalledTimes(8);
   });
 });
 

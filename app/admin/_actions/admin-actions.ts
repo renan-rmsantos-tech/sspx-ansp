@@ -1,6 +1,6 @@
 "use server";
 
-import { asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { BYPASS_USER, isAuthBypass } from "@/lib/auth/bypass";
 import { getSessionUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
@@ -112,10 +112,21 @@ export async function getDonorPledges() {
 export async function deleteDonorPledge(id: string): Promise<ActionResult> {
   await requireAuth();
 
+  const donor = await db.query.donorPledges.findFirst({
+    columns: { recibo_path: true },
+    where: eq(donorPledges.id, id),
+  });
+
   try {
     await db.delete(donorPledges).where(eq(donorPledges.id, id));
   } catch {
     return { success: false, error: "Erro ao excluir benfeitor." };
+  }
+
+  // O recibo é um documento sensível: excluir o cadastro sem apagar o
+  // arquivo deixaria o comprovante retido sem referência no banco.
+  if (donor?.recibo_path) {
+    await getStorage().remove(donor.recibo_path);
   }
 
   return { success: true };
@@ -203,7 +214,9 @@ export async function approveApplication(
   const { user } = await requireAuth();
 
   try {
-    await db
+    // Condicional em `pendente`: impede que duas decisões concorrentes se
+    // sobrescrevam e que um ID inexistente retorne sucesso.
+    const rows = await db
       .update(applications)
       .set({
         status: "aprovada",
@@ -212,7 +225,17 @@ export async function approveApplication(
         data_decisao: new Date().toISOString(),
         decided_by: resolveDecidedBy(user.id),
       })
-      .where(eq(applications.id, id));
+      .where(
+        and(eq(applications.id, id), eq(applications.status, "pendente"))
+      )
+      .returning({ id: applications.id });
+
+    if (rows.length === 0) {
+      return {
+        success: false,
+        error: "Solicitação não encontrada ou já decidida.",
+      };
+    }
   } catch {
     return { success: false, error: "Erro ao aprovar solicitação." };
   }
@@ -227,7 +250,7 @@ export async function rejectApplication(
   const { user } = await requireAuth();
 
   try {
-    await db
+    const rows = await db
       .update(applications)
       .set({
         status: "rejeitada",
@@ -235,7 +258,17 @@ export async function rejectApplication(
         data_decisao: new Date().toISOString(),
         decided_by: resolveDecidedBy(user.id),
       })
-      .where(eq(applications.id, id));
+      .where(
+        and(eq(applications.id, id), eq(applications.status, "pendente"))
+      )
+      .returning({ id: applications.id });
+
+    if (rows.length === 0) {
+      return {
+        success: false,
+        error: "Solicitação não encontrada ou já decidida.",
+      };
+    }
   } catch {
     return { success: false, error: "Erro ao rejeitar solicitação." };
   }
@@ -263,7 +296,17 @@ export async function createSchoolYear(input: {
   nome: string;
   data_inicio: string;
   data_fim: string;
-}): Promise<ActionResult> {
+}): Promise<
+  ActionResult & {
+    data?: {
+      id: string;
+      nome: string;
+      data_inicio: string;
+      data_fim: string;
+      ativo: boolean;
+    };
+  }
+> {
   if (new Date(input.data_fim) < new Date(input.data_inicio)) {
     return {
       success: false,
@@ -274,17 +317,28 @@ export async function createSchoolYear(input: {
   await requireAuth();
 
   try {
-    await db.insert(schoolYears).values({
-      nome: input.nome,
-      data_inicio: input.data_inicio,
-      data_fim: input.data_fim,
-      ativo: false,
-    });
+    // Devolve a linha criada: o cliente precisa do ID real para ativar ou
+    // excluir o ano letivo sem recarregar a página.
+    const [created] = await db
+      .insert(schoolYears)
+      .values({
+        nome: input.nome,
+        data_inicio: input.data_inicio,
+        data_fim: input.data_fim,
+        ativo: false,
+      })
+      .returning({
+        id: schoolYears.id,
+        nome: schoolYears.nome,
+        data_inicio: schoolYears.data_inicio,
+        data_fim: schoolYears.data_fim,
+        ativo: schoolYears.ativo,
+      });
+
+    return { success: true, data: created };
   } catch {
     return { success: false, error: "Erro ao criar ano letivo." };
   }
-
-  return { success: true };
 }
 
 export async function toggleSchoolYear(id: string): Promise<ActionResult> {
@@ -348,37 +402,28 @@ export async function saveTemplate(input: {
 }): Promise<ActionResult> {
   await requireAuth();
 
-  const existing = await db.query.decisionTemplates.findFirst({
-    columns: { id: true },
-    where: eq(decisionTemplates.tipo, input.tipo),
-  });
-
   try {
-    if (existing) {
-      await db
-        .update(decisionTemplates)
-        .set({
-          cabecalho: input.cabecalho,
-          corpo: input.corpo,
-          rodape: input.rodape,
-          updated_at: new Date().toISOString(),
-        })
-        .where(eq(decisionTemplates.id, existing.id));
-    } else {
-      await db.insert(decisionTemplates).values({
+    // Upsert sobre a unicidade de `tipo` (decision_templates_tipo_idx):
+    // atômico, sem a janela do padrão consultar-depois-inserir.
+    await db
+      .insert(decisionTemplates)
+      .values({
         tipo: input.tipo,
         cabecalho: input.cabecalho,
         corpo: input.corpo,
         rodape: input.rodape,
+      })
+      .onConflictDoUpdate({
+        target: decisionTemplates.tipo,
+        set: {
+          cabecalho: input.cabecalho,
+          corpo: input.corpo,
+          rodape: input.rodape,
+          updated_at: new Date().toISOString(),
+        },
       });
-    }
   } catch {
-    return {
-      success: false,
-      error: existing
-        ? "Erro ao atualizar modelo."
-        : "Erro ao criar modelo.",
-    };
+    return { success: false, error: "Erro ao salvar modelo." };
   }
 
   return { success: true };

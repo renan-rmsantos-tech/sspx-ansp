@@ -168,7 +168,16 @@ describe("SchoolYearForm", () => {
 
   it("submits valid form and calls onCreated", async () => {
     const onCreated = vi.fn();
-    mockCreateSchoolYear.mockResolvedValueOnce({ success: true });
+    mockCreateSchoolYear.mockResolvedValueOnce({
+      success: true,
+      data: {
+        id: "year-9",
+        nome: "2026",
+        data_inicio: "2026-02-01",
+        data_fim: "2026-12-15",
+        ativo: false,
+      },
+    });
 
     render(<SchoolYearForm onCreated={onCreated} />);
 
@@ -200,7 +209,16 @@ describe("AnoLetivoClient integration", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("creating a school year adds it to the list", async () => {
-    mockCreateSchoolYear.mockResolvedValueOnce({ success: true });
+    mockCreateSchoolYear.mockResolvedValueOnce({
+      success: true,
+      data: {
+        id: "year-27",
+        nome: "2027",
+        data_inicio: "2027-02-01",
+        data_fim: "2027-12-15",
+        ativo: false,
+      },
+    });
 
     render(<AnoLetivoClient initialYears={[]} />);
 
