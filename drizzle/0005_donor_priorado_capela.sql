@@ -1,0 +1,1 @@
+ALTER TABLE "donor_pledges" ADD COLUMN "priorado_capela" text;

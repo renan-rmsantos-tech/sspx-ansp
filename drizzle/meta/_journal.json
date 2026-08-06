@@ -36,6 +36,13 @@
       "when": 1786028636548,
       "tag": "0004_blushing_princess_powerful",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786052388201,
+      "tag": "0005_donor_priorado_capela",
+      "breakpoints": true
     }
   ]
 }
