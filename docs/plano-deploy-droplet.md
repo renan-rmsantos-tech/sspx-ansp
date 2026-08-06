@@ -203,9 +203,20 @@ requer o superusuário `postgres_admin`), contagens de todas as tabelas
 idênticas à base viva e os 15 arquivos do `uploads.tar` batendo com
 `documents`. Repetir o teste após mudanças estruturais no schema ou no script.
 
-Para enviar off-site, o padrão do droplet é o DigitalOcean Spaces (ver §5 e §7
-do runbook do catechism) — basta um `aws s3 cp` do arquivo cifrado ao final do
-script.
+**Off-site configurado (2026-08-06)**: o final do `backup.sh` envia o arquivo
+cifrado para o DigitalOcean Spaces (`s3://rmsantos-backup/ansp/`, região
+`nyc3`) usando o CLI da AWS via Docker (`amazon/aws-cli`) apontado para o
+endpoint do Spaces — nada precisa ser instalado no droplet. Credenciais em
+`SPACES_KEY`/`SPACES_SECRET`/`SPACES_BUCKET`/`SPACES_REGION` no `.env`; a
+chave é restrita ao bucket (não lista nem cria buckets, nem altera lifecycle
+rules), por isso a retenção remota (90 dias, `RETENTION_REMOTE_DAYS`) é feita
+pelo próprio script comparando o timestamp embutido no nome do arquivo.
+Ciclo completo testado: upload, download do bucket e decifragem com a
+`BACKUP_PASSPHRASE`.
+
+> A `BACKUP_PASSPHRASE` só existe no `.env` do droplet — guarde uma cópia num
+> gerenciador de senhas: sem ela os backups (locais e do Spaces) são
+> indecifráveis.
 
 ## Operação do dia a dia
 
