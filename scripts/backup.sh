@@ -18,14 +18,21 @@ BACKUP_DIR=${BACKUP_DIR:-$HOME/backups/ansp}
 RETENTION_DAYS=${RETENTION_DAYS:-30}
 STAMP=$(date -u '+%Y%m%dT%H%M%SZ')
 
+# Reaproveita o .env do deploy, onde BACKUP_PASSPHRASE e DATABASE_URL já
+# estão configurados — precisa vir antes das checagens abaixo.
+if { [ -z "${BACKUP_PASSPHRASE:-}" ] || [ -z "${DATABASE_URL:-}" ]; } \
+    && [ -f ./.env ]; then
+  set -a; . ./.env; set +a
+fi
+
 if [ -z "${BACKUP_PASSPHRASE:-}" ]; then
   echo "ERRO: BACKUP_PASSPHRASE não definido (exporte ou coloque no .env)." >&2
   exit 1
 fi
 
 if [ -z "${DATABASE_URL:-}" ]; then
-  # Reaproveita o .env do deploy, onde o DATABASE_URL já está configurado.
-  set -a; . ./.env; set +a
+  echo "ERRO: DATABASE_URL não definido (exporte ou coloque no .env)." >&2
+  exit 1
 fi
 
 mkdir -p "$BACKUP_DIR"
