@@ -260,6 +260,7 @@ html:has(.ansp-landing) { scroll-behavior: smooth; }
 /* ══════════ FOOTER ══════════ */
 .ansp-landing .footer { background: var(--navy-deep); color: oklch(80% 0.03 250); padding: 64px 0 40px; }
 .ansp-landing .footer-top { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 48px; padding-bottom: 40px; border-bottom: 1px solid oklch(34% 0.04 250); }
+.ansp-landing .footer-brand-col { display: flex; flex-direction: column; gap: 28px; }
 .ansp-landing .footer-brand { display: flex; gap: 16px; align-items: flex-start; }
 .ansp-landing .footer-brand .seal { width: 56px; height: 56px; flex-shrink: 0; }
 .ansp-landing .footer-brand .fb-name { font: 600 18px/1.2 var(--font-display); color: oklch(95% 0.02 85); margin-bottom: 6px; }
@@ -269,12 +270,11 @@ html:has(.ansp-landing) { scroll-behavior: smooth; }
 .ansp-landing .footer-col a { font: 400 14px/1.4 var(--font-body); color: oklch(80% 0.03 250); text-decoration: none; }
 .ansp-landing .footer-col a:hover { color: #fff; }
 
-/* FSSPX block */
-.ansp-landing .fsspx { display: flex; align-items: center; gap: 16px; padding-top: 32px; }
-.ansp-landing .fsspx-logo { width: 72px; height: 72px; flex-shrink: 0; display: grid; place-items: center; }
+/* FSSPX affiliation */
+.ansp-landing .fsspx { display: flex; align-items: center; gap: 12px; }
+.ansp-landing .fsspx-logo { width: 44px; height: 44px; flex-shrink: 0; display: grid; place-items: center; }
 .ansp-landing .fsspx-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
-.ansp-landing .fsspx-text .fsspx-name { font: 600 14px/1.3 var(--font-display); color: oklch(92% 0.02 85); }
-.ansp-landing .fsspx-text .fsspx-sub { font: 400 12px/1.5 var(--font-body); color: oklch(70% 0.03 250); max-width: 44ch; margin-top: 3px; }
+.ansp-landing .fsspx-name { font: 600 13.5px/1.4 var(--font-display); color: oklch(90% 0.02 85); max-width: 24ch; }
 
 .ansp-landing .footer-bottom { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-top: 28px; }
 .ansp-landing .footer-bottom p { font: 400 12.5px/1.5 var(--font-body); color: oklch(64% 0.03 250); }
@@ -601,7 +601,7 @@ export default function LandingPage() {
       <footer className="footer">
         <div className="shell">
           <div className="footer-top">
-            <div>
+            <div className="footer-brand-col">
               <div className="footer-brand">
                 <svg className="seal" viewBox="0 0 220 220" role="img" aria-label="Selo da Arca">
                   <use href="#seal-art" />
@@ -614,35 +614,29 @@ export default function LandingPage() {
                   </p>
                 </div>
               </div>
+              <div className="fsspx">
+                <div className="fsspx-logo">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/mqjmgzod-logo.png" alt="Fraternidade Sacerdotal São Pio X (FSSPX)" />
+                </div>
+                <div className="fsspx-name">Fraternidade Sacerdotal São Pio X</div>
+              </div>
             </div>
             <div className="footer-col">
               <h4>Navegação</h4>
               <ul>
                 <li><a href="#missao">Quem somos</a></li>
                 <li><a href="#solicitar">Solicitar bolsa</a></li>
-                <li><a href="/benfeitor">Seja um benfeitor</a></li>
                 <li><a href="#contato">Contato</a></li>
               </ul>
             </div>
             <div className="footer-col">
-              <h4>Solicitações</h4>
+              <h4>Acesso rápido</h4>
               <ul>
                 <li><a href="/form">Formulário de bolsa</a></li>
                 <li><a href="/benfeitor">Seja um benfeitor</a></li>
                 <li><a href="/admin">Área administrativa</a></li>
               </ul>
-            </div>
-          </div>
-
-          {/* FSSPX */}
-          <div className="fsspx">
-            <div className="fsspx-logo">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/mqjmgzod-logo.png" alt="Fraternidade Sacerdotal São Pio X (FSSPX)" />
-            </div>
-            <div className="fsspx-text">
-              <div className="fsspx-name">Fraternidade Sacerdotal São Pio X</div>
-              <div className="fsspx-sub">Orientação espiritual da Arca Nossa Senhora da Providência.</div>
             </div>
           </div>
 
