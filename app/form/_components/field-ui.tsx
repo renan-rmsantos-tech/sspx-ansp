@@ -28,10 +28,10 @@ export function inputClass(hasError?: boolean): string {
   return `w-full rounded-md border px-3.5 py-2.5 text-[15px] text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/20 ${fieldBorder(hasError)}`;
 }
 
-export function FieldError({ error }: { error?: string }) {
+export function FieldError({ error, id }: { error?: string; id?: string }) {
   if (!error) return null;
   return (
-    <p className="mt-1 text-xs font-medium text-danger" role="alert">
+    <p id={id} className="mt-1 text-xs font-medium text-danger" role="alert">
       {error}
     </p>
   );

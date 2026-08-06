@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -87,11 +87,58 @@ const NAV_SECTIONS = [
 export function Sidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const asideRef = useRef<HTMLElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+
+  // Menu mobile aberto se comporta como diálogo: foco entra no menu, Tab
+  // circula dentro dele, Escape fecha e devolve o foco ao botão.
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    const aside = asideRef.current;
+    if (!aside) return;
+
+    const focusables = () =>
+      Array.from(
+        aside.querySelectorAll<HTMLElement>("a[href], button:not([disabled])")
+      );
+
+    focusables()[0]?.focus();
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setMobileOpen(false);
+        toggleRef.current?.focus();
+        return;
+      }
+
+      if (e.key !== "Tab") return;
+
+      const items = focusables();
+      if (items.length === 0) return;
+
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+
+      if (e.shiftKey && (active === first || !aside.contains(active))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (active === last || !aside.contains(active))) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [mobileOpen]);
 
   return (
     <>
       {/* Mobile hamburger button */}
       <button
+        ref={toggleRef}
         type="button"
         aria-label="Abrir menu"
         aria-expanded={mobileOpen}
@@ -124,6 +171,7 @@ export function Sidebar() {
 
       {/* Sidebar */}
       <aside
+        ref={asideRef}
         className={cn(
           "sticky top-[53px] z-[var(--z-dropdown)] h-[calc(100vh-53px)] w-[250px] shrink-0 overflow-y-auto border-r border-border bg-surface py-5",
           "max-md:fixed max-md:left-0 max-md:top-[53px] max-md:z-[var(--z-modal)] max-md:h-[calc(100vh-53px)] max-md:border-r max-md:transition-transform max-md:duration-200 motion-reduce:max-md:transition-none",

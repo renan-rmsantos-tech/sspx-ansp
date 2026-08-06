@@ -80,6 +80,8 @@ export function Step5Vehicles({ data, onChange, errors }: Step5Props) {
                   <input
                     type="text"
                     placeholder="Marca"
+                    aria-label={`Marca do veículo ${i + 1}`}
+                    aria-invalid={marcaError ? true : undefined}
                     value={v.marca}
                     onChange={(e) => updateVehicle(i, "marca", e.target.value)}
                     className={`w-full rounded-md border px-3 py-2.5 text-sm text-fg outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 ${fieldBorder(!!marcaError)}`}
@@ -88,6 +90,8 @@ export function Step5Vehicles({ data, onChange, errors }: Step5Props) {
                   <input
                     type="text"
                     placeholder="Modelo"
+                    aria-label={`Modelo do veículo ${i + 1}`}
+                    aria-invalid={modeloError ? true : undefined}
                     value={v.modelo}
                     onChange={(e) => updateVehicle(i, "modelo", e.target.value)}
                     className={`w-full rounded-md border px-3 py-2.5 text-sm text-fg outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 ${fieldBorder(!!modeloError)}`}
@@ -96,6 +100,8 @@ export function Step5Vehicles({ data, onChange, errors }: Step5Props) {
                   <input
                     type="text"
                     placeholder="Ano"
+                    aria-label={`Ano do veículo ${i + 1}`}
+                    aria-invalid={anoError ? true : undefined}
                     value={v.ano}
                     onChange={(e) => updateVehicle(i, "ano", e.target.value)}
                     className={`w-full rounded-md border px-3 py-2.5 text-sm text-fg outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 ${fieldBorder(!!anoError)}`}
@@ -164,6 +170,8 @@ export function Step5Vehicles({ data, onChange, errors }: Step5Props) {
                   <input
                     type="text"
                     placeholder="Nome"
+                    aria-label={`Nome do benfeitor indicado ${i + 1}`}
+                    aria-invalid={nomeError ? true : undefined}
                     value={b.nome}
                     onChange={(e) => updateBenefactor(i, "nome", e.target.value)}
                     className={`w-full rounded-md border px-3 py-2.5 text-sm text-fg outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 ${fieldBorder(!!nomeError)}`}
@@ -175,6 +183,8 @@ export function Step5Vehicles({ data, onChange, errors }: Step5Props) {
                   <input
                     type="email"
                     placeholder="email@exemplo.com"
+                    aria-label={`E-mail do benfeitor indicado ${i + 1}`}
+                    aria-invalid={emailError ? true : undefined}
                     value={b.email}
                     onChange={(e) =>
                       updateBenefactor(i, "email", e.target.value)

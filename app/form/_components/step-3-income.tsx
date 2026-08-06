@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import type { FormData } from "./form-types";
 import { parseMoney, formatMoney } from "./form-types";
 import { FileUpload } from "./file-upload";
@@ -63,13 +64,18 @@ export function Step3Income({ data, onChange, errors }: Step3Props) {
         <div className="my-6 h-px bg-border" />
 
         <div className="mb-5">
-          <label className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg">
+          <label
+            htmlFor="pessoas-domicilio"
+            className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg"
+          >
             Pessoas no grupo familiar
             <RequiredMark />
           </label>
           <input
+            id="pessoas-domicilio"
             type="number"
             min="1"
+            aria-invalid={errors.pessoas_domicilio ? true : undefined}
             value={data.pessoas_domicilio}
             onChange={(e) => onChange({ pessoas_domicilio: e.target.value })}
             placeholder="Total de pessoas"
@@ -114,13 +120,20 @@ function MoneyField({
   onChange: (v: string) => void;
   testId?: string;
 }) {
+  const id = useId();
+
   return (
     <div className="mb-5">
-      <label className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg">
+      <label
+        htmlFor={id}
+        className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg"
+      >
         {label}
       </label>
       <input
+        id={id}
         type="text"
+        inputMode="decimal"
         placeholder="0,00"
         value={value}
         onChange={(e) => onChange(e.target.value)}

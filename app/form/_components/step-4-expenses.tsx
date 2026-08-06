@@ -44,11 +44,16 @@ export function Step4Expenses({ data, onChange, errors }: Step4Props) {
 
         {EXPENSE_FIELDS.map((f) => (
           <div key={f.key} className="mb-5">
-            <label className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg">
+            <label
+              htmlFor={f.testId}
+              className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg"
+            >
               {f.label}
             </label>
             <input
+              id={f.testId}
               type="text"
+              inputMode="decimal"
               placeholder="0,00"
               value={data[f.key]}
               onChange={(e) => onChange({ [f.key]: e.target.value })}

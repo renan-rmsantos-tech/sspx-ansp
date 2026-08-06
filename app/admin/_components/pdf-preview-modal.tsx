@@ -10,6 +10,9 @@ interface PdfPreviewModalProps {
 }
 
 // Visualização de PDF em overlay, com opções de imprimir e baixar.
+// Usa <dialog> nativo: showModal() prende o foco dentro do diálogo e o
+// devolve ao elemento que o abriu quando fechado — teclado não alcança o
+// conteúdo atrás do overlay.
 export function PdfPreviewModal({
   pdfBase64,
   filename,
@@ -17,6 +20,7 @@ export function PdfPreviewModal({
   onClose,
 }: PdfPreviewModalProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   const url = useMemo(() => {
     const bytes = Uint8Array.from(atob(pdfBase64), (c) => c.charCodeAt(0));
@@ -24,17 +28,14 @@ export function PdfPreviewModal({
     return URL.createObjectURL(blob);
   }, [pdfBase64]);
 
-  // Libera o blob ao desmontar e fecha com Esc.
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      URL.revokeObjectURL(url);
-    };
-  }, [url, onClose]);
+    const dialog = dialogRef.current;
+    if (dialog && !dialog.open) {
+      dialog.showModal();
+    }
+    // Libera o blob ao desmontar.
+    return () => URL.revokeObjectURL(url);
+  }, [url]);
 
   const handlePrint = () => {
     const frame = iframeRef.current;
@@ -52,17 +53,22 @@ export function PdfPreviewModal({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex flex-col bg-black/60 p-4 sm:p-8"
-      role="dialog"
-      aria-modal="true"
-      aria-label={title}
-      data-testid="pdf-preview-modal"
+    <dialog
+      ref={dialogRef}
+      onClose={onClose}
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
       onClick={(e) => {
+        // Clique no backdrop (o próprio <dialog>) fecha; cliques no conteúdo não.
         if (e.target === e.currentTarget) onClose();
       }}
+      className="admin-modal fixed inset-0 m-auto h-[min(90vh,60rem)] w-[min(94vw,56rem)] overflow-hidden rounded-lg border border-border bg-surface p-0 text-fg shadow-none backdrop:bg-[oklch(22%_0.06_250/0.32)]"
+      aria-label={title}
+      data-testid="pdf-preview-modal"
     >
-      <div className="mx-auto flex h-full w-full max-w-4xl flex-col overflow-hidden rounded-lg bg-surface shadow-xl">
+      <div className="flex h-full w-full flex-col overflow-hidden bg-surface">
         <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
           <h2 className="truncate text-sm font-semibold text-fg">{title}</h2>
           <div className="flex flex-shrink-0 gap-2">
@@ -101,6 +107,6 @@ export function PdfPreviewModal({
           data-testid="pdf-preview-frame"
         />
       </div>
-    </div>
+    </dialog>
   );
 }

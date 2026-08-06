@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import type { FormData, OtherChild } from "./form-types";
 import { FileUpload } from "./file-upload";
 import type { UploadedFile } from "./file-upload";
@@ -56,12 +57,16 @@ export function Step1Applicant({ data, onChange, errors }: Step1Props) {
         </p>
 
         <div className="mb-5">
-          <label className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg">
+          <label
+            htmlFor="escola-select"
+            className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg"
+          >
             Escola<RequiredMark />
           </label>
           {/* Por enquanto há apenas uma escola; o campo fica fixo e não editável.
               Futuramente outras escolas poderão ser adicionadas aqui. */}
           <select
+            id="escola-select"
             value={data.escola}
             disabled
             aria-readonly="true"
@@ -275,6 +280,8 @@ export function Step1Applicant({ data, onChange, errors }: Step1Props) {
                   <input
                     type="text"
                     placeholder="Nome completo"
+                    aria-label={`Nome completo do filho ${i + 1}`}
+                    aria-invalid={nomeError ? true : undefined}
                     value={child.nome}
                     onChange={(e) => updateChild(i, "nome", e.target.value)}
                     className={`w-full rounded-md border px-3 py-2.5 text-[15px] text-fg outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 ${fieldBorder(!!nomeError)}`}
@@ -283,6 +290,8 @@ export function Step1Applicant({ data, onChange, errors }: Step1Props) {
                   <input
                     type="text"
                     placeholder="CPF"
+                    aria-label={`CPF do filho ${i + 1}`}
+                    aria-invalid={cpfError ? true : undefined}
                     value={child.cpf}
                     onChange={(e) => updateChild(i, "cpf", e.target.value)}
                     className={`w-full rounded-md border px-3 py-2.5 text-[15px] text-fg outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 ${fieldBorder(!!cpfError)}`}
@@ -290,6 +299,8 @@ export function Step1Applicant({ data, onChange, errors }: Step1Props) {
                   />
                   <input
                     type="date"
+                    aria-label={`Data de nascimento do filho ${i + 1}`}
+                    aria-invalid={nascError ? true : undefined}
                     value={child.nascimento}
                     onChange={(e) => updateChild(i, "nascimento", e.target.value)}
                     className={`w-full rounded-md border px-3 py-2.5 text-[15px] text-fg outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 ${fieldBorder(!!nascError)}`}
@@ -342,21 +353,30 @@ function Field({
   type?: string;
   testId?: string;
 }) {
+  const id = useId();
+  const errorId = `${id}-error`;
+
   return (
     <div className="mb-5">
-      <label className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg">
+      <label
+        htmlFor={id}
+        className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg"
+      >
         {label}
         {required && <RequiredMark />}
       </label>
       <input
+        id={id}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
         className={`w-full rounded-md border px-3.5 py-2.5 text-[15px] text-fg outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/20 ${fieldBorder(!!error)}`}
         data-testid={testId}
       />
-      <FieldError error={error} />
+      <FieldError error={error} id={errorId} />
     </div>
   );
 }

@@ -86,12 +86,17 @@ export function Step2Students({ data, onChange, errors }: Step2Props) {
 
               <div className="mb-4 grid grid-cols-2 gap-3.5 max-sm:grid-cols-1">
                 <div className="col-span-full max-sm:col-span-1">
-                  <label className="mb-1 block text-xs font-medium tracking-wide text-muted">
+                  <label
+                    htmlFor={`aluno-nome-${i}`}
+                    className="mb-1 block text-xs font-medium tracking-wide text-muted"
+                  >
                     Nome completo do aluno<RequiredMark />
                   </label>
                   <input
+                    id={`aluno-nome-${i}`}
                     type="text"
                     placeholder="Nome completo"
+                    aria-invalid={errors[`aluno_${i}_nome`] ? true : undefined}
                     value={aluno.nome}
                     onChange={(e) =>
                       updateStudent(i, "nome", e.target.value)
@@ -102,12 +107,17 @@ export function Step2Students({ data, onChange, errors }: Step2Props) {
                   <FieldError error={errors[`aluno_${i}_nome`]} />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium tracking-wide text-muted">
+                  <label
+                    htmlFor={`aluno-cpf-${i}`}
+                    className="mb-1 block text-xs font-medium tracking-wide text-muted"
+                  >
                     CPF do aluno<RequiredMark />
                   </label>
                   <input
+                    id={`aluno-cpf-${i}`}
                     type="text"
                     placeholder="000.000.000-00"
+                    aria-invalid={errors[`aluno_${i}_cpf`] ? true : undefined}
                     value={aluno.cpf}
                     onChange={(e) =>
                       updateStudent(i, "cpf", e.target.value)
@@ -118,10 +128,15 @@ export function Step2Students({ data, onChange, errors }: Step2Props) {
                   <FieldError error={errors[`aluno_${i}_cpf`]} />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium tracking-wide text-muted">
+                  <label
+                    htmlFor={`aluno-serie-${i}`}
+                    className="mb-1 block text-xs font-medium tracking-wide text-muted"
+                  >
                     Série<RequiredMark />
                   </label>
                   <select
+                    id={`aluno-serie-${i}`}
+                    aria-invalid={errors[`aluno_${i}_serie`] ? true : undefined}
                     value={aluno.serie}
                     onChange={(e) =>
                       updateStudent(i, "serie", e.target.value)
@@ -139,12 +154,18 @@ export function Step2Students({ data, onChange, errors }: Step2Props) {
                   <FieldError error={errors[`aluno_${i}_serie`]} />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium tracking-wide text-muted">
+                  <label
+                    htmlFor={`aluno-mensalidade-${i}`}
+                    className="mb-1 block text-xs font-medium tracking-wide text-muted"
+                  >
                     Mensalidade (R$)<RequiredMark />
                   </label>
                   <input
+                    id={`aluno-mensalidade-${i}`}
                     type="text"
+                    inputMode="decimal"
                     placeholder="0,00"
+                    aria-invalid={errors[`aluno_${i}_mensalidade`] ? true : undefined}
                     value={aluno.mensalidade}
                     onChange={(e) =>
                       updateStudent(i, "mensalidade", e.target.value)
@@ -205,13 +226,15 @@ export function Step2Students({ data, onChange, errors }: Step2Props) {
             </span>
           </div>
           <div className="my-4 flex flex-wrap items-center gap-2.5">
-            <span className="text-[15px] text-muted">
+            <label htmlFor="desconto-pct" className="text-[15px] text-muted">
               Desconto solicitado:<RequiredMark />
-            </span>
+            </label>
             <input
+              id="desconto-pct"
               type="number"
               min="0"
               max="100"
+              aria-invalid={errors.desconto_solicitado ? true : undefined}
               value={data.desconto_solicitado}
               onChange={(e) =>
                 onChange({ desconto_solicitado: e.target.value })

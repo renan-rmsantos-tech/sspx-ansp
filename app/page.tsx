@@ -255,7 +255,6 @@ html:has(.ansp-landing) { scroll-behavior: smooth; }
 .ansp-landing .ci .val { font: 400 15px/1.55 var(--font-body); color: var(--fg); }
 .ansp-landing .ci .val a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--border); }
 .ansp-landing .ci .val a:hover { border-color: var(--gold); }
-.ansp-landing .placeholder-note { font: 400 12px/1.4 var(--font-mono); color: var(--muted); margin-top: 6px; }
 @media (max-width: 760px) { .ansp-landing .contato-grid { grid-template-columns: 1fr; } }
 
 /* ══════════ FOOTER ══════════ */
@@ -588,12 +587,10 @@ export default function LandingPage() {
                   <path d="M4 7l8 6 8-6" />
                 </svg>
               </div>
-              <div className="lbl">E-mail e telefone</div>
+              <div className="lbl">E-mail</div>
               <div className="val">
                 <a href="mailto:contato@arcaprovidencia.org">contato@arcaprovidencia.org</a>
-                <br />(—) ————-————
               </div>
-              <p className="placeholder-note">— a confirmar (canais oficiais)</p>
             </div>
           </div>
         </div>
