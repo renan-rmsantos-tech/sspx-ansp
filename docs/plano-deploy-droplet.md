@@ -16,7 +16,7 @@ push-to-deploy). Este documento cobre só o que é específico do sspx-ansp.
 | 2. Dockerização (Dockerfile, compose, health check) | **feito** |
 | 3. Primeira publicação no droplet | **feito** — no ar em https://ansp.apps.rmsantos.tech |
 | 4. Push-to-deploy | **feito** — hook instalado, `deploy.healthUrl` configurado |
-| 5. Backup e operação | script pronto (`scripts/backup.sh`); **cron e teste de restauração pendentes** |
+| 5. Backup e operação | **feito** — cron semanal (dom 04:00 UTC) instalado; restauração testada em 2026-08-06 (dump + uploads conferidos numa base descartável) |
 
 ## O que mudou (fases 1 e 2)
 
@@ -188,12 +188,20 @@ documentos de identidade.
 ```bash
 cd /opt/apps/projects/sspx-ansp
 ./scripts/backup.sh
-( crontab -l 2>/dev/null; echo "23 3 * * * cd /opt/apps/projects/sspx-ansp && ./scripts/backup.sh >> /var/log/ansp-backup.log 2>&1" ) | crontab -
 ```
 
-**Teste a restauração** antes de considerar a fase concluída: descriptografar,
-restaurar o dump num banco descartável e conferir que os caminhos em `documents`
-batem com os arquivos do `uploads.tar`.
+Crons instalados no droplet (usuário `renan`; logs em `~/ansp-*.log`):
+
+```cron
+30 3 * * * docker exec sspx-ansp-ansp-1 npm run storage:cleanup >> /home/renan/ansp-cleanup.log 2>&1
+0 4 * * 0 cd /opt/apps/projects/sspx-ansp && ./scripts/backup.sh >> /home/renan/ansp-backup.log 2>&1
+```
+
+**Restauração testada em 2026-08-06**: decifrado com a `BACKUP_PASSPHRASE` do
+`.env`, dump restaurado sem erros numa base descartável (`CREATE DATABASE`
+requer o superusuário `postgres_admin`), contagens de todas as tabelas
+idênticas à base viva e os 15 arquivos do `uploads.tar` batendo com
+`documents`. Repetir o teste após mudanças estruturais no schema ou no script.
 
 Para enviar off-site, o padrão do droplet é o DigitalOcean Spaces (ver §5 e §7
 do runbook do catechism) — basta um `aws s3 cp` do arquivo cifrado ao final do
