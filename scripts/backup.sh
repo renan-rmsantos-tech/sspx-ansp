@@ -61,18 +61,36 @@ find "$BACKUP_DIR" -name 'ansp-*.tar.gz.gpg' -mtime "+$RETENTION_DAYS" -delete
 
 # Cópia off-site no DigitalOcean Spaces (protocolo S3), se configurado no .env.
 # O arquivo já sai cifrado daqui, então o bucket só guarda o pacote trancado.
-# Usa o CLI da AWS via Docker para não instalar nada no droplet; a retenção
-# remota é uma lifecycle rule no próprio bucket (expira ansp/ após 90 dias).
-if [ -n "${SPACES_KEY:-}" ] && [ -n "${SPACES_SECRET:-}" ] \
-    && [ -n "${SPACES_BUCKET:-}" ] && [ -n "${SPACES_REGION:-}" ]; then
-  echo "==> Enviando ao Spaces (s3://$SPACES_BUCKET/ansp/)"
+# Usa o CLI da AWS via Docker para não instalar nada no droplet. A retenção
+# remota é feita aqui mesmo (a chave é restrita ao bucket e não pode criar
+# lifecycle rules): o nome do arquivo embute o timestamp UTC, então basta
+# comparar com o corte e apagar os antigos.
+RETENTION_REMOTE_DAYS=${RETENTION_REMOTE_DAYS:-90}
+
+aws_spaces() {
   docker run --rm \
     -e AWS_ACCESS_KEY_ID="$SPACES_KEY" \
     -e AWS_SECRET_ACCESS_KEY="$SPACES_SECRET" \
     -v "$BACKUP_DIR:/backup:ro" \
-    amazon/aws-cli s3 cp "/backup/ansp-$STAMP.tar.gz.gpg" \
-    "s3://$SPACES_BUCKET/ansp/ansp-$STAMP.tar.gz.gpg" \
+    amazon/aws-cli "$@" \
     --endpoint-url "https://$SPACES_REGION.digitaloceanspaces.com"
+}
+
+if [ -n "${SPACES_KEY:-}" ] && [ -n "${SPACES_SECRET:-}" ] \
+    && [ -n "${SPACES_BUCKET:-}" ] && [ -n "${SPACES_REGION:-}" ]; then
+  echo "==> Enviando ao Spaces (s3://$SPACES_BUCKET/ansp/)"
+  aws_spaces s3 cp "/backup/ansp-$STAMP.tar.gz.gpg" \
+    "s3://$SPACES_BUCKET/ansp/ansp-$STAMP.tar.gz.gpg"
+
+  echo "==> Removendo do Spaces backups com mais de $RETENTION_REMOTE_DAYS dias"
+  CUTOFF=$(date -u -d "$RETENTION_REMOTE_DAYS days ago" '+%Y%m%dT%H%M%SZ')
+  aws_spaces s3 ls "s3://$SPACES_BUCKET/ansp/" | awk '{print $NF}' |
+    grep -E '^ansp-[0-9TZ]+\.tar\.gz\.gpg$' | while read -r f; do
+      stamp=${f#ansp-}; stamp=${stamp%.tar.gz.gpg}
+      if [ "$stamp" \< "$CUTOFF" ]; then
+        aws_spaces s3 rm "s3://$SPACES_BUCKET/ansp/$f"
+      fi
+    done
 else
   echo "==> SPACES_* não configurado; pulando cópia off-site"
 fi
