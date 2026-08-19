@@ -81,6 +81,7 @@ const collaborationSchema = z.object({
 
 export const applicationSubmissionSchema = z.object({
   escola: z.string().min(1, "Nome da escola é obrigatório"),
+  declaracao_vaga: docsField,
 
   pai: z.object({
     nome: z.string().min(1, "Nome do pai é obrigatório"),

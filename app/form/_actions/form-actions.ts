@@ -275,6 +275,7 @@ function collectDocumentRows(
     }
   };
 
+  addDocs(data.declaracao_vaga, "declaracao_vaga");
   addDocs(data.pai.documentos, "rg_pai");
   addDocs(data.mae.documentos, "rg_mae");
   if (data.certidao_casamento) addDocs(data.certidao_casamento, "certidao");

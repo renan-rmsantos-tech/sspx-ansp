@@ -43,6 +43,7 @@ import {
 function validInput() {
   return {
     escola: "Colégio São José",
+    declaracao_vaga: ["pending/uuid/declaracao_vaga/declaracao.pdf"],
     pai: {
       nome: "João da Silva",
       rg: "12.345.678-9",
@@ -142,6 +143,21 @@ describe("submitApplication", () => {
     const studentDoc = rows.find((row) => row.categoria === "rg_aluno");
 
     expect(studentDoc?.student_id).toBe("student-1");
+  });
+
+  it("stores the school vacancy declaration with its own category", async () => {
+    await submitApplication(validInput());
+
+    const rows = insertedFor(documents) as Array<{
+      categoria: string;
+      storage_path: string;
+    }>;
+    expect(rows).toContainEqual(
+      expect.objectContaining({
+        categoria: "declaracao_vaga",
+        storage_path: "applications/app-1/declaracao_vaga/declaracao.pdf",
+      })
+    );
   });
 
   it("moves uploaded files from pending/ into the application folder", async () => {

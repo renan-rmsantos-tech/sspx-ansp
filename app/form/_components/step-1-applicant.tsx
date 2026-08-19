@@ -81,6 +81,27 @@ export function Step1Applicant({ data, onChange, errors }: Step1Props) {
           </select>
         </div>
 
+        <div className="mb-5">
+          <label className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg">
+            Declaração de vaga do colégio
+            {SCHOLARSHIP_UPLOADS_ENABLED && <RequiredMark />}
+          </label>
+          <p className="mb-2 text-xs text-muted">
+            Envie o documento emitido pelo colégio confirmando a disponibilidade
+            da vaga.
+          </p>
+          <FileUpload
+            label="para enviar a declaração de vaga do colégio"
+            category="declaracao_vaga"
+            files={data.declaracao_vaga}
+            onChange={(f) => updateFiles("declaracao_vaga", f)}
+            required={SCHOLARSHIP_UPLOADS_ENABLED}
+            disabled={!SCHOLARSHIP_UPLOADS_ENABLED}
+            disabledMessage={SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE}
+            error={errors.declaracao_vaga}
+          />
+        </div>
+
         <div className="my-6 h-px bg-border" />
 
         <Field

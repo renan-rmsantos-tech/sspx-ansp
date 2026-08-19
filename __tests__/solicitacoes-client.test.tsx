@@ -119,6 +119,14 @@ describe("SolicitacoesClient", () => {
         benefactors: [{ id: "b1", nome: "Ana Costa", email: "ana@email.com" }],
         documents: [
           {
+            id: "d0",
+            application_id: "app-1",
+            categoria: "declaracao_vaga",
+            nome_arquivo: "declaracao.pdf",
+            storage_path: "pending/declaracao.pdf",
+            mime_type: "application/pdf",
+          },
+          {
             id: "d1",
             application_id: "app-1",
             categoria: "rg_pai",
@@ -379,6 +387,14 @@ describe("SolicitacoesClient", () => {
 
     expect(screen.getByTestId("preview-d1")).toBeInTheDocument();
     expect(screen.getByTestId("preview-d1")).toHaveTextContent("Visualizar");
+  });
+
+  it("shows the school vacancy declaration label in the document list", async () => {
+    render(<SolicitacoesClient initialApplications={[makeApp()]} />);
+
+    await expandCard();
+
+    expect(screen.getByText("Declaração de Vaga do Colégio:")).toBeInTheDocument();
   });
 
   it("document preview opens PDF in modal", async () => {

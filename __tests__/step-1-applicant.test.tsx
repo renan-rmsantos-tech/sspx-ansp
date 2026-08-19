@@ -105,9 +105,18 @@ describe("Step1Applicant", () => {
 
   it("renders upload areas for parent documents", () => {
     renderStep1();
+    expect(screen.getByText("Declaração de vaga do colégio")).toBeInTheDocument();
     expect(screen.getByText(/RG ou CPF do pai/)).toBeInTheDocument();
     expect(screen.getByText(/RG ou CPF da mãe/)).toBeInTheDocument();
     expect(screen.getByText(/comprovante de endereço/)).toBeInTheDocument();
+  });
+
+  it("places the school vacancy declaration as the first upload option", () => {
+    renderStep1();
+    const uploadAreas = screen.getAllByTestId("upload-area");
+    expect(uploadAreas[0]).toHaveTextContent(
+      "para enviar a declaração de vaga do colégio"
+    );
   });
 
   it("updates mae_cpf on change", () => {

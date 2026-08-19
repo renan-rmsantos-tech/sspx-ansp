@@ -50,18 +50,6 @@ export function FileUpload({
   const inputId = useId();
   const [dragOver, setDragOver] = useState(false);
 
-  if (disabled) {
-    return (
-      <div
-        className="rounded-md border border-dashed border-border bg-bg px-3 py-3 text-[13px] text-muted"
-        data-testid="upload-disabled"
-        role="status"
-      >
-        {disabledMessage}
-      </div>
-    );
-  }
-
   // Uploads são assíncronos: cada conclusão atualiza a lista a partir do
   // estado mais recente (via ref), não do snapshot da closure — remover um
   // arquivo ou anexar outro durante um envio não é sobrescrito.
@@ -168,6 +156,18 @@ export function FileUpload({
     },
     [patchFiles]
   );
+
+  if (disabled) {
+    return (
+      <div
+        className="rounded-md border border-dashed border-border bg-bg px-3 py-3 text-[13px] text-muted"
+        data-testid="upload-disabled"
+        role="status"
+      >
+        {disabledMessage}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-1">

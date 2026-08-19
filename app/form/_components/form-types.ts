@@ -38,6 +38,7 @@ export interface Collaboration {
 
 export interface FormData {
   escola: string;
+  declaracao_vaga: UploadedFile[];
   pai_nome: string;
   pai_rg: string;
   pai_cpf: string;
@@ -77,6 +78,7 @@ export const INITIAL_FORM_DATA: FormData = {
   // Por enquanto há apenas uma escola; o campo deixou de ser escolhido no
   // formulário e usa este valor padrão. Futuramente poderá voltar a ser select.
   escola: "Colégio São José",
+  declaracao_vaga: [],
   pai_nome: "",
   pai_rg: "",
   pai_cpf: "",

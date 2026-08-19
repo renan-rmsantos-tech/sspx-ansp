@@ -7,6 +7,7 @@ import {
 function validApplication(): ApplicationSubmission {
   return {
     escola: "Colégio São José",
+    declaracao_vaga: ["pending/uuid1/declaracao_vaga/declaracao.pdf"],
     pai: {
       nome: "João da Silva",
       rg: "12.345.678-9",

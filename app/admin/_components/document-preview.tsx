@@ -18,6 +18,7 @@ interface DocumentPreviewProps {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
+  declaracao_vaga: "Declaração de Vaga do Colégio",
   rg_pai: "RG do Pai",
   rg_mae: "RG da Mãe",
   certidao: "Certidão de Casamento",

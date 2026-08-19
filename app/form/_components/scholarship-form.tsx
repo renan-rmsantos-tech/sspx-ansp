@@ -51,6 +51,8 @@ function validateStep1(data: FormData): Record<string, string> {
   }
   if (!data.mae_profissao.trim()) errors.mae_profissao = M;
   if (SCHOLARSHIP_UPLOADS_ENABLED) {
+    const declaracaoVaga = docError(data.declaracao_vaga);
+    if (declaracaoVaga) errors.declaracao_vaga = declaracaoVaga;
     const docPai = docError(data.doc_pai);
     if (docPai) errors.doc_pai = docPai;
     const docMae = docError(data.doc_mae);
@@ -241,6 +243,9 @@ export function ScholarshipForm() {
 
     const payload: ApplicationSubmission = {
       escola: formData.escola,
+      declaracao_vaga: formData.declaracao_vaga
+        .filter((f) => f.path)
+        .map((f) => f.path),
       pai: {
         nome: formData.pai_nome,
         rg: formData.pai_rg,
