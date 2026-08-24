@@ -1,0 +1,476 @@
+apiVersion: compozy.loop/v1
+kind: Loop
+meta:
+    name: feature-delivery-pipeline
+    version: 4
+    description: Ciclo completo de feature com worktree, aprovações humanas, validação, revisão profunda e deploy.
+    catalog:
+        use_when: Quando uma feature precisa percorrer o ciclo completo com três aprovações humanas.
+        keywords:
+            - feature
+            - spec
+            - tasks
+            - review
+            - deploy
+        category: Engineering
+concurrency: forbid
+inputs:
+    analysis_agent:
+        type: agent
+        default: general
+    base_ref:
+        type: string
+        default: main
+    delivery_agent:
+        type: agent
+        default: general
+    feature_request:
+        type: string
+        required: true
+    implementer:
+        type: agent
+        default: code_implementer
+    reviewer:
+        type: agent
+        default: reviewer
+    slug:
+        type: string
+        required: true
+contract:
+    goal: Entregar {{ .inputs.slug }} da análise até uma revisão profunda limpa e, conforme decisão humana final, encerrar ou realizar deploy.
+    definition_of_done: Análise, Spec e tarefas aprovadas; implementação validada; revisão profunda com veredito SHIP; e decisão humana final respeitada, com deploy verificado quando escolhido.
+    constraints:
+        - Preservar mudanças não relacionadas.
+        - Não contornar testes, gates, segurança ou credenciais ausentes.
+        - Trabalhar no worktree dedicado após sua criação.
+    boundaries:
+        - Limitar a feature ao prompt fornecido em feature_request.
+        - Executar deploy somente após escolha humana explícita; sem essa escolha, finalizar sem deploy.
+    verification:
+        - id: completion_verified
+          type: agent-judge
+          agent: '{{ .inputs.reviewer }}'
+          rubric: 'Aprove somente se a revisão profunda terminou com SHIP e a decisão humana final foi respeitada. Se nodes.deployment_choice.output.action for finish, aprove quando nodes.finish_without_deploy.output.status for skipped_by_user. Se a ação for deploy, aprove somente quando nodes.deploy.output.status for deployed e houver evidência concreta de verificação do alvo. Decisão: {{ .nodes.deployment_choice.output }}; finalização: {{ .nodes.finish_without_deploy.output }}; deploy: {{ .nodes.deploy.output }}'
+    iteration_cap: 10
+    no_progress:
+        window: 3
+    budget:
+        tokens: 0
+        wall_clock_sec: 0
+        on_exceeded: escalate
+    terminal_states:
+        - done
+        - no-op
+        - blocked
+        - failed
+        - exhausted
+        - stalled
+        - canceled
+graph:
+    nodes:
+        - id: feature_analyse
+          class: action
+          kind: run-agent
+          retry:
+            max_attempts: 2
+            backoff:
+                base: 2s
+                max: 20s
+          params:
+            agent: '{{ .inputs.analysis_agent }}'
+            max_turns: 50
+            output_schema:
+                properties:
+                    analysis_path:
+                        type: string
+                    status:
+                        enum:
+                            - complete
+                            - blocked
+                        type: string
+                    summary:
+                        type: string
+                required:
+                    - status
+                    - summary
+                    - analysis_path
+                type: object
+            prompt: 'Analise profundamente a feature ''{{ .inputs.slug }}'': {{ .inputs.feature_request }}. Inspecione o repositório e suas instruções. Produza .compozy/tasks/{{ .inputs.slug }}/_analysis.md com objetivos, escopo, riscos, dependências, impactos e recomendação. Não implemente.'
+        - id: approve_analysis
+          class: control
+          kind: gate
+          criteria:
+            - id: human_analysis
+              type: human
+              prompt: 'Revise e aprove a análise de {{ .inputs.slug }} em {{ .nodes.feature_analyse.output.analysis_path }}. Resumo: {{ .nodes.feature_analyse.output.summary }}'
+          verdict_policy: revise_until_clean
+          on_result:
+            approval: escalate
+            blocked: halt
+            error: halt
+            fail: revise
+            invalid_output: halt
+            pass: continue
+            timeout: halt
+          max_revisions: 5
+        - id: create_worktree
+          class: action
+          kind: run-agent
+          retry:
+            max_attempts: 2
+            backoff:
+                base: 2s
+                max: 20s
+          params:
+            agent: '{{ .inputs.delivery_agent }}'
+            max_turns: 50
+            output_schema:
+                properties:
+                    status:
+                        enum:
+                            - ready
+                            - blocked
+                        type: string
+                    summary:
+                        type: string
+                    worktree_ref:
+                        type: string
+                required:
+                    - status
+                    - summary
+                    - worktree_ref
+                type: object
+            prompt: 'Crie ou reutilize com segurança um worktree Compozy pronto para {{ .inputs.slug }}, baseado em {{ .inputs.base_ref }}. Use as ferramentas nativas para listar, criar e inspecionar; aguarde ready. Nome: {{ .inputs.slug }}. Branch: feature/{{ .inputs.slug }}. Não remova worktrees.'
+        - id: create_specs
+          class: action
+          kind: run-agent
+          retry:
+            max_attempts: 2
+            backoff:
+                base: 2s
+                max: 20s
+          params:
+            agent: '{{ .inputs.delivery_agent }}'
+            environment:
+                mode: worktree
+                worktree_ref: '{{ .nodes.create_worktree.output.worktree_ref }}'
+            max_turns: 50
+            output_schema:
+                properties:
+                    spec_path:
+                        type: string
+                    status:
+                        enum:
+                            - complete
+                            - blocked
+                        type: string
+                    summary:
+                        type: string
+                required:
+                    - status
+                    - summary
+                    - spec_path
+                type: object
+            prompt: No worktree dedicado, crie a Spec unificada para {{ .inputs.slug }} a partir da análise e do pedido {{ .inputs.feature_request }}. Use obrigatoriamente cy-create-spec e produza _spec.md, _user_stories.md, _dx.md, _uiux.md quando aplicável e _tests.md. Não implemente.
+        - id: approve_specs
+          class: control
+          kind: gate
+          criteria:
+            - id: human_specs
+              type: human
+              prompt: 'Revise e aprove a Spec de {{ .inputs.slug }} em {{ .nodes.create_specs.output.spec_path }}. Resumo: {{ .nodes.create_specs.output.summary }}'
+          verdict_policy: revise_until_clean
+          on_result:
+            approval: escalate
+            blocked: halt
+            error: halt
+            fail: revise
+            invalid_output: halt
+            pass: continue
+            timeout: halt
+          max_revisions: 5
+        - id: create_tasks
+          class: action
+          kind: run-agent
+          retry:
+            max_attempts: 2
+            backoff:
+                base: 2s
+                max: 20s
+          params:
+            agent: '{{ .inputs.delivery_agent }}'
+            environment:
+                mode: worktree
+                worktree_ref: '{{ .nodes.create_worktree.output.worktree_ref }}'
+            max_turns: 50
+            output_schema:
+                properties:
+                    status:
+                        enum:
+                            - complete
+                            - blocked
+                        type: string
+                    summary:
+                        type: string
+                    task_count:
+                        minimum: 0
+                        type: integer
+                    tasks_path:
+                        type: string
+                required:
+                    - status
+                    - summary
+                    - task_count
+                    - tasks_path
+                type: object
+            prompt: Use obrigatoriamente cy-create-tasks para decompor a Spec de {{ .inputs.slug }} em tarefas implementáveis. Atribua cada caso de _tests.md exatamente uma vez e atualize o tracking. Não implemente.
+        - id: approve_tasks
+          class: control
+          kind: gate
+          criteria:
+            - id: human_tasks
+              type: human
+              prompt: 'Revise e aprove as tarefas de {{ .inputs.slug }} em {{ .nodes.create_tasks.output.tasks_path }}. Quantidade: {{ .nodes.create_tasks.output.task_count }}. Resumo: {{ .nodes.create_tasks.output.summary }}'
+          verdict_policy: revise_until_clean
+          on_result:
+            approval: escalate
+            blocked: halt
+            error: halt
+            fail: revise
+            invalid_output: halt
+            pass: continue
+            timeout: halt
+          max_revisions: 5
+        - id: execute_tasks
+          class: action
+          kind: run-agent
+          retry:
+            max_attempts: 2
+            backoff:
+                base: 2s
+                max: 20s
+          params:
+            agent: '{{ .inputs.implementer }}'
+            environment:
+                mode: worktree
+                worktree_ref: '{{ .nodes.create_worktree.output.worktree_ref }}'
+            max_turns: 50
+            output_schema:
+                properties:
+                    status:
+                        enum:
+                            - complete
+                            - blocked
+                        type: string
+                    summary:
+                        type: string
+                    tasks_completed:
+                        minimum: 0
+                        type: integer
+                    verification:
+                        items:
+                            type: string
+                        type: array
+                required:
+                    - status
+                    - summary
+                    - tasks_completed
+                    - verification
+                type: object
+            prompt: Execute todas as tarefas aprovadas de .compozy/tasks/{{ .inputs.slug }} em ordem de dependência. Use cy-execute-task para cada tarefa e cy-final-verify antes de concluir. Atualize o tracking com evidência fresca. Preserve mudanças não relacionadas e não faça push.
+        - id: validate_tasks
+          class: control
+          kind: gate
+          criteria:
+            - id: task_validation
+              type: agent-judge
+              agent: '{{ .inputs.reviewer }}'
+              rubric: 'Valide independentemente {{ .inputs.slug }} no worktree {{ .nodes.create_worktree.output.worktree_ref }}. Use cy-final-verify; rode testes, lint, typecheck e build aplicáveis; confira _tests.md e todas as tarefas. Rejeite com issues concretas diante de qualquer falha. Relatório: {{ .nodes.execute_tasks.output }}'
+          verdict_policy: revise_until_clean
+          on_result:
+            blocked: halt
+            error: halt
+            fail: revise
+            invalid_output: revise
+            pass: continue
+            timeout: halt
+          max_revisions: 5
+        - id: deep_review
+          class: action
+          kind: run-agent
+          retry:
+            max_attempts: 2
+            backoff:
+                base: 2s
+                max: 20s
+          params:
+            agent: '{{ .inputs.delivery_agent }}'
+            environment:
+                mode: worktree
+                worktree_ref: '{{ .nodes.create_worktree.output.worktree_ref }}'
+            max_turns: 50
+            output_schema:
+                properties:
+                    clean:
+                        type: boolean
+                    findings_count:
+                        minimum: 0
+                        type: integer
+                    status:
+                        enum:
+                            - complete
+                            - blocked
+                        type: string
+                    summary:
+                        type: string
+                    verdict:
+                        enum:
+                            - SHIP
+                            - FIX_BEFORE_SHIP
+                            - REWORK
+                            - BLOCKED
+                        type: string
+                    verification:
+                        items:
+                            type: string
+                        type: array
+                required:
+                    - status
+                    - clean
+                    - verdict
+                    - findings_count
+                    - summary
+                    - verification
+                type: object
+            prompt: 'Use obrigatoriamente $deep-review para revisar profundamente toda a implementação de {{ .inputs.slug }}. Inicie uma rodada local read-only com escopo --worktree, contrato --spec .compozy/tasks/{{ .inputs.slug }}/ e artefatos em --out .deep-review/{{ .inputs.slug }}. Durante cada rodada de revisão, siga integralmente a skill deep-review: source freeze, manifest, knowledge/rules, coortes, cobertura defect+polish por hunk, merge mecânico, walkthrough, findings por severidade e veredito SHIP, FIX_BEFORE_SHIP ou REWORK. Não use deep-review para aplicar correções. Se a rodada retornar FIX_BEFORE_SHIP ou REWORK, encerre a fase read-only da skill, aplique os fixes válidos com disciplina normal de implementação a partir dos fix prompts, execute cy-final-verify e então invoque $deep-review novamente em modo incremental. Repita review -> fix fora da skill -> re-review até obter SHIP ou encontrar bloqueio externo concreto. Se $deep-review não estiver disponível na sessão executora, retorne status blocked e verdict BLOCKED; não substitua por revisão genérica nem por cy-review-round.'
+        - id: deep_review_gate
+          class: control
+          kind: gate
+          criteria:
+            - id: deep_review_validation
+              type: agent-judge
+              agent: '{{ .inputs.reviewer }}'
+              rubric: 'Aprove somente se o nó deep_review usou explicitamente a skill deep-review, retornou status complete, clean true, verdict SHIP, findings_count 0 e apresentou evidência fresca de cy-final-verify. Rejeite se a skill estava indisponível, se houve substituição por revisão genérica, ou se restou qualquer finding. Resultado: {{ .nodes.deep_review.output }}'
+          verdict_policy: revise_until_clean
+          on_result:
+            blocked: halt
+            error: halt
+            fail: revise
+            invalid_output: revise
+            pass: continue
+            timeout: halt
+          max_revisions: 5
+        - id: deployment_choice
+          class: control
+          kind: ask
+          params:
+            context:
+                deep_review_summary: '{{ .nodes.deep_review.output.summary }}'
+                deep_review_verdict: '{{ .nodes.deep_review.output.verdict }}'
+                slug: '{{ .inputs.slug }}'
+            expect:
+                additionalProperties: false
+                properties:
+                    action:
+                        enum:
+                            - deploy
+                            - finish
+                        type: string
+                required:
+                    - action
+                type: object
+            prompt: A feature {{ .inputs.slug }} passou pela validação e pelo deep review com veredito SHIP. Deseja realizar o deploy agora ou finalizar o fluxo sem deploy?
+        - id: route_after_review
+          class: control
+          kind: route
+          routes:
+            - when: nodes.deployment_choice.output.action == 'deploy'
+              to: deploy
+          default: finish_without_deploy
+        - id: finish_without_deploy
+          class: action
+          kind: transform
+          produces:
+            properties:
+                status:
+                    type: string
+                summary:
+                    type: string
+            required:
+                - status
+                - summary
+            type: object
+          params:
+            map:
+                status:
+                    value: skipped_by_user
+                summary:
+                    template: Fluxo de {{ .inputs.slug }} finalizado por decisão humana após deep review SHIP, sem deploy.
+        - id: deploy
+          class: action
+          kind: run-agent
+          retry:
+            max_attempts: 1
+          params:
+            agent: '{{ .inputs.delivery_agent }}'
+            environment:
+                mode: worktree
+                worktree_ref: '{{ .nodes.create_worktree.output.worktree_ref }}'
+            max_turns: 50
+            output_schema:
+                properties:
+                    evidence:
+                        items:
+                            type: string
+                        type: array
+                    status:
+                        enum:
+                            - deployed
+                            - blocked
+                        type: string
+                    summary:
+                        type: string
+                    target:
+                        type: string
+                required:
+                    - status
+                    - summary
+                    - target
+                    - evidence
+                type: object
+            prompt: O usuário escolheu explicitamente realizar o deploy de {{ .inputs.slug }} após revisão SHIP. Descubra e siga somente o processo de deploy documentado no repositório para esta feature. Não invente ambiente, destino, comando ou credencial; se houver mais de um alvo possível ou faltar informação necessária, retorne blocked. Depois do deploy, execute a verificação pós-deploy documentada e retorne evidência estruturada.
+    edges:
+        - from: feature_analyse
+          to: approve_analysis
+        - from: approve_analysis
+          to: create_worktree
+        - from: create_worktree
+          to: create_specs
+        - from: create_specs
+          to: approve_specs
+        - from: approve_specs
+          to: create_tasks
+        - from: create_tasks
+          to: approve_tasks
+        - from: approve_tasks
+          to: execute_tasks
+        - from: execute_tasks
+          to: validate_tasks
+        - from: validate_tasks
+          to: deep_review
+        - from: deep_review
+          to: deep_review_gate
+        - from: deep_review_gate
+          to: deployment_choice
+        - from: deployment_choice
+          to: route_after_review
+        - from: route_after_review
+          to: deploy
+        - from: route_after_review
+          to: finish_without_deploy
+start:
+    - kind: manual
+    - kind: cli
+    - kind: http
+    - kind: uds
+    - kind: native_tool
