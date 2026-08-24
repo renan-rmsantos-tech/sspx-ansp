@@ -1,46 +1,104 @@
+---
+title: ANSP Scholarship System
+description: Guidance for AI agents working on the Arca Nossa Senhora da Providência scholarship application system (Next.js 16, Postgres, Drizzle).
+---
+
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file is the single source of truth for AI agent guidance in this repository. `AGENT.md` is a symbolic link to this file.
 
 ## Project Overview
 
 Scholarship application system ("Solicitação de Bolsa para Família Necessitada") for **Arca Nossa Senhora da Providência (ANSP)** — the nonprofit association (mantenedora) behind Colégio São José / ACIPEC / FSSPX in Itatiba-SP.
 
-Next.js 16 App Router application: a public multi-step form, an admin review panel, a public donor sign-up page, and PDF generation for decisions and contracts. Deployed to the shared DigitalOcean droplet behind Traefik — see `docs/plano-deploy-droplet.md`.
+Next.js 16 App Router application: a public multi-step form, an admin review panel, a public donor sign-up page, and PDF generation for decisions and contracts. Deployed to the shared DigitalOcean droplet behind Traefik — see `docs/plano-deploy-droplet.md`. Production URL: https://ansp.apps.rmsantos.tech
 
 ## Architecture
 
-- **Data**: Postgres via Drizzle ORM (`postgres.js` driver). Schema in `lib/db/schema.ts`, migrations in `drizzle/`. Drizzle field names deliberately match the DB column names (`snake_case`) because server actions return rows straight to components and PDF renderers.
-- **Auth**: iron-session cookie, admin accounts in `admin_users` (scrypt hashes, `lib/auth/password.ts`). `proxy.ts` guards `/admin`; every admin server action calls `requireAuth()` independently. There is no row-level security — authorization lives entirely in the application.
-- **Storage**: documents are written to `STORAGE_DIR` through the driver in `lib/storage/`. Upload and download go through `/api/uploads` and `/api/documents`, authorized by HMAC tickets (`lib/storage/tickets.ts`) signed with `SESSION_SECRET`. Upload and download tickets use separate derived keys.
+- **Data**: Postgres via Drizzle ORM (`postgres.js` driver). Schema in `lib/db/schema.ts`, migrations in `drizzle/` (6 migrations). Drizzle field names deliberately match the DB column names (`snake_case`) because server actions return rows straight to components and PDF renderers.
+- **Auth**: iron-session cookie, admin accounts in `admin_users` (scrypt hashes, `lib/auth/password.ts`). `proxy.ts` guards `/admin`; every admin server action calls `requireAuth()` independently. There is no row-level security — authorization lives entirely in the application. Dev bypass: `AUTH_BYPASS=true` with `admin@admin.com` / `admin123` (ignored in production).
+- **Storage**: documents are written to `STORAGE_DIR` through the driver in `lib/storage/`. Upload and download go through `/api/uploads` and `/api/documents`, authorized by HMAC tickets (`lib/storage/tickets.ts`) signed with `SESSION_SECRET`. Upload and download tickets use separate derived keys. Max upload: 10 MB.
 - **Bootstrap**: `scripts/bootstrap.ts` runs on every start; it is idempotent and never overwrites existing rows or passwords.
+- **PDFs**: `@react-pdf/renderer` in `lib/pdf/` — application, decision, contract, and donor receipts share `document-header.tsx`.
+- **Templates**: decision and contract text use token replacement (`lib/templates/token-replacer.ts`, `contract-tokens.ts`).
 
 Any page that reads the database must be dynamic — `app/form/page.tsx` sets `force-dynamic`; admin pages get it implicitly from `cookies()`. Do not wrap `cookies()` in a `try/catch` that swallows errors: that hides Next's dynamic-rendering signal and the page will fail at build time.
 
+Form submission runs inside a database transaction. Upload paths are server-generated (`pending/{uuid}/...`); files move to `applications/` or `donors/` on successful submission.
+
+## Routes
+
+| Area | Path | Key files |
+|------|------|-----------|
+| Landing | `/` | `app/page.tsx` |
+| Scholarship form | `/form` | `app/form/page.tsx`, `app/form/_actions/form-actions.ts`, 6 step components |
+| Donor sign-up | `/benfeitor` | `app/benfeitor/page.tsx`, `app/benfeitor/_actions/donor-actions.ts` |
+| Admin login | `/login` | `app/login/page.tsx`, `app/login/_actions/auth-actions.ts` |
+| Admin panel | `/admin/*` | `app/admin/_actions/admin-actions.ts`, layout with sidebar/topbar |
+| Upload API | `PUT /api/uploads` | Ticket scope `upload` |
+| Download API | `GET /api/documents` | Ticket scope `download` |
+| Health | `GET /api/health` | Used by deploy hook; validates app + Postgres |
+
+Admin sections: solicitações, benfeitores, ano letivo, cabeçalho (PDF header), textos (decision templates), contrato (contract template).
+
 ## Repository Structure
 
-- `app/` — routes: `form/` (public form), `admin/`, `benfeitor/`, `login/`, `api/`
-- `lib/` — `db/`, `auth/`, `storage/`, `pdf/`, `validations/`, `templates/`
-- `drizzle/` — versioned SQL migrations (`0001` holds CHECK constraints and the single-active-school-year trigger)
-- `scripts/` — `bootstrap.ts`, `backup.sh`, `post-receive.sh` (deploy hook, kept identical across droplet projects)
-- `design/` — original static HTML prototypes, kept as visual reference
-- `docs/` — `brand-spec.md`, `plano-deploy-droplet.md`, original paper form PDF
+```
+app/                 # Next.js routes (form, admin, benfeitor, login, api)
+lib/                 # db, auth, storage, pdf, validations, templates
+drizzle/             # SQL migrations
+scripts/             # bootstrap, backup, post-receive deploy hook, cleanup
+docs/
+├── design/          # UX/UI specs (brand, product context)
+│   └── opendesign/  # Open Design HTML prototypes + assets (reference only)
+├── examples/        # Original paper form, contract template, sample PDFs
+└── plano-deploy-droplet.md
+proxy.ts             # Next.js 16 proxy guard for /admin/* (no middleware.ts)
+```
 
-## Design System
+## Schema (key tables)
 
-The canonical source of truth is `docs/brand-spec.md`; tokens live in `app/globals.css`.
+`admin_users`, `school_years` (only one `ativo=true`), `applications` (status: pendente/aprovada/rejeitada), `students`, `other_children`, `vehicles`, `collaboration`, `benefactors`, `documents`, `decision_templates`, `contract_templates`, `document_header`, `donor_pledges`.
 
-Key tokens: `--accent` (navy), `--gold` (gold), `--bg` (warm paper), `--surface` (white cards). OKLch color space throughout.
+## UX/UI and Design
 
-Typography: serif display (`Iowan Old Style` stack) for headings, system sans for body. No external font loading.
+All UX/UI documentation lives under `docs/design/`. Read `docs/design/README.md` for the index.
 
-Design posture: institutional gravity with warmth — no shadows on cards (borders + whitespace), 8px radius, gold used sparingly, generous whitespace with a print-magazine feel.
+| Doc | Purpose |
+|-----|---------|
+| `docs/design/brand-spec.md` | Color tokens, typography, logo, visual posture |
+| `docs/design/product.md` | Users, brand personality, anti-references, UX principles |
+| `docs/design/opendesign/` | Static HTML prototypes exported from Open Design — visual reference, not production code |
+
+**Implementation source of truth for tokens:** `app/globals.css` (`@theme` block). The Open Design prototypes may lag behind the live app.
+
+Design posture: institutional gravity with warmth — navy + gold + warm paper, Iowan Old Style display serif, system sans body, no card shadows (borders + whitespace), 8px radius, gold used sparingly. Sacred imagery is required on institutional surfaces.
+
+## Development
+
+```bash
+cp .env.example .env
+npm run db:start          # Postgres on port 5433
+npm run db:migrate && npm run db:bootstrap
+npm run dev
+```
+
+Key env vars: `DATABASE_URL`, `SESSION_SECRET` (≥32 chars), `STORAGE_DIR`, `ADMIN_EMAIL`/`ADMIN_PASSWORD`, `APP_HOST` (production routing only).
+
+Production start: `npm start` = migrate → bootstrap → `next start`.
 
 ## Testing
 
 `npm test` (Vitest) is the deploy gate — it runs inside the Docker build, so a failing suite means the image is never produced and the previous container keeps serving.
 
 Server actions are tested against `__tests__/helpers/fake-db.ts`, a stand-in for the Drizzle client. Configure a table's reads with `queryFor("<schemaExportName>").findFirst/findMany` and assert writes via the `inserted`/`updated`/`deleted` arrays.
+
+## Deploy
+
+- **Dockerfile**: `npm ci` → `npm test` → `npm run build` → `CMD npm start`
+- **Production compose**: `compose.traefik.yaml` (Traefik labels, volume for uploads, `internal` + `proxy` networks)
+- **Push-to-deploy**: `git push production main` → `scripts/post-receive.sh` → build with health check at `/api/health`, automatic rollback on failure
+- **Backup**: `scripts/backup.sh` — weekly cron on droplet (Postgres dump + uploads, GPG-encrypted)
 
 ## Domain Context
 

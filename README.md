@@ -128,6 +128,8 @@ lib/
 
 drizzle/             # Migrations SQL versionadas
 scripts/             # bootstrap, backup e hook de deploy
-design/              # Protótipos HTML (referência visual)
-docs/                # Brand spec, plano de deploy e formulário original
+docs/
+├── design/          # UX/UI (brand-spec, product) + opendesign/ (protótipos Open Design)
+├── examples/        # Formulário em papel, contrato e PDFs de referência
+└── plano-deploy-droplet.md
 ```
