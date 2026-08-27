@@ -36,7 +36,7 @@ export function SealLogo({ size = 72, className }: SealLogoProps) {
         opacity="0.35"
       />
       <image
-        href="/base1.png"
+        href="/logo-gesso.jpg"
         x="22"
         y="30"
         width="176"

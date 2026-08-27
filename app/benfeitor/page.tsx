@@ -45,7 +45,7 @@ export default function BenfeitorPage() {
               <circle cx="110" cy="110" r="106" fill="url(#benf-bg)" stroke="#c9a84c" strokeWidth="3" />
               <circle cx="110" cy="110" r="98" fill="none" stroke="#c9a84c" strokeWidth="0.6" opacity="0.35" />
               <image
-                href="/base1.png"
+                href="/logo-gesso.jpg"
                 x="22"
                 y="30"
                 width="176"
