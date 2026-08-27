@@ -1,3 +1,4 @@
+- [workflow verification validation_scope](project_workflow_verification.md) - Sequence 66: the assistant stated that validation concerns "execuções, não apenas o YAML no repositório".
 - [workflow_version_4 deploy_instructions_requirement](project_workflow_version_4.md) - Sequências 680–695: o assistente publicou a versão 4 sem `deploy_instructions` e informou que o dry-run confirmou que o campo não é mais exigido.
 - [workflow de revisão e deploy gates de deep-review](project_workflow_de_revis_o_e_deploy.md) - sequence 590: o assistente registrou explicitamente os gates e o comportamento de bloqueio do Loop.
 - [workflow de desenvolvimento e deploy sequência e política de gates](project_workflow_de_desenvolvimento_e_deploy.md) - sequence 198: o assistente descreveu o desenho final com três gates humanos, dois gates automáticos e bloqueio do deploy em caso de falha.
