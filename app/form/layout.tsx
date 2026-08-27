@@ -60,7 +60,7 @@ export default function FormLayout({
               opacity="0.35"
             />
             <image
-              href="/logo-gesso.jpg"
+              href="/base1.png"
               x="22"
               y="30"
               width="176"
