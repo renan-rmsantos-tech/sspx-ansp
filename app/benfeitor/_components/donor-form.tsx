@@ -22,7 +22,12 @@ import {
 type Frequencia = "unica" | "mensal";
 type Duracao = "um_ano" | "indeterminado";
 
-const VALOR_PRESETS = [40, 80, 160] as const;
+const VALOR_PRESETS = {
+  mensal: [80, 100, 200],
+  unica: [300, 500, 800],
+} as const;
+
+type ValorPreset = (typeof VALOR_PRESETS)[Frequencia][number] | "outro";
 
 const inputClass =
   "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg outline-none focus:border-accent";
@@ -64,7 +69,7 @@ function ErrorText({ msg }: { msg?: string }) {
 export function DonorForm() {
   const [frequencia, setFrequencia] = useState<Frequencia>("mensal");
   const [duracao, setDuracao] = useState<Duracao | null>("um_ano");
-  const [valorPreset, setValorPreset] = useState<number | "outro">(80);
+  const [valorPreset, setValorPreset] = useState<ValorPreset>(80);
   const [valorOutro, setValorOutro] = useState("");
   const [dataPagamento, setDataPagamento] = useState("");
   const [lembreteEmail, setLembreteEmail] = useState(false);
@@ -249,13 +254,19 @@ export function DonorForm() {
           <div className="flex flex-wrap gap-2">
             <OptionButton
               active={frequencia === "unica"}
-              onClick={() => setFrequencia("unica")}
+              onClick={() => {
+                setFrequencia("unica");
+                if (valorPreset !== "outro") setValorPreset(VALOR_PRESETS.unica[0]);
+              }}
             >
               Uma vez
             </OptionButton>
             <OptionButton
               active={frequencia === "mensal"}
-              onClick={() => setFrequencia("mensal")}
+              onClick={() => {
+                setFrequencia("mensal");
+                if (valorPreset !== "outro") setValorPreset(VALOR_PRESETS.mensal[0]);
+              }}
             >
               Mensal
             </OptionButton>
@@ -283,7 +294,7 @@ export function DonorForm() {
         <div>
           <FieldLabel>Valor {frequencia === "mensal" ? "(por mês)" : ""}</FieldLabel>
           <div className="flex flex-wrap items-center gap-2">
-            {VALOR_PRESETS.map((v) => (
+            {VALOR_PRESETS[frequencia].map((v) => (
               <OptionButton key={v} active={valorPreset === v} onClick={() => setValorPreset(v)}>
                 R$ {v}
               </OptionButton>
