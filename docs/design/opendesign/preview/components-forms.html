@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview — Formulários e upload · Arca N. S. da Providência</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); padding: 48px 32px 80px; font: var(--text-body); color: var(--fg); }
+  .card-shell { max-width: 940px; margin: 0 auto; }
+  .card-head { padding-bottom: 16px; margin-bottom: 40px; border-bottom: 1px solid var(--border); }
+  .card-head .eyebrow { font: var(--text-caption); letter-spacing: var(--track-caption); text-transform: uppercase; color: var(--muted); }
+  .card-head h1 { font: var(--text-h2); letter-spacing: var(--track-heading); color: var(--accent); margin-top: 10px; }
+  .card-head p { font: var(--text-ui-sm); color: var(--muted); max-width: 62ch; margin-top: 8px; }
+  .group { margin-bottom: 44px; }
+  .group > h2 { font: var(--text-caption); letter-spacing: var(--track-caption); text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+
+  .step-nav { margin-bottom: 20px; }
+  .step-label { display: flex; justify-content: space-between; font: 400 12px/1.4 var(--font-body); color: var(--muted); margin-bottom: 8px; }
+  .step-label .current { color: var(--accent); font-weight: 550; }
+  .progress-bar { display: flex; gap: 6px; }
+  .progress-step { flex: 1; height: 4px; border-radius: 2px; background: var(--border); transition: background var(--dur-medium); }
+  .progress-step.done { background: var(--gold); }
+  .progress-step.active { background: var(--accent); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--pad-card-lg); }
+  .section-title { font: 600 20px/1.2 var(--font-display); letter-spacing: var(--track-heading); margin-bottom: 6px; }
+  .section-desc { font: var(--text-ui-sm); color: var(--muted); margin-bottom: 24px; }
+  .field { margin-bottom: 20px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { display: block; font: var(--text-label); letter-spacing: var(--track-ui); margin-bottom: 6px; }
+  .field label .req { color: var(--danger); margin-left: 2px; }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: var(--pad-input); font: var(--text-ui); color: var(--fg);
+    background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-ctl);
+    outline: none; transition: border-color var(--dur-quick);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); box-shadow: var(--ring-focus); }
+  .field input.is-error { border-color: var(--danger); }
+  .field input.is-error:focus { box-shadow: var(--ring-focus-error); }
+  .field .hint { font: 400 12px/1.4 var(--font-body); color: var(--muted); margin-top: 4px; }
+  .field .err { font: 450 12px/1.4 var(--font-body); color: var(--danger); margin-top: 4px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-default); }
+  .divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+  .upload-area { position: relative; border: var(--border-width-strong) dashed var(--border); border-radius: var(--radius-ctl);
+                 padding: 16px; text-align: center; cursor: pointer; transition: border-color var(--dur-quick), background var(--dur-quick); }
+  .upload-area:hover { border-color: var(--gold); background: var(--gold-light); }
+  .upload-label { font: 400 13px/1.5 var(--font-body); color: var(--muted); }
+  .upload-label strong { color: var(--gold-dark); }
+  .upload-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; justify-content: center; }
+  .upload-file { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--accent-light);
+                 border-radius: var(--radius-sm); font: 400 12px/1.6 var(--font-body); color: var(--fg); }
+  .upload-file button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; line-height: 1; }
+
+  .repeat-row { display: grid; grid-template-columns: 1fr 160px 140px 36px; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .repeat-row input { width: 100%; padding: var(--pad-input-sm); font: var(--text-ui); color: var(--fg); background: var(--bg);
+                      border: 1px solid var(--border); border-radius: var(--radius-ctl); outline: none; }
+  .btn-remove { width: 36px; height: 36px; border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+                border-radius: var(--radius-ctl); cursor: pointer; font-size: 18px; display: grid; place-items: center; }
+  .btn-add { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font: 500 13px/1 var(--font-body);
+             letter-spacing: var(--track-ui); color: var(--gold-dark); background: var(--gold-light);
+             border: 1px solid transparent; border-radius: var(--radius-ctl); cursor: pointer; }
+
+  .summary-row { display: flex; justify-content: space-between; padding: 10px 0; border-top: 1px solid var(--border); font: var(--text-ui-sm); }
+  .summary-row .label { color: var(--muted); }
+  .summary-row .value { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .desconto { display: flex; align-items: center; gap: 10px; margin: 16px 0; }
+  .desconto input { width: 100px; padding: var(--pad-input-sm); text-align: center; font: 600 16px/1.5 var(--font-body);
+                    background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-ctl); outline: none; font-variant-numeric: tabular-nums; }
+  .desconto span { font: var(--text-ui); color: var(--muted); }
+
+  .checkbox-item { display: flex; gap: 10px; align-items: flex-start; }
+  .checkbox-item input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--accent); flex-shrink: 0; }
+  .checkbox-item label { font: 400 13px/1.5 var(--font-body); color: var(--muted); cursor: pointer; }
+
+  .actions { display: flex; justify-content: space-between; gap: 12px; margin-top: var(--space-spacious); }
+  .btn { padding: 12px 28px; font: 550 14px/1 var(--font-body); letter-spacing: var(--track-ui);
+         border-radius: var(--radius-ctl); cursor: pointer; border: 1px solid transparent; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-secondary { background: var(--surface); color: var(--fg); border-color: var(--border); }
+  .ctx { font: var(--text-ui-sm); color: var(--muted); margin-top: 12px; max-width: 66ch; }
+  code { font: 400 12px/1.4 var(--font-mono); }
+  @media (max-width: 640px) { .row2, .repeat-row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="card-shell">
+  <header class="card-head">
+    <div class="eyebrow">Preview card · 07</div>
+    <h1>Formulários e upload</h1>
+    <p>Reprodução fiel da etapa 1 de <code>formulario.html</code>: navegação sticky de seis etapas,
+       campos afundados no papel, áreas de upload tracejadas e linhas repetíveis.</p>
+  </header>
+
+  <section class="group">
+    <h2>Navegação de etapas</h2>
+    <div class="step-nav">
+      <div class="step-label">
+        <span class="current">1. Dados dos Pais</span>
+        <span>Etapa 1 de 6</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-step active"></div>
+        <div class="progress-step"></div>
+        <div class="progress-step"></div>
+        <div class="progress-step"></div>
+        <div class="progress-step"></div>
+        <div class="progress-step"></div>
+      </div>
+    </div>
+    <div class="step-nav">
+      <div class="step-label">
+        <span class="current">4. Despesas Mensais</span>
+        <span>Etapa 4 de 6</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-step done"></div>
+        <div class="progress-step done"></div>
+        <div class="progress-step done"></div>
+        <div class="progress-step active"></div>
+        <div class="progress-step"></div>
+        <div class="progress-step"></div>
+      </div>
+    </div>
+    <p class="ctx">Etapas concluídas ficam douradas; a etapa atual fica navy; as futuras ficam em
+       <code>--border</code>. A barra é sticky no topo, sobre <code>--bg</code>.</p>
+  </section>
+
+  <section class="group">
+    <h2>Campos</h2>
+    <div class="card">
+      <h3 class="section-title">Dados dos Solicitantes</h3>
+      <p class="section-desc">Informações pessoais dos pais ou responsáveis.</p>
+
+      <div class="field">
+        <label for="f-escola">Escola <span class="req">*</span></label>
+        <select id="f-escola">
+          <option>Colégio São José</option>
+          <option>Escola Santa Catarina</option>
+          <option>Escola Nossa Senhora da Providência</option>
+        </select>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field">
+        <label for="f-pai">Nome e sobrenome do pai <span class="req">*</span></label>
+        <input id="f-pai" type="text" value="Carlos Alberto Silva">
+        <div class="hint">Como consta no documento de identidade</div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label for="f-rg">RG do pai <span class="req">*</span></label>
+          <input id="f-rg" type="text" value="34.567.890-1">
+        </div>
+        <div class="field">
+          <label for="f-cpf">CPF do pai <span class="req">*</span></label>
+          <input id="f-cpf" type="text" placeholder="000.000.000-00">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-email">E-mail <span class="req">*</span></label>
+        <input id="f-email" type="email" class="is-error" value="email-invalido" aria-invalid="true" aria-describedby="f-email-err">
+        <div class="err" id="f-email-err" role="alert">Informe um e-mail válido</div>
+      </div>
+
+      <div class="field">
+        <label>Comprovante de Endereço <span class="req">*</span></label>
+        <div class="upload-area">
+          <div class="upload-label"><strong>Clique ou arraste</strong> para enviar comprovante de endereço</div>
+          <div class="upload-preview">
+            <span class="upload-file">conta_luz.jpg <button type="button" title="Remover">&times;</button></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="ctx">Campos usam <code>--bg</code> como fundo: ficam <em>afundados</em> na página, e o card branco
+       fica em volta deles. Erro = borda <code>--danger</code>, anel avermelhado, mensagem com <code>role="alert"</code>.</p>
+  </section>
+
+  <section class="group">
+    <h2>Linhas repetíveis e totais</h2>
+    <div class="card">
+      <h3 class="section-title">Outros Filhos</h3>
+      <p class="section-desc">Informe nome e data de nascimento dos demais filhos que não estão na escola.</p>
+      <div class="repeat-row">
+        <input type="text" value="Rafael Silva" aria-label="Nome completo">
+        <input type="text" placeholder="000.000.000-00" aria-label="CPF">
+        <input type="date" value="2020-03-12" aria-label="Data de nascimento">
+        <button type="button" class="btn-remove" title="Remover">×</button>
+      </div>
+      <div class="repeat-row">
+        <input type="text" placeholder="Nome completo" aria-label="Nome completo">
+        <input type="text" placeholder="000.000.000-00" aria-label="CPF">
+        <input type="date" aria-label="Data de nascimento">
+        <button type="button" class="btn-remove" title="Remover">×</button>
+      </div>
+      <button type="button" class="btn-add">+ Adicionar filho</button>
+
+      <div style="margin-top: 24px;">
+        <div class="summary-row"><span class="label">Total sem desconto</span><span class="value">R$ 1.630,00</span></div>
+        <div class="desconto">
+          <span>Desconto solicitado:</span>
+          <input type="number" min="0" max="100" value="50" aria-label="Desconto solicitado em porcento">
+          <span>% do total</span>
+        </div>
+        <div class="summary-row"><span class="label">Total com desconto</span><span class="value">R$ 815,00</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>Declaração e navegação</h2>
+    <div class="card">
+      <div class="checkbox-item">
+        <input type="checkbox" id="f-aceite" checked>
+        <label for="f-aceite">Declaro que todas as informações prestadas são verdadeiras e estou ciente das condições
+          de concessão, validade e compromisso de colaboração da bolsa. <span style="color: var(--danger);">*</span></label>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-secondary">Voltar</button>
+        <button type="button" class="btn btn-primary">Enviar Solicitação</button>
+      </div>
+    </div>
+    <p class="ctx">A declaração juramentada é um gate: sem ela o envio dispara um shake de 0.4s e rótulo vermelho
+       por 2s — nunca um modal.</p>
+  </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview — Cores da marca · Arca N. S. da Providência</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); padding: 48px 32px 80px; font: var(--text-body); color: var(--fg); }
+  .card-shell { max-width: 1000px; margin: 0 auto; }
+  .card-head { padding-bottom: 16px; margin-bottom: 40px; border-bottom: 1px solid var(--border); }
+  .card-head .eyebrow { font: var(--text-caption); letter-spacing: var(--track-caption); text-transform: uppercase; color: var(--muted); }
+  .card-head h1 { font: var(--text-h2); letter-spacing: var(--track-heading); color: var(--accent); margin-top: 10px; }
+  .card-head p { font: var(--text-ui-sm); color: var(--muted); max-width: 62ch; margin-top: 8px; }
+  .group { margin-bottom: 48px; }
+  .group > h2 { font: var(--text-caption); letter-spacing: var(--track-caption); text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--space-default); }
+  .chip { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: var(--surface); }
+  .chip .fill { height: 92px; display: grid; place-items: center; }
+  .chip .fill span { font: var(--text-caption); letter-spacing: var(--track-caption); text-transform: uppercase; }
+  .chip .meta { padding: 12px 14px; }
+  .chip .name { font: 550 13px/1.2 var(--font-body); letter-spacing: 0.02em; }
+  .chip .val { font: 400 11px/1.5 var(--font-mono); color: var(--muted); margin-top: 4px; }
+  .chip .use { font: 400 12px/1.45 var(--font-body); color: var(--muted); margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px; }
+  .pairing { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-default); }
+  .pair { border-radius: var(--radius); padding: var(--pad-card); border: 1px solid var(--border); }
+  .pair h3 { font: var(--text-h4); margin-bottom: 6px; }
+  .pair p { font: var(--text-ui-sm); }
+  .pair .rule { width: 48px; height: 2px; background: var(--gold); border: none; margin: 12px 0; }
+  .pair.on-navy { background: var(--accent); border-color: var(--accent); }
+  .pair.on-navy h3 { color: var(--fg-on-navy); }
+  .pair.on-navy p { color: var(--muted-on-navy); }
+  .pair.on-cream { background: var(--cream); border-color: var(--border); }
+  .pair.on-cream h3 { color: var(--accent); }
+  .pair.on-cream p { color: var(--muted); }
+  .pair.on-surface { background: var(--surface); }
+  .pair.on-surface p { color: var(--muted); }
+  .rules { border: 1px solid var(--border); border-radius: var(--radius); background: var(--cream); padding: var(--pad-card); }
+  .rules li { font: var(--text-ui-sm); color: var(--fg); margin-left: 18px; margin-bottom: 8px; }
+  .rules li:last-child { margin-bottom: 0; }
+  .rules code { font: 400 12px/1.4 var(--font-mono); }
+</style>
+</head>
+<body>
+<main class="card-shell">
+  <header class="card-head">
+    <div class="eyebrow">Preview card · 01</div>
+    <h1>Cores da marca</h1>
+    <p>Superfícies, texto e marca — transcritos de <code>design-system.html</code> e
+       <code>brand-spec.md</code>. Esta página carrega <code>../colors_and_type.css</code>,
+       então as amostras abaixo são os tokens reais, não cópias.</p>
+  </header>
+
+  <section class="group">
+    <h2>Superfícies</h2>
+    <div class="swatches">
+      <div class="chip">
+        <div class="fill" style="background: var(--bg);"></div>
+        <div class="meta"><div class="name">Background</div><div class="val">--bg · oklch(97.5% 0.005 85)</div>
+        <div class="use">Fundo de página e fundo dos campos de formulário.</div></div>
+      </div>
+      <div class="chip">
+        <div class="fill" style="background: var(--surface); border-bottom: 1px solid var(--border);"></div>
+        <div class="meta"><div class="name">Surface</div><div class="val">--surface · oklch(100% 0 0)</div>
+        <div class="use">Cards, painéis, topbar e sidebar do console.</div></div>
+      </div>
+      <div class="chip">
+        <div class="fill" style="background: var(--cream);"></div>
+        <div class="meta"><div class="name">Cream</div><div class="val">--cream · oklch(92% 0.03 85)</div>
+        <div class="use">Blocos de destaque: citações, cheat-sheet de tokens, formulário de decisão.</div></div>
+      </div>
+      <div class="chip">
+        <div class="fill" style="background: var(--border);"></div>
+        <div class="meta"><div class="name">Border</div><div class="val">--border · oklch(90% 0.008 85)</div>
+        <div class="use">Único peso de divisor do sistema: 1px.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>Texto</h2>
+    <div class="swatches">
+      <div class="chip">
+        <div class="fill" style="background: var(--fg);"><span style="color: var(--fg-on-navy);">Aa</span></div>
+        <div class="meta"><div class="name">Foreground</div><div class="val">--fg · oklch(22% 0.06 250)</div>
+        <div class="use">Texto primário — quase preto com viés navy.</div></div>
+      </div>
+      <div class="chip">
+        <div class="fill" style="background: var(--muted);"><span style="color: #fff;">Aa</span></div>
+        <div class="meta"><div class="name">Muted</div><div class="val">--muted · oklch(48% 0.03 250)</div>
+        <div class="use">Labels, meta rows, texto secundário.</div></div>
+      </div>
+      <div class="chip">
+        <div class="fill" style="background: var(--accent);"><span style="color: var(--muted-on-navy);">Aa</span></div>
+        <div class="meta"><div class="name">Muted on navy</div><div class="val">--muted-on-navy · oklch(84% 0.025 250)</div>
+        <div class="use">Corpo de texto sobre faixas navy.</div></div>
+      </div>
+      <div class="chip">
+        <div class="fill" style="background: var(--accent);"><span style="color: var(--fg-on-navy);">Aa</span></div>
+        <div class="meta"><div class="name">FG on navy</div><div class="val">--fg-on-navy · oklch(97% 0.02 85)</div>
+        <div class="use">Títulos sobre navy — levemente quente, nunca branco puro.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>Marca</h2>
+    <div class="swatches">
+      <div class="chip">
+        <div class="fill" style="background: var(--accent);"></div>
+        <div class="meta"><div class="name">Navy (accent)</div><div class="val">--accent · oklch(25% 0.06 250)</div>
+        <div class="use">Cor dominante: hero, faixa de CTA, rodapé, botão primário, nav ativo.</div></div>
+      </div>
+      <div class="chip">
+        <div class="fill" style="background: var(--navy-deep);"></div>
+        <div class="meta"><div class="name">Navy deep</div><div class="val">--navy-deep · oklch(20% 0.06 250)</div>
+        <div class="use">Rodapé e base do gradiente do hero; hover do botão primário.</div></div>
+      </div>
+      <div class="chip">
+        <div class="fill" style="background: var(--gold);"></div>
+        <div class="meta"><div class="name">Gold</div><div class="val">--gold · oklch(72% 0.10 80)</div>
+        <div class="use">Selo, divisor 48×2, kickers, CTA dourado, foco. Máx. 2 usos por tela.</div></div>
+      </div>
+      <div class="chip">
+        <div class="fill" style="background: var(--gold-dark);"></div>
+        <div class="meta"><div class="name">Gold dark</div><div class="val">--gold-dark · oklch(58% 0.10 80)</div>
+        <div class="use">O dourado para <em>texto</em> sobre superfícies claras.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>Pareamentos válidos</h2>
+    <div class="pairing">
+      <div class="pair on-navy">
+        <h3>Faixa navy</h3>
+        <hr class="rule">
+        <p>Kicker dourado, título em <code>--fg-on-navy</code>, corpo em <code>--muted-on-navy</code>. Foco fica dourado aqui.</p>
+      </div>
+      <div class="pair on-surface">
+        <h3>Card sobre papel</h3>
+        <hr class="rule">
+        <p>Superfície branca, borda 1px, sem sombra. O divisor dourado separa título e corpo.</p>
+      </div>
+      <div class="pair on-cream">
+        <h3>Bloco de destaque</h3>
+        <hr class="rule">
+        <p>Cream é destaque, nunca fundo de página. Usado em citações e no formulário de decisão.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>Regras</h2>
+    <div class="rules">
+      <ul>
+        <li>Navy é a cor de marca dominante; dourado é acento com <strong>limite de dois usos por tela</strong>.</li>
+        <li>Dourado em texto sobre claro sempre usa <code>--gold-dark</code>.</li>
+        <li>Nenhum hex novo: derive com <code>oklch()</code> ou <code>color-mix(in oklch, …)</code>.</li>
+        <li>Os únicos hex fixos do sistema são os literais do selo: <code>#1e2a4a</code>, <code>#0f1729</code>, <code>#c9a84c</code>.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+</body>
+</html>

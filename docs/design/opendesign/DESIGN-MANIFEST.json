@@ -1,0 +1,366 @@
+{
+  "schema": "open-design.design-manifest.v1",
+  "title": "19fe4faa-faea-4bae-9401-9069c0abafc8",
+  "entryFile": "index.html",
+  "sourceFiles": {
+    "all": [
+      "admin.html",
+      "arca-landing.html",
+      "assets/base1.png",
+      "assets/base2.png",
+      "assets/gold-rule.svg",
+      "assets/logo-gesso.jpg",
+      "assets/mqjmgzod-logo.png",
+      "assets/seal-arca-1440.png",
+      "assets/seal-arca-master.svg",
+      "assets/seal-arca-mono.svg",
+      "assets/seal-arca-on-navy.svg",
+      "assets/seal-arca.svg",
+      "assets/wordmark-arca.svg",
+      "base1.png",
+      "base2.png",
+      "brand-spec.md",
+      "CleanShot-2026-08-21-at-17.37.11.png",
+      "colors_and_type.css",
+      "context/provenance.md",
+      "context/source-context.md",
+      "design-system.html",
+      "DESIGN.md",
+      "formulario_bolsa.pdf",
+      "formulario.html",
+      "index.html",
+      "login.html",
+      "logo-gesso.jpg",
+      "mqjmgzod-logo.png",
+      "preview/applied-surfaces.html",
+      "preview/brand-assets.html",
+      "preview/colors-brand-core.html",
+      "preview/colors-status-semantics.html",
+      "preview/components-buttons.html",
+      "preview/components-forms.html",
+      "preview/components-records.html",
+      "preview/index.html",
+      "preview/radius-and-elevation.html",
+      "preview/spacing-tokens.html",
+      "preview/typography-specimens.html",
+      "README.md",
+      "SKILL.md",
+      "tokens.css",
+      "ui_kits/app/components/App.js",
+      "ui_kits/app/components/Composer.js",
+      "ui_kits/app/components/DecisionPanel.js",
+      "ui_kits/app/components/kit.css",
+      "ui_kits/app/components/RequestCard.js",
+      "ui_kits/app/components/Seal.js",
+      "ui_kits/app/components/Sidebar.js",
+      "ui_kits/app/components/StatBoard.js",
+      "ui_kits/app/index.html",
+      "ui_kits/app/README.md"
+    ],
+    "html": [
+      "admin.html",
+      "arca-landing.html",
+      "design-system.html",
+      "formulario.html",
+      "index.html",
+      "login.html",
+      "preview/applied-surfaces.html",
+      "preview/brand-assets.html",
+      "preview/colors-brand-core.html",
+      "preview/colors-status-semantics.html",
+      "preview/components-buttons.html",
+      "preview/components-forms.html",
+      "preview/components-records.html",
+      "preview/index.html",
+      "preview/radius-and-elevation.html",
+      "preview/spacing-tokens.html",
+      "preview/typography-specimens.html",
+      "ui_kits/app/index.html"
+    ],
+    "css": [
+      "colors_and_type.css",
+      "tokens.css",
+      "ui_kits/app/components/kit.css"
+    ],
+    "scriptsAndComponents": [
+      "ui_kits/app/components/App.js",
+      "ui_kits/app/components/Composer.js",
+      "ui_kits/app/components/DecisionPanel.js",
+      "ui_kits/app/components/RequestCard.js",
+      "ui_kits/app/components/Seal.js",
+      "ui_kits/app/components/Sidebar.js",
+      "ui_kits/app/components/StatBoard.js"
+    ],
+    "assets": [
+      "assets/base1.png",
+      "assets/base2.png",
+      "assets/gold-rule.svg",
+      "assets/logo-gesso.jpg",
+      "assets/mqjmgzod-logo.png",
+      "assets/seal-arca-1440.png",
+      "assets/seal-arca-master.svg",
+      "assets/seal-arca-mono.svg",
+      "assets/seal-arca-on-navy.svg",
+      "assets/seal-arca.svg",
+      "assets/wordmark-arca.svg",
+      "base1.png",
+      "base2.png",
+      "brand-spec.md",
+      "CleanShot-2026-08-21-at-17.37.11.png",
+      "context/provenance.md",
+      "context/source-context.md",
+      "DESIGN.md",
+      "formulario_bolsa.pdf",
+      "logo-gesso.jpg",
+      "mqjmgzod-logo.png",
+      "README.md",
+      "SKILL.md",
+      "ui_kits/app/README.md"
+    ]
+  },
+  "screens": [
+    {
+      "file": "admin.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "arca-landing.html",
+      "role": "landing-page",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "design-system.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "formulario.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "index.html",
+      "role": "launcher-overview",
+      "implementationNote": "Use this as the navigation/overview entry only; implement each linked screen file as its own route/surface."
+    },
+    {
+      "file": "login.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "preview/applied-surfaces.html",
+      "role": "product-screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "preview/brand-assets.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "preview/colors-brand-core.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "preview/colors-status-semantics.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "preview/components-buttons.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "preview/components-forms.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "preview/components-records.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "preview/index.html",
+      "role": "launcher-overview",
+      "implementationNote": "Use this as the navigation/overview entry only; implement each linked screen file as its own route/surface."
+    },
+    {
+      "file": "preview/radius-and-elevation.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "preview/spacing-tokens.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "preview/typography-specimens.html",
+      "role": "screen",
+      "implementationNote": "Preserve visual hierarchy, responsive behavior, and interactive states from this screen."
+    },
+    {
+      "file": "ui_kits/app/index.html",
+      "role": "launcher-overview",
+      "implementationNote": "Use this as the navigation/overview entry only; implement each linked screen file as its own route/surface."
+    }
+  ],
+  "screenFilePolicy": {
+    "mode": "screen-file-first",
+    "entryFileRole": "launcher-overview",
+    "rules": [
+      "Each distinct user-facing screen or surface must be delivered and implemented as its own file/route.",
+      "If a landing page is present or requested, keep it in landing.html and do not merge it into the product app screen.",
+      "When multiple HTML screens exist, index.html is a launcher/overview only; it must not be treated as the combined final UI.",
+      "Keep product app screens, landing pages, platform screens, and OS widget surfaces separate in production code."
+    ]
+  },
+  "appModules": [
+    "Identify domain-specific in-app modules from the exported UI; do not reduce them to generic cards.",
+    "For each major module, implement purpose, default/loading/empty/error/success states, and responsive behavior.",
+    "Keep app modules separate from OS home-screen widgets in the production component model."
+  ],
+  "osWidgets": [
+    "If the export includes home-screen, lock-screen, Live Activity, tablet glance, or Android widget surfaces, implement them as platform quick-access surfaces outside the app UI.",
+    "If none are present, do not invent OS widgets unless the product requirements request them."
+  ],
+  "landingPage": {
+    "detection": "Inspect files and screen names for a marketing/landing page surface. If present, keep it separate from product app screens.",
+    "requiredSections": [
+      "hero",
+      "value props",
+      "product proof/screenshots",
+      "feature proof",
+      "CTA"
+    ]
+  },
+  "tokens": {
+    "source": [
+      "colors_and_type.css",
+      "tokens.css",
+      "ui_kits/app/components/kit.css"
+    ],
+    "required": [
+      "background",
+      "surface",
+      "foreground",
+      "muted text",
+      "border",
+      "accent",
+      "radius",
+      "shadow",
+      "spacing",
+      "type scale",
+      "motion"
+    ],
+    "note": "Extract/freeze tokens before framework implementation so coding tools do not substitute default theme colors or typography."
+  },
+  "interactions": {
+    "source": [
+      "ui_kits/app/components/App.js",
+      "ui_kits/app/components/Composer.js",
+      "ui_kits/app/components/DecisionPanel.js",
+      "ui_kits/app/components/RequestCard.js",
+      "ui_kits/app/components/Seal.js",
+      "ui_kits/app/components/Sidebar.js",
+      "ui_kits/app/components/StatBoard.js"
+    ],
+    "requiredStates": [
+      "default",
+      "hover",
+      "focus",
+      "active",
+      "disabled",
+      "loading",
+      "empty",
+      "error",
+      "success"
+    ],
+    "requiredBehaviors": [
+      "forms/validation where present",
+      "tabs/filters where present",
+      "dialogs/sheets/drawers where present",
+      "copy/generate/share actions where present",
+      "player or quick controls where present"
+    ],
+    "note": "If the prototype is static, derive missing behavior from visible controls and document it before coding."
+  },
+  "responsiveViewports": [
+    {
+      "name": "mobile-compact",
+      "width": 360,
+      "height": 800,
+      "category": "mobile",
+      "mustAvoidHorizontalScroll": true
+    },
+    {
+      "name": "mobile-standard",
+      "width": 390,
+      "height": 844,
+      "category": "mobile",
+      "mustAvoidHorizontalScroll": true
+    },
+    {
+      "name": "mobile-large",
+      "width": 430,
+      "height": 932,
+      "category": "mobile",
+      "mustAvoidHorizontalScroll": true
+    },
+    {
+      "name": "foldable-small-tablet",
+      "width": 600,
+      "height": 960,
+      "category": "foldable-tablet",
+      "mustAvoidHorizontalScroll": true
+    },
+    {
+      "name": "tablet-portrait",
+      "width": 820,
+      "height": 1180,
+      "category": "tablet",
+      "mustAvoidHorizontalScroll": true
+    },
+    {
+      "name": "tablet-landscape",
+      "width": 1024,
+      "height": 768,
+      "category": "tablet",
+      "mustAvoidHorizontalScroll": true
+    },
+    {
+      "name": "laptop",
+      "width": 1366,
+      "height": 768,
+      "category": "desktop",
+      "mustAvoidHorizontalScroll": true
+    },
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900,
+      "category": "desktop",
+      "mustAvoidHorizontalScroll": true
+    },
+    {
+      "name": "wide",
+      "width": 1920,
+      "height": 1080,
+      "category": "wide",
+      "mustAvoidHorizontalScroll": true
+    }
+  ],
+  "implementationChecklist": [
+    "Open entryFile first and map screens, modules, tokens, and interactions.",
+    "Extract tokens before writing framework components.",
+    "Implement app-specific modules with real states instead of generic card grids.",
+    "Preserve or rebuild JS interactions for meaningful UX actions.",
+    "Validate screenshots at desktop/tablet/mobile viewports with no horizontal overflow.",
+    "Keep landing pages, in-app modules, and OS widgets as separate implementation surfaces."
+  ]
+}

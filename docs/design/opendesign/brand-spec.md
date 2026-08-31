@@ -3,8 +3,6 @@
 Derivada da identidade visual do Colégio São José / FSSPX / ACIPEC.
 A Arca é a mantenedora do colégio — mesma família visual, identidade própria.
 
-Implementação canônica dos tokens: `app/globals.css` (`@theme`). Protótipo visual: `opendesign/design-system.html`.
-
 ## Palette (OKLch)
 
 | Token       | Value                      | Usage                          |
@@ -27,15 +25,13 @@ Implementação canônica dos tokens: `app/globals.css` (`@theme`). Protótipo v
 - **Body:** `-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif`
 - **Mono:** `ui-monospace, 'SF Mono', Menlo, monospace`
 
-Sem carregamento de fontes externas.
-
 ## Logo
 
 - **Estrutura:** Selo Simples — moldura circular navy com radialGradient, borda dourada
-- **Imagem central:** Pintura clássica de Nossa Senhora da Providência com o Menino Jesus (`opendesign/base1.png`), clipped em círculo
-- **Tipografia em arco:** "ARCA" no arco superior, "N. S. DA PROVIDÊNCIA" no arco inferior — serifada, dourada, bold, letter-spacing generoso
+- **Imagem central:** Pintura clássica de Nossa Senhora da Providência com o Menino Jesus (`base1.png`), clipped em círculo
+- **Tipografia em arco:** "ARCA" no arco superior (baseline `r=88`), "N. S. DA PROVIDÊNCIA" no arco inferior (baseline `r=90`, centro `110,118`) — serifada, dourada, bold, letter-spacing generoso
+- **Folga do arco superior:** o topo das letras de "ARCA" nunca alcança o anel interno em `r=98`. Baseline acima de `r≈92` faz a linha fina cortar o texto.
 - **Variações:** Fundo claro, fundo escuro (idêntico), monocromático (feColorMatrix saturate 0)
-- **Assets:** `opendesign/logo-gesso.jpg`, `opendesign/base1.png`, `opendesign/base2.png`
 
 ## Posture
 

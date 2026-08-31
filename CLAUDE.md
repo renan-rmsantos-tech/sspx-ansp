@@ -5,7 +5,7 @@ description: Guidance for AI agents working on the Arca Nossa Senhora da Provid�
 
 # CLAUDE.md
 
-This file is the single source of truth for AI agent guidance in this repository. `AGENT.md` is a symbolic link to this file.
+This file is the single source of truth for AI agent guidance in this repository. `AGENTS.md` is a symbolic link to this file.
 
 ## Project Overview
 
@@ -49,8 +49,8 @@ lib/                 # db, auth, storage, pdf, validations, templates
 drizzle/             # SQL migrations
 scripts/             # bootstrap, backup, post-receive deploy hook, cleanup
 docs/
-├── design/          # UX/UI specs (brand, product context)
-│   └── opendesign/  # Open Design HTML prototypes + assets (reference only)
+├── design/          # Open Design prototypes, assets and previews (reference only)
+│   └── opendesign/
 ├── examples/        # Original paper form, contract template, sample PDFs
 └── plano-deploy-droplet.md
 proxy.ts             # Next.js 16 proxy guard for /admin/* (no middleware.ts)
@@ -62,17 +62,7 @@ proxy.ts             # Next.js 16 proxy guard for /admin/* (no middleware.ts)
 
 ## UX/UI and Design
 
-All UX/UI documentation lives under `docs/design/`. Read `docs/design/README.md` for the index.
-
-| Doc | Purpose |
-|-----|---------|
-| `docs/design/brand-spec.md` | Color tokens, typography, logo, visual posture |
-| `docs/design/product.md` | Users, brand personality, anti-references, UX principles |
-| `docs/design/opendesign/` | Static HTML prototypes exported from Open Design — visual reference, not production code |
-
-**Implementation source of truth for tokens:** `app/globals.css` (`@theme` block). The Open Design prototypes may lag behind the live app.
-
-Design posture: institutional gravity with warmth — navy + gold + warm paper, Iowan Old Style display serif, system sans body, no card shadows (borders + whitespace), 8px radius, gold used sparingly. Sacred imagery is required on institutional surfaces.
+Leia `PRODUCT.md`, `DESIGN.md` e `COPY.md` antes de trabalho de UX/UI ou copy. O catálogo e os protótipos ficam em `docs/design/opendesign/`; são referência visual, não código de produção. A fonte executável dos tokens é `app/globals.css` e os componentes em `app/` e `components/` prevalecem em qualquer divergência.
 
 ## Development
 

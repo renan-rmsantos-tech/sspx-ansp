@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview — Escala de espaçamento · Arca N. S. da Providência</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); padding: 48px 32px 80px; font: var(--text-body); color: var(--fg); }
+  .card-shell { max-width: 1000px; margin: 0 auto; }
+  .card-head { padding-bottom: 16px; margin-bottom: 40px; border-bottom: 1px solid var(--border); }
+  .card-head .eyebrow { font: var(--text-caption); letter-spacing: var(--track-caption); text-transform: uppercase; color: var(--muted); }
+  .card-head h1 { font: var(--text-h2); letter-spacing: var(--track-heading); color: var(--accent); margin-top: 10px; }
+  .card-head p { font: var(--text-ui-sm); color: var(--muted); max-width: 62ch; margin-top: 8px; }
+  .group { margin-bottom: 48px; }
+  .group > h2 { font: var(--text-caption); letter-spacing: var(--track-caption); text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+  .ladder-row { display: grid; grid-template-columns: 90px minmax(0, 340px) 1fr; gap: 16px; align-items: center; margin-bottom: 12px; }
+  .ladder-row .tok { font: 550 12px/1.3 var(--font-mono); color: var(--fg); }
+  .ladder-bar { height: 24px; background: var(--cream); border: 1px solid var(--border); border-radius: 3px; }
+  .ladder-row .use { font: var(--text-ui-sm); color: var(--muted); }
+  .applied { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-default); }
+  .demo { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--pad-card); }
+  .demo h3 { font: var(--text-h4); }
+  .demo .rule { width: 48px; height: 2px; background: var(--gold); border: none; margin: 12px 0; }
+  .demo p { font: var(--text-ui-sm); color: var(--muted); }
+  .demo .tag { display: inline-block; margin-top: 16px; font: 500 12px/1.5 var(--font-body); padding: 2px 9px; border-radius: var(--radius-pill); background: var(--warn-light); color: var(--warn); }
+  .demo .measure { margin-top: 12px; font: 400 11px/1.5 var(--font-mono); color: var(--muted); }
+  .field { margin-bottom: var(--space-comfort); }
+  .field:last-child { margin-bottom: 0; }
+  .field label { display: block; font: var(--text-label); letter-spacing: var(--track-ui); margin-bottom: 6px; }
+  .field input { width: 100%; padding: var(--pad-input); font: var(--text-ui); color: var(--fg); background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-ctl); outline: none; }
+  .field .hint { font: 400 12px/1.4 var(--font-body); color: var(--muted); margin-top: 4px; }
+  .containers { display: flex; flex-direction: column; gap: 10px; }
+  .cbar { position: relative; height: 34px; border-radius: var(--radius-sm); background: var(--accent-light); border: 1px solid var(--border); display: flex; align-items: center; padding-left: 12px; }
+  .cbar span { font: 500 12px/1 var(--font-mono); color: var(--accent); }
+  .note { font: var(--text-ui-sm); color: var(--muted); max-width: 66ch; margin-top: 14px; }
+  code { font: 400 12px/1.4 var(--font-mono); }
+  @media (max-width: 640px) { .ladder-row { grid-template-columns: 72px 1fr; } .ladder-row .use { grid-column: 1 / -1; } }
+</style>
+</head>
+<body>
+<main class="card-shell">
+  <header class="card-head">
+    <div class="eyebrow">Preview card · 04</div>
+    <h1>Espaçamento e ritmo</h1>
+    <p>Nove degraus, nada entre eles. Nomes e usos vêm da seção 04 de
+       <code>design-system.html</code>; as medidas aplicadas vêm de
+       <code>formulario.html</code> e <code>admin.html</code>.</p>
+  </header>
+
+  <section class="group">
+    <h2>A escada</h2>
+    <div class="ladder-row"><span class="tok">--space-micro<br>4px</span><div class="ladder-bar" style="width:16px"></div><span class="use">Ícone ↔ label</span></div>
+    <div class="ladder-row"><span class="tok">--space-tight<br>8px</span><div class="ladder-bar" style="width:32px"></div><span class="use">Dentro de um componente</span></div>
+    <div class="ladder-row"><span class="tok">--space-compact<br>12px</span><div class="ladder-bar" style="width:48px"></div><span class="use">Entre elementos relacionados</span></div>
+    <div class="ladder-row"><span class="tok">--space-default<br>16px</span><div class="ladder-bar" style="width:64px"></div><span class="use">Gap padrão de grid</span></div>
+    <div class="ladder-row"><span class="tok">--space-comfort<br>24px</span><div class="ladder-bar" style="width:96px"></div><span class="use">Padding de card, grupo de campos</span></div>
+    <div class="ladder-row"><span class="tok">--space-spacious<br>32px</span><div class="ladder-bar" style="width:128px"></div><span class="use">Entre blocos internos de seção</span></div>
+    <div class="ladder-row"><span class="tok">--space-section<br>48px</span><div class="ladder-bar" style="width:192px"></div><span class="use">Entre blocos maiores</span></div>
+    <div class="ladder-row"><span class="tok">--space-region<br>64px</span><div class="ladder-bar" style="width:256px"></div><span class="use">Entre seções de página</span></div>
+    <div class="ladder-row"><span class="tok">--space-landmark<br>80px</span><div class="ladder-bar" style="width:320px"></div><span class="use">Entre grandes áreas / faixas</span></div>
+  </section>
+
+  <section class="group">
+    <h2>Aplicado — componentes reais</h2>
+    <div class="applied">
+      <div class="demo">
+        <h3>Família Silva</h3>
+        <hr class="rule">
+        <p>2 alunos matriculados · Solicitação de 50% de desconto · Renda familiar: R$ 3.200,00</p>
+        <span class="tag">Pendente</span>
+        <div class="measure">card: padding 24px · borda 1px · raio 8px · sem sombra</div>
+      </div>
+      <div class="demo">
+        <div class="field">
+          <label for="sp-nome">Nome completo</label>
+          <input id="sp-nome" type="text" placeholder="Maria da Silva Santos">
+          <div class="hint">Como consta no documento de identidade</div>
+        </div>
+        <div class="field">
+          <label for="sp-cpf">CPF do responsável</label>
+          <input id="sp-cpf" type="text" placeholder="000.000.000-00">
+        </div>
+        <div class="measure">campo: padding 11×14 · raio 6px · gap entre campos 24px (20px em formulário denso)</div>
+      </div>
+    </div>
+    <p class="note">Os controles são sempre um degrau mais fechados que o card que os contém:
+       raio <code>6px</code> dentro de raio <code>8px</code>.</p>
+  </section>
+
+  <section class="group">
+    <h2>Larguras de container</h2>
+    <div class="containers">
+      <div class="cbar" style="width:100%"><span>--maxw-page · 1120px — shell de marketing</span></div>
+      <div class="cbar" style="width:84%"><span>--maxw-console · 940px — coluna de conteúdo do console</span></div>
+      <div class="cbar" style="width:64%"><span>--maxw-form · 720px — coluna do formulário</span></div>
+      <div class="cbar" style="width:36%"><span>--maxw-card · 400px — card de login</span></div>
+      <div class="cbar" style="width:23%"><span>--sidebar-w · 250px</span></div>
+    </div>
+    <p class="note">Faixas de marketing usam <code>96px</code> de padding vertical; a faixa de CTA usa
+       <code>84px 24px</code>. O console é sticky topbar (53px) + grid <code>250px 1fr</code>.</p>
+  </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview — Cards de registro e tabelas · Arca N. S. da Providência</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); padding: 48px 32px 80px; font: var(--text-body); color: var(--fg); }
+  .card-shell { max-width: 980px; margin: 0 auto; }
+  .card-head { padding-bottom: 16px; margin-bottom: 40px; border-bottom: 1px solid var(--border); }
+  .card-head .eyebrow { font: var(--text-caption); letter-spacing: var(--track-caption); text-transform: uppercase; color: var(--muted); }
+  .card-head h1 { font: var(--text-h2); letter-spacing: var(--track-heading); color: var(--accent); margin-top: 10px; }
+  .card-head p { font: var(--text-ui-sm); color: var(--muted); max-width: 62ch; margin-top: 8px; }
+  .group { margin-bottom: 44px; }
+  .group > h2 { font: var(--text-caption); letter-spacing: var(--track-caption); text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+
+  .toolbar { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .search { flex: 1; max-width: 320px; }
+  .search input { width: 100%; padding: 9px 12px; font: var(--text-ui-sm); color: var(--fg); background: var(--surface);
+                  border: 1px solid var(--border); border-radius: var(--radius-ctl); outline: none; }
+  .sort { display: flex; align-items: center; gap: 8px; }
+  .sort label { font: var(--text-ui-sm); color: var(--muted); }
+  .sort select { padding: 7px 10px; font: var(--text-ui-sm); color: var(--fg); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-ctl); }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .filter-btn { padding: 6px 14px; font: 500 13px/1 var(--font-body); color: var(--muted); background: var(--surface);
+                border: 1px solid var(--border); border-radius: var(--radius-pill); cursor: pointer; }
+  .filter-btn.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+  .results-count { margin-top: 12px; font: var(--text-ui-sm); color: var(--muted); }
+
+  .rec-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-top: 12px; }
+  .rec-body { padding: 16px; }
+  .rec-top { display: flex; align-items: flex-start; gap: 12px; }
+  .rec-main { flex: 1; min-width: 0; }
+  .rec-name { font: 600 16px/1.3 var(--font-body); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .rec-meta { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px 16px; font: var(--text-ui-sm); color: var(--muted); }
+  .rec-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+  .rec-chevron { background: none; border: none; cursor: pointer; color: var(--muted); padding: 4px; border-radius: var(--radius-ctl); }
+  .rec-chevron svg { width: 20px; height: 20px; display: block; transform: rotate(180deg); }
+  .rec-detail { border-top: 1px solid var(--border); padding: 16px; }
+  .pill { display: inline-flex; padding: 2px 9px; font: 500 12px/1.5 var(--font-body); border-radius: var(--radius-pill); }
+  .pill-pendente { background: var(--warn-light); color: var(--warn); }
+  .pill-aprovada { background: var(--success-light); color: var(--success); }
+  .pill-mensal { background: var(--success-light); color: var(--success); }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; font: 500 13px/1 var(--font-body);
+         border-radius: var(--radius-ctl); cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--fg); }
+  .btn-outline-accent { border-color: var(--accent); color: var(--accent); }
+  .btn-accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .dtabs { display: flex; flex-wrap: wrap; gap: 2px; border-bottom: 1px solid var(--border); }
+  .dtab { padding: 8px 14px; font: 500 14px/1 var(--font-body); color: var(--muted); background: none; border: none;
+          border-bottom: 2px solid transparent; cursor: pointer; margin-bottom: -1px; }
+  .dtab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .dtab .cnt { color: var(--muted); font-size: 12px; margin-left: 4px; }
+  .dpanel { padding-top: 16px; }
+  .dsection { margin-bottom: 16px; }
+  .dsection h4 { font: 600 14px/1.3 var(--font-body); border-bottom: 1px solid var(--border); padding-bottom: 6px; margin-bottom: 10px; }
+  .dfields { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; }
+  .dfield { font: var(--text-ui-sm); }
+  .dfield .k { color: var(--muted); }
+  .dtable { width: 100%; border-collapse: collapse; font: var(--text-ui-sm); }
+  .dtable th { text-align: left; font: 500 12px/1 var(--font-body); color: var(--muted); padding: 4px 8px 6px 0; border-bottom: 1px solid var(--border); }
+  .dtable td { padding: 6px 8px 6px 0; border-bottom: 1px solid color-mix(in oklch, var(--border) 60%, transparent); font-variant-numeric: tabular-nums; }
+
+  .empty-state { text-align: center; padding: 48px 20px; color: var(--muted); font: var(--text-ui-sm);
+                 background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-top: 12px; }
+  .brand-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--pad-card); max-width: 340px; }
+  .brand-card .t { font: var(--text-h4); }
+  .brand-card .rule { width: 48px; height: 2px; background: var(--gold); border: none; margin: 12px 0; }
+  .brand-card p { font: var(--text-ui-sm); color: var(--muted); }
+  .ctx { font: var(--text-ui-sm); color: var(--muted); margin-top: 12px; max-width: 66ch; }
+  code { font: 400 12px/1.4 var(--font-mono); }
+  @media (max-width: 640px) { .dfields { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main class="card-shell">
+  <header class="card-head">
+    <div class="eyebrow">Preview card · 08</div>
+    <h1>Cards de registro, listas e tabelas</h1>
+    <p>O padrão central do console: toolbar → pills de filtro → contagem → lista de cards expansíveis
+       com quatro abas de detalhe. Dados de amostra vêm do seed de <code>admin.html</code>.</p>
+  </header>
+
+  <section class="group">
+    <h2>Toolbar, filtros e contagem</h2>
+    <div class="toolbar">
+      <div class="search"><input type="search" placeholder="Buscar por nome ou escola…" aria-label="Buscar solicitações"></div>
+      <div class="sort">
+        <label for="r-sort">Ordenar</label>
+        <select id="r-sort"><option>Mais recentes</option><option>Mais antigas</option><option>Nome da família</option><option>Escola</option></select>
+      </div>
+    </div>
+    <div class="filters">
+      <button type="button" class="filter-btn active">Todos (3)</button>
+      <button type="button" class="filter-btn">Pendente (2)</button>
+      <button type="button" class="filter-btn">Aprovada (1)</button>
+      <button type="button" class="filter-btn">Rejeitada (0)</button>
+    </div>
+    <p class="results-count">3 solicitações</p>
+  </section>
+
+  <section class="group">
+    <h2>Card de solicitação — fechado</h2>
+    <div class="rec-card">
+      <div class="rec-body">
+        <div class="rec-top">
+          <div class="rec-main">
+            <div class="rec-name">Roberto de Souza &amp; Fernanda de Souza <span class="pill pill-pendente">Pendente</span></div>
+            <div class="rec-meta">
+              <span>Escola Santa Catarina</span><span>12/06/2026</span><span>1 aluno</span><span>Desconto: 70%</span>
+            </div>
+          </div>
+          <div class="rec-actions">
+            <button type="button" class="btn btn-outline-accent">Exportar Dados (PDF)</button>
+          </div>
+          <button type="button" class="rec-chevron" aria-label="Expandir" style="transform: rotate(180deg);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>Card de solicitação — aberto</h2>
+    <div class="rec-card">
+      <div class="rec-body">
+        <div class="rec-top">
+          <div class="rec-main">
+            <div class="rec-name">José Antonio Ferreira &amp; Cláudia Ferreira <span class="pill pill-aprovada">Aprovada</span></div>
+            <div class="rec-meta">
+              <span>Escola Nossa Senhora da Providência</span><span>20/05/2026</span><span>1 aluno</span><span>Desconto: 50%</span>
+            </div>
+          </div>
+          <div class="rec-actions">
+            <button type="button" class="btn btn-outline-accent">Exportar Dados (PDF)</button>
+            <button type="button" class="btn btn-accent">Exportar Decisão</button>
+            <button type="button" class="btn btn-outline-accent">Gerar Contrato (PDF)</button>
+          </div>
+          <button type="button" class="rec-chevron" aria-label="Recolher">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="rec-detail">
+        <div class="dtabs">
+          <button type="button" class="dtab active">Resumo</button>
+          <button type="button" class="dtab">Documentos<span class="cnt">(2)</span></button>
+          <button type="button" class="dtab">Financeiro</button>
+          <button type="button" class="dtab">Decisão</button>
+        </div>
+        <div class="dpanel">
+          <div class="dsection">
+            <h4>Dados do Solicitante</h4>
+            <div class="dfields">
+              <div class="dfield"><span class="k">Pai: </span><span class="v">José Antonio Ferreira</span></div>
+              <div class="dfield"><span class="k">Mãe: </span><span class="v">Cláudia Ferreira</span></div>
+              <div class="dfield"><span class="k">CPF: </span><span class="v">222.333.444-55</span></div>
+              <div class="dfield"><span class="k">Profissão: </span><span class="v">Vigilante</span></div>
+              <div class="dfield"><span class="k">Endereço: </span><span class="v">Rua São Paulo, 88 — Centro</span></div>
+              <div class="dfield"><span class="k">Telefone: </span><span class="v">(11) 91234-5678</span></div>
+            </div>
+          </div>
+          <div class="dsection">
+            <h4>Alunos</h4>
+            <table class="dtable">
+              <thead><tr><th>Nome</th><th>CPF</th><th>Série</th><th>Mensalidade</th></tr></thead>
+              <tbody>
+                <tr><td>Beatriz Ferreira</td><td>—</td><td>3º EM</td><td>R$ 1.050,00</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="ctx">A abertura é <code>.open</code> no card: revela a região de detalhe separada por 1px, com abas
+       <strong>Resumo · Documentos · Financeiro · Decisão</strong>. O chevron gira 180°.</p>
+  </section>
+
+  <section class="group">
+    <h2>Card de benfeitor</h2>
+    <div class="rec-card">
+      <div class="rec-body">
+        <div class="rec-top">
+          <div class="rec-main">
+            <div class="rec-name">Antônio Pereira <span class="pill pill-mensal">Mensal · Indeterminado</span></div>
+            <div class="rec-meta"><span>antonio@email.com</span><span>CPF: 123.456.789-00</span><span>Cadastro: 14/06/2026</span></div>
+            <div class="rec-meta" style="margin-top:8px; color: var(--fg);">
+              <span><span style="color: var(--muted)">Valor: </span><strong>R$ 80,00/mês</strong></span>
+              <span><span style="color: var(--muted)">Meio: </span>Pix</span>
+              <span><span style="color: var(--muted)">Lembrete: </span>WhatsApp</span>
+            </div>
+          </div>
+          <div class="rec-actions">
+            <button type="button" class="btn btn-outline-accent">Visualizar e Imprimir</button>
+            <button type="button" class="btn" style="color: var(--danger);">Excluir</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>Card editorial e estado vazio</h2>
+    <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start;">
+      <div class="brand-card">
+        <div class="t">Família Silva</div>
+        <hr class="rule">
+        <p>2 alunos matriculados · Solicitação de 50% de desconto · Renda familiar: R$ 3.200,00</p>
+      </div>
+      <div class="empty-state" style="flex:1; min-width:280px; margin-top:0;">Nenhuma solicitação corresponde à busca.</div>
+    </div>
+    <p class="ctx">Estados vazios distinguem “ainda não há nada” de “nada corresponde à sua busca” — nunca a
+       mesma frase para os dois.</p>
+  </section>
+</main>
+</body>
+</html>

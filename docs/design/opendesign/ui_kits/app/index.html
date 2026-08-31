@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UI kit aplicado — Console da Arca N. S. da Providência</title>
+
+<!-- Design-system foundations. Every colour, type ramp, space and radius below
+     comes from these two files — the kit never redefines a token. -->
+<link rel="stylesheet" href="../../colors_and_type.css">
+<link rel="stylesheet" href="../../tokens.css">
+<!-- Component styles for the modular files loaded further down. -->
+<link rel="stylesheet" href="components/kit.css">
+
+<style>
+  /* Page chrome for the kit itself — not part of the design system. */
+  .kit-frame { border-bottom: 1px solid var(--border); background: var(--cream); padding: 20px 24px; }
+  .kit-frame .eyebrow { font: var(--text-caption); letter-spacing: var(--track-caption); text-transform: uppercase; color: var(--muted); }
+  .kit-frame h1 { font: 600 18px/1.3 var(--font-display); letter-spacing: var(--track-heading); color: var(--accent); margin-top: 8px; }
+  .kit-frame p { font: var(--text-ui-sm); color: var(--muted); max-width: 76ch; margin-top: 6px; }
+  .kit-frame ul { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; list-style: none; }
+  .kit-frame li { font: 400 11px/1.6 var(--font-mono); color: var(--muted); background: var(--surface);
+                  border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 2px 8px; }
+  .kit-fallback { padding: 40px 24px; font: var(--text-ui-sm); color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="kit-frame">
+  <div class="eyebrow">Applied UI kit · Arca N. S. da Providência</div>
+  <h1>Console de bolsas — montado a partir de componentes modulares</h1>
+  <p>Esta página não é uma maquete estática. Ela carrega sete arquivos de
+     <code>components/</code> e monta o console real: alterne as vistas na sidebar, clique nos stat
+     cards para filtrar, busque por família ou escola, expanda um card para ver as quatro abas,
+     e aprove ou rejeite uma solicitação — a contagem e os filtros reagem na hora. A aba
+     <strong>Textos de Decisão</strong> traz o editor de modelos com substituição de tokens ao vivo.</p>
+  <ul>
+    <li>components/App.js</li>
+    <li>components/Sidebar.js</li>
+    <li>components/StatBoard.js</li>
+    <li>components/RequestCard.js</li>
+    <li>components/DecisionPanel.js</li>
+    <li>components/Composer.js</li>
+    <li>components/Seal.js</li>
+    <li>components/kit.css</li>
+  </ul>
+</div>
+
+<div id="kit-root">
+  <p class="kit-fallback">Carregando o console aplicado…</p>
+</div>
+
+<!-- Modular components. Plain browser scripts: no build step, no bundler, no
+     JSX transform. Each file assigns its own global. -->
+<script src="components/Seal.js"></script>
+<script src="components/Sidebar.js"></script>
+<script src="components/StatBoard.js"></script>
+<script src="components/DecisionPanel.js"></script>
+<script src="components/RequestCard.js"></script>
+<script src="components/Composer.js"></script>
+<script src="components/App.js"></script>
+
+<script>
+  // Entry point: App composes Seal, Sidebar, StatBoard, RequestCard,
+  // DecisionPanel and Composer into the console shell.
+  App.mount(document.getElementById('kit-root'));
+</script>
+</body>
+</html>

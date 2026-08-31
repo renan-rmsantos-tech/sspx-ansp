@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview — Botões e ações · Arca N. S. da Providência</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); padding: 48px 32px 80px; font: var(--text-body); color: var(--fg); }
+  .card-shell { max-width: 1000px; margin: 0 auto; }
+  .card-head { padding-bottom: 16px; margin-bottom: 40px; border-bottom: 1px solid var(--border); }
+  .card-head .eyebrow { font: var(--text-caption); letter-spacing: var(--track-caption); text-transform: uppercase; color: var(--muted); }
+  .card-head h1 { font: var(--text-h2); letter-spacing: var(--track-heading); color: var(--accent); margin-top: 10px; }
+  .card-head p { font: var(--text-ui-sm); color: var(--muted); max-width: 62ch; margin-top: 8px; }
+  .group { margin-bottom: 44px; }
+  .group > h2 { font: var(--text-caption); letter-spacing: var(--track-caption); text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: var(--pad-btn);
+         font: 550 14px/1 var(--font-body); letter-spacing: var(--track-ui); border: none;
+         border-radius: var(--radius-ctl); cursor: pointer; transition: background var(--dur-quick), transform var(--dur-instant); }
+  .btn:active { transform: var(--nudge-active); }
+  .btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .btn svg { width: 16px; height: 16px; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-gold { background: var(--gold); color: var(--navy-deep); }
+  .btn-gold:hover { filter: brightness(1.06); }
+  .btn-outline { background: transparent; color: var(--accent); border: var(--border-width-strong) solid var(--accent); }
+  .btn-outline:hover { background: var(--accent-light); }
+  .btn-ghost { background: transparent; color: var(--muted); }
+  .btn-ghost:hover { background: var(--cream); color: var(--fg); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-sm { padding: var(--pad-btn-sm); font-size: 13px; }
+  .btn-lg { padding: var(--pad-btn-lg); font-size: 15px; }
+  .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+  .btn-loading .spinner { animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .btn-mini { padding: 4px 10px; font: 500 12px/1 var(--font-body); border-radius: var(--radius-ctl); cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--muted); }
+  .btn-mini.accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-mini.danger { color: var(--danger); border-color: color-mix(in oklch, var(--danger) 30%, transparent); }
+  .btn-xs { padding: 2px 8px; font-size: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--accent); cursor: pointer; }
+  .btn-add { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font: 500 13px/1 var(--font-body); letter-spacing: var(--track-ui);
+             color: var(--gold-dark); background: var(--gold-light); border: 1px solid transparent; border-radius: var(--radius-ctl); cursor: pointer; }
+  .btn-remove { width: 36px; height: 36px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); border-radius: var(--radius-ctl); cursor: pointer; font-size: 18px; display: grid; place-items: center; }
+  .btn-remove:hover { border-color: var(--danger); color: var(--danger); }
+  .navy-band { background: var(--accent); border-radius: var(--radius); padding: 32px; }
+  .navy-band .lbl { font: var(--text-caption); letter-spacing: var(--track-kicker); text-transform: uppercase; color: var(--gold); margin-bottom: 14px; }
+  .btn-band-ghost { color: var(--fg-on-navy); border: var(--border-width-strong) solid oklch(60% 0.04 250); background: transparent; }
+  .btn-band-ghost:hover { border-color: var(--gold); }
+  .spec { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: var(--pad-card); margin-top: 16px; }
+  .spec table { width: 100%; border-collapse: collapse; }
+  .spec th { text-align: left; font: 500 12px/1 var(--font-body); letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); padding: 0 12px 10px 0; border-bottom: 1px solid var(--border); }
+  .spec td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--border); font: var(--text-ui-sm); }
+  .spec tr:last-child td { border-bottom: none; }
+  .spec code { font: 400 12px/1.4 var(--font-mono); color: var(--fg); }
+  .ctx { font: var(--text-ui-sm); color: var(--muted); margin-top: 10px; max-width: 66ch; }
+  code { font: 400 12px/1.4 var(--font-mono); }
+</style>
+</head>
+<body>
+<main class="card-shell">
+  <header class="card-head">
+    <div class="eyebrow">Preview card · 06</div>
+    <h1>Botões e ações</h1>
+    <p>Cinco variantes, uma geometria. Rótulos são os reais das telas de origem —
+       <code>admin.html</code>, <code>formulario.html</code> e <code>index.html</code>.</p>
+  </header>
+
+  <section class="group">
+    <h2>Variantes</h2>
+    <div class="row">
+      <button type="button" class="btn btn-primary">Salvar Modelo</button>
+      <button type="button" class="btn btn-gold">Faça sua solicitação de bolsa
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+      <button type="button" class="btn btn-outline">Exportar Dados (PDF)</button>
+      <button type="button" class="btn btn-ghost">Cancelar</button>
+      <button type="button" class="btn btn-danger">Excluir</button>
+    </div>
+    <p class="ctx">Primário navy é a ação padrão do produto. O dourado é reservado ao CTA principal das
+       superfícies públicas — no máximo um por tela.</p>
+  </section>
+
+  <section class="group">
+    <h2>Tamanhos</h2>
+    <div class="row">
+      <button type="button" class="btn btn-primary btn-sm">Aprovar</button>
+      <button type="button" class="btn btn-primary">Próximo</button>
+      <button type="button" class="btn btn-primary btn-lg">Enviar Solicitação</button>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>Estados</h2>
+    <div class="row">
+      <button type="button" class="btn btn-primary">Normal</button>
+      <button type="button" class="btn btn-primary" disabled>Desabilitado</button>
+      <button type="button" class="btn btn-primary btn-loading" disabled aria-busy="true">
+        <svg class="spinner" width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="2" stroke-dasharray="28" stroke-dashoffset="8" stroke-linecap="round"/></svg>
+        Enviando…
+      </button>
+    </div>
+    <p class="ctx">Carregando mantém o rótulo, troca por “Enviando…”, adiciona o spinner de traço e marca
+       <code>aria-busy</code> + <code>disabled</code>.</p>
+  </section>
+
+  <section class="group">
+    <h2>Ações de decisão</h2>
+    <div class="row">
+      <button type="button" class="btn btn-success">Confirmar aprovação</button>
+      <button type="button" class="btn btn-danger">Confirmar rejeição</button>
+      <button type="button" class="btn btn-ghost">Cancelar</button>
+    </div>
+    <p class="ctx">Fills sólidos de status só existem dentro do formulário de decisão.</p>
+  </section>
+
+  <section class="group">
+    <h2>Controles secundários</h2>
+    <div class="row">
+      <button type="button" class="btn-add">+ Adicionar aluno</button>
+      <button type="button" class="btn-remove" title="Remover">×</button>
+      <button type="button" class="btn-mini accent">Ativar</button>
+      <button type="button" class="btn-mini">Desativar</button>
+      <button type="button" class="btn-mini danger">Excluir</button>
+      <button type="button" class="btn-xs">Visualizar</button>
+      <button type="button" class="btn-xs">Baixar</button>
+    </div>
+    <p class="ctx"><code>btn-add</code> é dourado-suave e aparece sempre no fim de listas repetíveis
+       (alunos, filhos, veículos, cláusulas).</p>
+  </section>
+
+  <section class="group">
+    <h2>Sobre faixa navy</h2>
+    <div class="navy-band">
+      <div class="lbl">Faça sua solicitação</div>
+      <div class="row">
+        <button type="button" class="btn btn-gold">Abrir formulário de solicitação
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+        <button type="button" class="btn btn-band-ghost">Conheça a Arca</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="group">
+    <h2>Especificação</h2>
+    <div class="spec">
+      <table>
+        <thead><tr><th>Propriedade</th><th>Valor</th></tr></thead>
+        <tbody>
+          <tr><td>Raio</td><td><code>var(--radius-ctl)</code> = 6px</td></tr>
+          <tr><td>Tipografia</td><td><code>550 14px/1</code>, tracking <code>0.02em</code></td></tr>
+          <tr><td>Padding</td><td>sm <code>7×14</code> · default <code>11×24</code> · lg <code>14×32</code></td></tr>
+          <tr><td>Hover</td><td>troca de fundo (<code>0.15s</code>) — nunca escala nem sombra</td></tr>
+          <tr><td>Active</td><td><code>translateY(1px)</code> em <code>0.1s</code></td></tr>
+          <tr><td>Foco</td><td><code>outline: 2px solid var(--gold); outline-offset: 2px</code></td></tr>
+          <tr><td>Disabled</td><td><code>opacity: 0.45</code> + <code>cursor: not-allowed</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,92 @@
+/* ============================================================================
+   Arca N. S. da Providência — Spacing, Radius, Elevation & Motion Tokens
+   Companion to colors_and_type.css. Load colors_and_type.css first.
+
+   Every step below was measured from the source surfaces (design-system.html
+   documents the spacing ladder; formulario.html and admin.html apply it).
+   ============================================================================ */
+
+:root {
+  /* ── Spacing ladder ───────────────────────────────────────────────────────
+     Named exactly as documented in section 04 of design-system.html.       */
+  --space-micro:     4px;   /* icon ↔ label                                 */
+  --space-tight:     8px;   /* inside a component                           */
+  --space-compact:  12px;   /* between related elements                     */
+  --space-default:  16px;   /* default grid gap                             */
+  --space-comfort:  24px;   /* card padding, form field group               */
+  --space-spacious: 32px;   /* between blocks inside a section              */
+  --space-section:  48px;   /* between larger blocks                        */
+  --space-region:   64px;   /* between page sections                        */
+  --space-landmark: 80px;   /* between major areas / marketing bands        */
+
+  /* Applied paddings pulled straight from the source surfaces. */
+  --pad-card:        24px;         /* .card in design-system.html           */
+  --pad-card-lg:     32px;         /* form step card in formulario.html     */
+  --pad-panel:       20px;         /* .panel in admin.html                  */
+  --pad-input:       11px 14px;    /* text inputs, selects                  */
+  --pad-input-sm:    10px 12px;    /* inputs inside repeated rows           */
+  --pad-btn:         11px 24px;
+  --pad-btn-sm:       7px 14px;
+  --pad-btn-lg:      14px 32px;
+  --pad-band:        84px 24px;    /* marketing CTA bands                   */
+
+  /* ── Radius ───────────────────────────────────────────────────────────── */
+  --radius-sm:   4px;    /* upload chips, tiny swatches                     */
+  --radius-ctl:  6px;    /* buttons, inputs, selects — the control radius   */
+  --radius:      8px;    /* cards, panels, seal frames — the house radius   */
+  --radius-lg:  12px;    /* editorial cards, contact tiles                  */
+  --radius-pill: 999px;  /* status badges, filter pills                     */
+
+  /* ── Borders ──────────────────────────────────────────────────────────── */
+  --border-width:        1px;      /* the default and near-only weight      */
+  --border-width-strong: 1.5px;    /* outline buttons, dashed upload areas  */
+  --border-seal:         3px;      /* the seal's gold ring                  */
+
+  /* ── Elevation ────────────────────────────────────────────────────────────
+     This system is border-led, not shadow-led. Cards get NO shadow. Shadows
+     exist only for (a) focus rings and (b) the seal floating over navy.   */
+  --ring-focus:       0 0 0 3px var(--accent-light);
+  --ring-focus-error: 0 0 0 3px oklch(92% 0.04 25);
+  --ring-hairline:    0 0 0 1px var(--accent);
+  --shadow-seal:      drop-shadow(0 20px 44px rgba(0, 0, 0, 0.45));
+  --shadow-seal-sm:   drop-shadow(0 8px 20px rgba(0, 0, 0, 0.45));
+
+  /* ── Layout ───────────────────────────────────────────────────────────── */
+  --maxw-page:     1120px;  /* marketing + design-system shell              */
+  --maxw-form:      720px;  /* single-column form container                 */
+  --maxw-console:   940px;  /* admin content column                         */
+  --maxw-card:      400px;  /* login card                                   */
+  --sidebar-w:      250px;  /* admin sidebar                                */
+  --topbar-h:        53px;  /* admin topbar (14px pad + content + border)   */
+  --nav-h:           72px;  /* marketing nav, expands to 128px on brand hover */
+  --nav-h-expanded: 128px;
+
+  /* ── Breakpoints (documented for reference; use in @media by value) ───── */
+  --bp-sm:  460px;   /* stack devotional figure                             */
+  --bp-md:  560px;   /* collapse two-column form rows                       */
+  --bp-lg:  860px;   /* admin sidebar becomes a horizontal rail             */
+  --bp-xl:  880px;   /* marketing bands collapse to one column              */
+
+  /* ── Motion ───────────────────────────────────────────────────────────── */
+  --dur-instant:  0.1s;    /* :active nudge                                 */
+  --dur-quick:   0.15s;    /* hover, border-color, background               */
+  --dur-medium:   0.3s;    /* progress bar fill, nav growth                 */
+  --dur-reveal:   0.7s;    /* scroll reveal                                 */
+  --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring:   cubic-bezier(0.34, 1.4, 0.64, 1);
+  --nudge-active:  translateY(1px);
+}
+
+/* ── Reduced motion — mandatory in every surface of this system ─────────── */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-instant: 0.01ms;
+    --dur-quick:   0.01ms;
+    --dur-medium:  0.01ms;
+    --dur-reveal:  0.01ms;
+  }
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

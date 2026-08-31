@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview — Cores semânticas de status · Arca N. S. da Providência</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); padding: 48px 32px 80px; font: var(--text-body); color: var(--fg); }
+  .card-shell { max-width: 1000px; margin: 0 auto; }
+  .card-head { padding-bottom: 16px; margin-bottom: 40px; border-bottom: 1px solid var(--border); }
+  .card-head .eyebrow { font: var(--text-caption); letter-spacing: var(--track-caption); text-transform: uppercase; color: var(--muted); }
+  .card-head h1 { font: var(--text-h2); letter-spacing: var(--track-heading); color: var(--accent); margin-top: 10px; }
+  .card-head p { font: var(--text-ui-sm); color: var(--muted); max-width: 62ch; margin-top: 8px; }
+  .group { margin-bottom: 48px; }
+  .group > h2 { font: var(--text-caption); letter-spacing: var(--track-caption); text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  th { text-align: left; font: 500 12px/1 var(--font-body); letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  td { padding: 14px; border-bottom: 1px solid var(--border); font: var(--text-ui-sm); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .dot { width: 26px; height: 26px; border-radius: var(--radius-pill); display: inline-block; vertical-align: middle; }
+  .pill { display: inline-flex; padding: 2px 9px; font: 500 12px/1.5 var(--font-body); border-radius: var(--radius-pill); }
+  .pill-pendente { background: var(--warn-light); color: var(--warn); }
+  .pill-aprovada { background: var(--success-light); color: var(--success); }
+  .pill-rejeitada { background: var(--danger-light); color: var(--danger); }
+  .pill-mensal { background: var(--success-light); color: var(--success); }
+  .pill-unica { background: var(--accent-light); color: var(--accent); }
+  .pill-muted { background: var(--cream); color: var(--muted); }
+  .mono { font: 400 12px/1.5 var(--font-mono); color: var(--muted); }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-default); }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .stat.active { border-color: var(--accent); background: var(--accent-light); }
+  .stat .lbl { font: 500 12px/1.3 var(--font-body); color: var(--muted); }
+  .stat .val { font: var(--text-stat); letter-spacing: var(--track-display); font-variant-numeric: tabular-nums; margin-top: 6px; }
+  .val.total { color: var(--fg); } .val.pendente { color: var(--warn); }
+  .val.aprovada { color: var(--success); } .val.rejeitada { color: var(--danger); }
+  .decision { border: 1px solid var(--border); background: var(--cream); border-radius: var(--radius); padding: var(--pad-card); max-width: 460px; }
+  .decision h3 { font: 600 14px/1 var(--font-body); }
+  .decision p { font: var(--text-ui-sm); color: var(--danger); margin-top: 8px; }
+  .decision label { display: block; font: var(--text-ui-sm); color: var(--muted); margin: 12px 0 4px; }
+  .decision input { width: 100px; padding: var(--pad-input-sm); font: var(--text-ui-sm); border: 1px solid var(--border); border-radius: var(--radius-ctl); background: var(--surface); font-variant-numeric: tabular-nums; }
+  .btn-row { display: flex; gap: 8px; margin-top: 14px; }
+  .btn { padding: 7px 14px; font: 500 13px/1 var(--font-body); border-radius: var(--radius-ctl); border: 1px solid var(--border); background: var(--surface); color: var(--fg); cursor: pointer; }
+  .btn-success { background: var(--success); color: #fff; border-color: var(--success); }
+  .btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+  .note { font: var(--text-ui-sm); color: var(--muted); margin-top: 14px; max-width: 62ch; }
+  @media (max-width: 720px) { .stats { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<main class="card-shell">
+  <header class="card-head">
+    <div class="eyebrow">Preview card · 02</div>
+    <h1>Status e semântica</h1>
+    <p>As três decisões do pipeline de bolsas — <strong>pendente</strong>, <strong>aprovada</strong>,
+       <strong>rejeitada</strong> — mais as frequências de doação. Cores semânticas nunca são usadas
+       como cor de marca.</p>
+  </header>
+
+  <section class="group">
+    <h2>Ramp semântico</h2>
+    <table>
+      <thead><tr><th>Cor</th><th>Token</th><th>Fill claro</th><th>Pill</th><th>Significado no produto</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="dot" style="background: var(--warn);"></span></td>
+          <td class="mono">--warn<br>oklch(68% 0.14 70)</td>
+          <td><span class="dot" style="background: var(--warn-light); border: 1px solid var(--border);"></span></td>
+          <td><span class="pill pill-pendente">Pendente</span></td>
+          <td>Solicitação aguardando análise da comissão.</td>
+        </tr>
+        <tr>
+          <td><span class="dot" style="background: var(--success);"></span></td>
+          <td class="mono">--success<br>oklch(52% 0.14 155)</td>
+          <td><span class="dot" style="background: var(--success-light); border: 1px solid var(--border);"></span></td>
+          <td><span class="pill pill-aprovada">Aprovada</span></td>
+          <td>Bolsa concedida — desconto registrado e contrato liberado.</td>
+        </tr>
+        <tr>
+          <td><span class="dot" style="background: var(--danger);"></span></td>
+          <td class="mono">--danger<br>oklch(52% 0.16 25)</td>
+          <td><span class="dot" style="background: var(--danger-light); border: 1px solid var(--border);"></span></td>
+          <td><span class="pill pill-rejeitada">Rejeitada</span></td>
+          <td>Pedido negado. Ação definitiva, exige confirmação explícita.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="group">
+    <h2>Pills auxiliares</h2>
+    <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
+      <span class="pill pill-mensal">Mensal · Indeterminado</span>
+      <span class="pill pill-unica">Única</span>
+      <span class="pill pill-muted">Ano letivo inativo</span>
+    </div>
+    <p class="note">Frequência de doação de benfeitores (<code>mensal</code> / <code>unica</code>) e estados
+       neutros reutilizam o mesmo formato: raio pill, fill claro, texto saturado.</p>
+  </section>
+
+  <section class="group">
+    <h2>Stat cards — filtros clicáveis</h2>
+    <div class="stats">
+      <div class="stat active"><div class="lbl">Total</div><div class="val total">3</div></div>
+      <div class="stat"><div class="lbl">Pendentes</div><div class="val pendente">2</div></div>
+      <div class="stat"><div class="lbl">Aprovadas</div><div class="val aprovada">1</div></div>
+      <div class="stat"><div class="lbl">Rejeitadas</div><div class="val rejeitada">0</div></div>
+    </div>
+    <p class="note">Os stat cards de <code>admin.html</code> não são decoração: clicar num deles define o
+       filtro da lista. O card ativo troca borda e fundo para <code>--accent</code> / <code>--accent-light</code>.</p>
+  </section>
+
+  <section class="group">
+    <h2>Ação destrutiva</h2>
+    <div class="decision">
+      <h3>Rejeitar Solicitação</h3>
+      <p>Esta ação é definitiva. A família será notificada da rejeição.</p>
+      <label for="pct">Desconto (%)</label>
+      <input id="pct" type="number" min="0" max="100" value="50">
+      <div class="btn-row">
+        <button type="button" class="btn btn-danger">Confirmar rejeição</button>
+        <button type="button" class="btn">Cancelar</button>
+      </div>
+    </div>
+    <p class="note">Fills sólidos de status existem só aqui: no botão de confirmação dentro do formulário de
+       decisão. Em listas e cards, status sempre aparece como pill de fill claro.</p>
+  </section>
+</main>
+</body>
+</html>

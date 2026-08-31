@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview — Superfícies aplicadas (fontes preservadas) · Arca N. S. da Providência</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); padding: 48px 32px 80px; font: var(--text-body); color: var(--fg); }
+  .card-shell { max-width: 1100px; margin: 0 auto; }
+  .card-head { padding-bottom: 16px; margin-bottom: 32px; border-bottom: 1px solid var(--border); }
+  .card-head .eyebrow { font: var(--text-caption); letter-spacing: var(--track-caption); text-transform: uppercase; color: var(--muted); }
+  .card-head h1 { font: var(--text-h2); letter-spacing: var(--track-heading); color: var(--accent); margin-top: 10px; }
+  .card-head p { font: var(--text-ui-sm); color: var(--muted); max-width: 68ch; margin-top: 8px; }
+  .notice { border: 1px solid var(--border); background: var(--cream); border-radius: var(--radius);
+            padding: 16px 20px; font: var(--text-ui-sm); color: var(--fg); margin-bottom: 40px; }
+  .notice strong { font-weight: 600; }
+
+  .surface { margin-bottom: 44px; }
+  .surface-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+  .surface-head h2 { font: var(--text-h3); color: var(--accent); }
+  .surface-head .file { font: 400 12px/1.5 var(--font-mono); color: var(--muted); }
+  .surface-head a { margin-left: auto; font: 500 13px/1 var(--font-body); color: var(--accent);
+                    text-decoration: none; border: 1px solid var(--accent); border-radius: var(--radius-ctl); padding: 7px 14px; }
+  .surface-head a:hover { background: var(--accent-light); }
+  .surface > p { font: var(--text-ui-sm); color: var(--muted); max-width: 70ch; margin-bottom: 14px; }
+
+  .viewport { position: relative; height: 460px; overflow: hidden; border: 1px solid var(--border);
+              border-radius: var(--radius); background: var(--surface); }
+  .viewport iframe { position: absolute; top: 0; left: 0; width: 1400px; height: 1150px; border: 0;
+                     transform: scale(0.4); transform-origin: 0 0; }
+  .viewport.tall iframe { height: 1500px; }
+  .viewport.narrow iframe { width: 1000px; transform: scale(0.56); }
+  .viewport iframe { background: var(--bg); }
+
+  .pairs { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-comfort); }
+  .tokens-used { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
+                 padding: 14px 18px; margin-top: 12px; }
+  .tokens-used span { display: inline-block; font: 400 11px/1.6 var(--font-mono); color: var(--muted);
+                      background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+                      padding: 2px 8px; margin: 3px 6px 3px 0; }
+  code { font: 400 12px/1.4 var(--font-mono); }
+</style>
+<script>
+// Preview convenience only, and it must run before the iframes are created:
+// the admin console guards on this flag and would otherwise redirect its frame
+// to login.html. Wrapped because localStorage is blocked on some file:// origins.
+try { localStorage.setItem('bolsa_auth', 'true'); } catch (e) { /* preview runs unauthenticated */ }
+</script>
+</head>
+<body>
+<main class="card-shell">
+  <header class="card-head">
+    <div class="eyebrow">Preview card · 10</div>
+    <h1>Superfícies aplicadas</h1>
+    <p>Este card carrega os arquivos de origem preservados na raiz do projeto — não recriações.
+       Cada quadro abaixo é o HTML real do projeto ASNP rodando dentro de um iframe em escala reduzida.</p>
+  </header>
+
+  <div class="notice">
+    <strong>Nota de fidelidade.</strong> Os iframes exigem que a pasta seja servida (o painel de arquivos do
+    Open Design já faz isso). O console de administração checa <code>localStorage.bolsa_auth</code> e redireciona
+    para o login — esta página seta essa flag antes de carregar, apenas para a revisão.
+    O rodapé de <code>index.html</code> aponta para <code>mqjmgzod-logo.png</code> (marca da FSSPX), que não veio
+    no pacote de evidências; a imagem aparece quebrada e está registrada como lacuna em
+    <code>context/provenance.md</code>.
+  </div>
+
+  <section class="surface">
+    <div class="surface-head">
+      <h2>Site público</h2>
+      <span class="file">index.html</span>
+      <a href="../index.html" target="_blank" rel="noopener">Abrir em tamanho real</a>
+    </div>
+    <p>Nav navy sticky com o selo, hero em gradiente radial com fio dourado na base, faixa de missão em
+       <code>--surface</code>, faixa de CTA em <code>--accent</code>, faixa de benfeitor em <code>--cream</code>,
+       rodapé em <code>--navy-deep</code>.</p>
+    <div class="viewport"><iframe src="../index.html" title="Site público da Arca N. S. da Providência" loading="lazy"></iframe></div>
+    <div class="tokens-used">
+      <span>--accent</span><span>--navy-deep</span><span>--gold</span><span>--cream</span>
+      <span>--maxw-page 1120px</span><span>--nav-h 72px</span><span>clamp(40px, 6vw, 64px)</span><span>--space-landmark</span>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="surface-head">
+      <h2>Formulário de solicitação</h2>
+      <span class="file">formulario.html</span>
+      <a href="../formulario.html" target="_blank" rel="noopener">Abrir em tamanho real</a>
+    </div>
+    <p>Coluna única de 720px, navegação de etapas sticky com barra de seis segmentos, cards por grupo lógico,
+       áreas de upload tracejadas e totais monetários calculados ao vivo.</p>
+    <div class="viewport tall narrow"><iframe src="../formulario.html" title="Formulário de solicitação de bolsa" loading="lazy"></iframe></div>
+    <div class="tokens-used">
+      <span>--maxw-form 720px</span><span>--pad-card-lg 32px</span><span>--radius-ctl 6px</span>
+      <span>--gold-light</span><span>--danger</span><span>--ring-focus</span><span>tabular-nums</span>
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="surface-head">
+      <h2>Console de administração</h2>
+      <span class="file">admin.html</span>
+      <a href="../admin.html" target="_blank" rel="noopener">Abrir em tamanho real</a>
+    </div>
+    <p>Topbar sticky, sidebar de 250px agrupada, stat cards clicáveis que definem o filtro, pills com contagem
+       viva, cards de solicitação expansíveis com quatro abas e o fluxo de decisão aprovar/rejeitar.</p>
+    <div class="viewport"><iframe src="../admin.html" title="Console de administração da Arca" loading="lazy"></iframe></div>
+    <div class="tokens-used">
+      <span>--sidebar-w 250px</span><span>--topbar-h 53px</span><span>--maxw-console 940px</span>
+      <span>--accent-light</span><span>--warn-light</span><span>--success-light</span><span>--danger-light</span>
+    </div>
+  </section>
+
+  <div class="pairs">
+    <section class="surface" style="margin-bottom:0;">
+      <div class="surface-head">
+        <h2>Login</h2>
+        <span class="file">login.html</span>
+      </div>
+      <p>Card de 400px centrado, selo a 72px, banner de erro inline em <code>role="alert"</code>.</p>
+      <div class="viewport narrow" style="height: 400px;"><iframe src="../login.html" title="Login da área administrativa" loading="lazy"></iframe></div>
+    </section>
+
+    <section class="surface" style="margin-bottom:0;">
+      <div class="surface-head">
+        <h2>Referência de tokens</h2>
+        <span class="file">design-system.html</span>
+      </div>
+      <p>A página de sistema escrita à mão que originou a paleta, os espécimes e a escada de espaçamento.</p>
+      <div class="viewport narrow" style="height: 400px;"><iframe src="../design-system.html" title="Página de design system original" loading="lazy"></iframe></div>
+    </section>
+  </div>
+</main>
+</body>
+</html>

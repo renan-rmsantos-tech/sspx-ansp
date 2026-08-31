@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview — Espécimes tipográficos · Arca N. S. da Providência</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); padding: 48px 32px 80px; font: var(--text-body); color: var(--fg); }
+  .card-shell { max-width: 940px; margin: 0 auto; }
+  .card-head { padding-bottom: 16px; margin-bottom: 40px; border-bottom: 1px solid var(--border); }
+  .card-head .eyebrow { font: var(--text-caption); letter-spacing: var(--track-caption); text-transform: uppercase; color: var(--muted); }
+  .card-head h1 { font: var(--text-h2); letter-spacing: var(--track-heading); color: var(--accent); margin-top: 10px; }
+  .card-head p { font: var(--text-ui-sm); color: var(--muted); max-width: 62ch; margin-top: 8px; }
+  .stacks { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-default); margin-bottom: 48px; }
+  .stack { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: var(--pad-card); }
+  .stack .role { font: var(--text-caption); letter-spacing: var(--track-caption); text-transform: uppercase; color: var(--muted); }
+  .stack .sample { margin: 12px 0 10px; }
+  .stack .css { font: 400 11px/1.5 var(--font-mono); color: var(--muted); word-break: break-word; }
+  .spec { padding-bottom: 28px; margin-bottom: 28px; border-bottom: 1px solid var(--border); }
+  .spec:last-of-type { border-bottom: none; }
+  .spec .label { font: var(--text-caption); letter-spacing: var(--track-caption); text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .spec .meta { margin-top: 8px; font: 400 12px/1.5 var(--font-mono); color: var(--muted); }
+  .s-display { font: var(--text-display); letter-spacing: var(--track-display); }
+  .s-h1 { font: var(--text-h1); letter-spacing: var(--track-heading); }
+  .s-h2 { font: var(--text-h2); letter-spacing: var(--track-heading); }
+  .s-h3 { font: var(--text-h3); }
+  .s-stat { font: var(--text-stat); letter-spacing: var(--track-display); font-variant-numeric: tabular-nums; color: var(--success); }
+  .s-lede { font: var(--text-lede); max-width: 60ch; }
+  .s-body { font: var(--text-body); max-width: 65ch; }
+  .s-ui { font: var(--text-ui); }
+  .s-label { font: var(--text-label); letter-spacing: var(--track-ui); }
+  .s-caption { font: var(--text-caption); letter-spacing: var(--track-caption); text-transform: uppercase; color: var(--muted); }
+  .s-kicker { font: var(--text-caption); letter-spacing: var(--track-kicker); text-transform: uppercase; color: var(--gold-dark); }
+  .s-mono { font: var(--text-mono); }
+  .quote { border-left: 3px solid var(--gold); background: var(--cream); border-radius: 0 var(--radius) var(--radius) 0; padding: 18px 26px; max-width: 62ch; }
+  .quote blockquote { font: italic 400 19px/1.55 var(--font-display); color: var(--accent); text-wrap: pretty; }
+  .quote cite { display: block; margin-top: 12px; font: var(--text-caption); letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold-dark); font-style: normal; }
+  .rules { border: 1px solid var(--border); border-radius: var(--radius); background: var(--cream); padding: var(--pad-card); margin-top: 40px; }
+  .rules li { font: var(--text-ui-sm); margin-left: 18px; margin-bottom: 8px; }
+  .rules li:last-child { margin-bottom: 0; }
+  code { font: 400 12px/1.4 var(--font-mono); }
+</style>
+</head>
+<body>
+<main class="card-shell">
+  <header class="card-head">
+    <div class="eyebrow">Preview card · 03</div>
+    <h1>Espécimes tipográficos</h1>
+    <p>Serifa para autoridade institucional, sans do sistema para o trabalho. Textos de amostra
+       vêm das telas reais (<code>index.html</code>, <code>formulario.html</code>, <code>admin.html</code>).</p>
+  </header>
+
+  <section class="stacks">
+    <div class="stack">
+      <div class="role">Display</div>
+      <div class="sample" style="font: 600 30px/1.15 var(--font-display); letter-spacing: -0.01em;">Providência</div>
+      <div class="css">'Iowan Old Style', 'Charter', 'Palatino', Georgia, serif</div>
+    </div>
+    <div class="stack">
+      <div class="role">Body / UI</div>
+      <div class="sample" style="font: 400 18px/1.4 var(--font-body);">Solicitar bolsa</div>
+      <div class="css">-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif</div>
+    </div>
+    <div class="stack">
+      <div class="role">Mono</div>
+      <div class="sample" style="font: 400 17px/1.4 var(--font-mono);">{ano_letivo}</div>
+      <div class="css">ui-monospace, 'SF Mono', Menlo, monospace</div>
+    </div>
+  </section>
+
+  <section class="spec">
+    <div class="label">Display — 48 / 600</div>
+    <div class="s-display">Providência e Fé</div>
+    <div class="meta">font: 600 48px/1.1 var(--font-display) · letter-spacing: −0.02em</div>
+  </section>
+
+  <section class="spec">
+    <div class="label">Heading 1 — 36 / 600</div>
+    <div class="s-h1">Solicitação de Bolsa de Estudos</div>
+    <div class="meta">font: 600 36px/1.15 var(--font-display) · −0.01em · hero usa clamp(40px, 6vw, 64px)</div>
+  </section>
+
+  <section class="spec">
+    <div class="label">Heading 2 — 28 / 600</div>
+    <div class="s-h2">Dados do Responsável</div>
+    <div class="meta">font: 600 28px/1.2 var(--font-display) · −0.01em</div>
+  </section>
+
+  <section class="spec">
+    <div class="label">Heading 3 — 22 / 600</div>
+    <div class="s-h3">Informações Financeiras</div>
+    <div class="meta">font: 600 22px/1.25 var(--font-display)</div>
+  </section>
+
+  <section class="spec">
+    <div class="label">Stat — 26 / 600 · tabular</div>
+    <div class="s-stat">1&nbsp;<span style="font: var(--text-ui-sm); color: var(--muted); letter-spacing: 0;">aprovada</span></div>
+    <div class="meta">font: 600 26px/1.1 var(--font-display) · font-variant-numeric: tabular-nums</div>
+  </section>
+
+  <section class="spec">
+    <div class="label">Lede — 19 / 400</div>
+    <div class="s-lede">Conscientes de que o fim do homem não é outro senão a vida eterna, abraçamos com fidelidade a máxima do Papa Pio XI.</div>
+    <div class="meta">font: 400 19px/1.65 var(--font-body) · max-width 60ch · text-wrap: pretty</div>
+  </section>
+
+  <section class="spec">
+    <div class="label">Pull-quote — display, itálico</div>
+    <figure class="quote">
+      <blockquote>“O fim próprio e imediato da educação cristã é cooperar com a graça divina na formação do verdadeiro e perfeito cristão.”</blockquote>
+      <cite>Pio XI · Divini Illius Magistri</cite>
+    </figure>
+    <div class="meta">font: italic 400 19px/1.55 var(--font-display) · citação em --gold-dark, caixa alta, 0.1em</div>
+  </section>
+
+  <section class="spec">
+    <div class="label">Body — 16 / 400</div>
+    <div class="s-body">A Arca Nossa Senhora da Providência oferece bolsas de estudo parciais para famílias que comprovem necessidade financeira, conforme critérios socioeconômicos estabelecidos pela diretoria de cada escola mantida.</div>
+    <div class="meta">font: 400 16px/1.55 var(--font-body) · max-width 65ch</div>
+  </section>
+
+  <section class="spec">
+    <div class="label">UI — 15 / 400 · e Label — 13 / 550</div>
+    <div class="s-ui">Buscar por nome ou escola…</div>
+    <div class="s-label" style="margin-top:10px;">Nome e sobrenome do pai <span style="color: var(--danger);">*</span></div>
+    <div class="meta">UI: 400 15px/1.5 · Label: 550 13px/1 · letter-spacing 0.02em</div>
+  </section>
+
+  <section class="spec">
+    <div class="label">Caption e Kicker — 11 / 550 · UPPERCASE</div>
+    <div class="s-caption">Status da Solicitação</div>
+    <div class="s-kicker" style="margin-top:10px;">Faça sua solicitação</div>
+    <div class="meta">Caption 0.06em · Kicker 0.14em — caixa alta nunca abaixo de 0.06em</div>
+  </section>
+
+  <section class="spec">
+    <div class="label">Mono — 14 / 400</div>
+    <div class="s-mono">ID: 2024-0847 · CPF: •••.•••.123-45 · {desconto}%</div>
+    <div class="meta">font: 400 14px/1.5 var(--font-mono)</div>
+  </section>
+
+  <div class="rules">
+    <ul>
+      <li><strong>550</strong> é um peso real deste sistema — labels e captions o usam; <strong>600</strong> pertence à serifa.</li>
+      <li>Nunca corpo de texto em serifa, nunca título em sans. A divisão é a identidade.</li>
+      <li>Títulos com <code>text-wrap: balance</code>; parágrafos longos com <code>text-wrap: pretty</code>.</li>
+      <li>Dinheiro e contagens sempre com <code>font-variant-numeric: tabular-nums</code>.</li>
+    </ul>
+  </div>
+</main>
+</body>
+</html>
