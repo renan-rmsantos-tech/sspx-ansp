@@ -117,6 +117,7 @@ STORAGE_DIR=/data/uploads
 ADMIN_EMAIL=<email do comitê>
 ADMIN_PASSWORD=<senha forte inicial>
 APP_HOST=ansp.apps.rmsantos.tech
+APP_HOST_LEGACY=ansp.apps.rmsantos.tech
 BACKUP_PASSPHRASE=<openssl rand -base64 32>
 # AUTH_BYPASS deve ficar FORA do .env de produção.
 ```
