@@ -45,6 +45,7 @@ describe("login", () => {
       id: "admin-1",
       email: "admin@test.com",
       password_hash: await hashPassword("password123"),
+      ativo: true,
     });
 
     // Precisa ser a página final, não /admin: aquela rota redireciona de novo,
@@ -64,6 +65,7 @@ describe("login", () => {
       id: "admin-1",
       email: "admin@test.com",
       password_hash: await hashPassword("password123"),
+      ativo: true,
     });
 
     expect(await login("admin@test.com", "wrong")).toEqual({ error: INVALID });
@@ -76,6 +78,20 @@ describe("login", () => {
     expect(await login("nobody@test.com", "whatever")).toEqual({
       error: INVALID,
     });
+  });
+
+  it("rejects an inactive account without starting a session", async () => {
+    queryFor("adminUsers").findFirst.mockResolvedValue({
+      id: "admin-1",
+      email: "admin@test.com",
+      password_hash: await hashPassword("password123"),
+      ativo: false,
+    });
+
+    expect(await login("admin@test.com", "password123")).toEqual({
+      error: INVALID,
+    });
+    expect(mockSession.save).not.toHaveBeenCalled();
   });
 
   it("looks the user up by lowercased, trimmed email", async () => {

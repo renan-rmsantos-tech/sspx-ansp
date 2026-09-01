@@ -115,12 +115,14 @@ const writeApi = {
   })),
 };
 
+export const transactionExecute = vi.fn().mockResolvedValue([]);
+
 export const fakeDb = {
   query,
   ...writeApi,
   execute: vi.fn().mockResolvedValue([]),
   transaction: vi.fn(async (callback: (tx: unknown) => unknown) =>
-    callback({ ...writeApi, query })
+    callback({ ...writeApi, query, execute: transactionExecute })
   ),
 };
 
@@ -137,6 +139,7 @@ export function resetFakeDb() {
   }
 
   fakeDb.execute.mockClear();
+  transactionExecute.mockClear();
   fakeDb.transaction.mockClear();
   writeApi.insert.mockClear();
   writeApi.update.mockClear();

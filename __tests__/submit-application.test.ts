@@ -55,16 +55,18 @@ function validInput() {
       cpf: "111.444.777-35",
       documentos: ["pending/uuid/rg_mae/rg.pdf"],
     },
+    certidao_casamento: ["pending/uuid/certidao/certidao.pdf"],
     endereco: "Rua das Flores, 123",
     telefone: "(11) 99999-9999",
-    comprovante_endereco: ["pending/uuid/comprovante/comp.pdf"],
+    comprovante_endereco: ["pending/uuid/comprovante_endereco/comp.pdf"],
     outros_filhos: [],
     alunos: [
       {
         nome: "Ana Silva",
         serie: "5º ano",
         mensalidade: 1200,
-        documentos: ["pending/uuid/rg_aluno/rg.pdf"],
+        documento_identidade: ["pending/uuid/rg_aluno_0/rg.pdf"],
+        certidao_nascimento: ["pending/uuid/certidao_nascimento_0/certidao.pdf"],
       },
     ],
     desconto_solicitado: 50,
@@ -155,7 +157,7 @@ describe("submitApplication", () => {
     expect(rows).toContainEqual(
       expect.objectContaining({
         categoria: "declaracao_vaga",
-        storage_path: "applications/app-1/declaracao_vaga/declaracao.pdf",
+        storage_path: "applications/app-1/uuid/declaracao_vaga/declaracao.pdf",
       })
     );
   });
@@ -165,7 +167,7 @@ describe("submitApplication", () => {
 
     expect(mockMove).toHaveBeenCalledWith(
       "pending/uuid/rg_pai/rg.pdf",
-      "applications/app-1/rg_pai/rg.pdf"
+      "applications/app-1/uuid/rg_pai/rg.pdf"
     );
 
     // O insert acontece antes do move (dentro da transação), com o caminho
@@ -224,6 +226,17 @@ describe("submitApplication", () => {
     const result = await submitApplication(data);
 
     expect(result.success).toBe(false);
+    expect(inserted).toHaveLength(0);
+  });
+
+  it.each([
+    ["uses another required category", (data: ReturnType<typeof validInput>) => { data.pai.documentos = ["pending/uuid/rg_mae/rg.pdf"]; }],
+    ["reuses one path in two required groups", (data: ReturnType<typeof validInput>) => { data.mae.documentos = [...data.pai.documentos]; }],
+    ["uses a wrong student category", (data: ReturnType<typeof validInput>) => { data.alunos[0].certidao_nascimento = ["pending/uuid/certidao_nascimento_1/certidao.pdf"]; }],
+  ])("rejects a submission that %s", async (_label, mutate) => {
+    const data = validInput();
+    mutate(data);
+    await expect(submitApplication(data)).resolves.toMatchObject({ success: false });
     expect(inserted).toHaveLength(0);
   });
 

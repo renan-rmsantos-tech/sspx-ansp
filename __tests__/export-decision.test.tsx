@@ -20,6 +20,10 @@ vi.mock("@/app/admin/_actions/admin-actions", () => ({
   getDocumentUrl: vi.fn(),
 }));
 
+vi.mock("@/app/admin/_components/application-observations", () => ({
+  ApplicationObservations: () => null,
+}));
+
 import { ApplicationCard, type ApplicationSummary } from "@/app/admin/_components/application-card";
 
 // base64 de "PDF"

@@ -10,12 +10,20 @@ vi.mock("@/lib/db", async () => ({
 // mocks que elas referenciam precisam existir antes de qualquer outro código.
 const {
   mockGetSessionUser,
+  mockRequireAdmin,
+  mockRequireCapability,
   mockSize,
+  mockPut,
+  mockRemove,
   mockRenderContractPdf,
   mockRenderDecisionPdf,
 } = vi.hoisted(() => ({
   mockGetSessionUser: vi.fn(),
+  mockRequireAdmin: vi.fn(),
+  mockRequireCapability: vi.fn(),
   mockSize: vi.fn(),
+  mockPut: vi.fn(),
+  mockRemove: vi.fn(),
   mockRenderContractPdf: vi.fn((_d: unknown) =>
     Promise.resolve(Buffer.from("PDF"))
   ),
@@ -28,8 +36,13 @@ vi.mock("@/lib/auth/session", () => ({
   getSessionUser: mockGetSessionUser,
 }));
 
+vi.mock("@/lib/auth/authorization", () => ({
+  requireAdmin: mockRequireAdmin,
+  requireCapability: mockRequireCapability,
+}));
+
 vi.mock("@/lib/storage", () => ({
-  getStorage: () => ({ size: mockSize }),
+  getStorage: () => ({ size: mockSize, put: mockPut, remove: mockRemove }),
 }));
 
 vi.mock("@/lib/pdf/contract-pdf", () => ({
@@ -45,6 +58,7 @@ import {
   contractTemplates,
   decisionTemplates,
   donorPledges,
+  issuedDocuments,
   schoolYears,
 } from "@/lib/db/schema";
 import { verifyTicket } from "@/lib/storage/tickets";
@@ -58,6 +72,10 @@ import {
   getApplicationDetail,
   getApplications,
   getContractTemplate,
+  getCurrentIssuedDocuments,
+  getDonorPledges,
+  getIssuedDocumentHistory,
+  getIssuedDocumentUrl,
   getDocumentUrl,
   getSchoolYears,
   getTemplates,
@@ -76,10 +94,18 @@ import {
   updated,
 } from "./helpers/fake-db";
 
-const MOCK_USER = { id: "user-123", email: "admin@test.com" };
+const MOCK_USER = { id: "user-123", email: "admin@test.com", role: "admin" as const, ativo: true };
 
-function authAs(user: typeof MOCK_USER | null = MOCK_USER) {
+function authAs(user: { id: string; email: string; role: "admin" | "secretaria"; ativo: boolean } | null = MOCK_USER) {
   mockGetSessionUser.mockResolvedValue(user);
+  if (user) {
+    mockRequireAdmin.mockResolvedValue(user);
+    mockRequireCapability.mockResolvedValue(user);
+  } else {
+    const error = new Error("Não autorizado. Faça login para continuar.");
+    mockRequireAdmin.mockRejectedValue(error);
+    mockRequireCapability.mockRejectedValue(error);
+  }
 }
 
 beforeEach(() => {
@@ -161,6 +187,66 @@ describe("getApplications", () => {
 
     expect(result.data).toBeNull();
     expect(result.error).toContain("Erro ao buscar solicitações");
+  });
+});
+
+describe("issued document role boundaries", () => {
+  const secretaria = { id: "secretaria-1", email: "sec@test.com", role: "secretaria" as const, ativo: true };
+
+  it("returns only the eligible current decision to Secretaria", async () => {
+    authAs(secretaria);
+    queryFor("applications").findFirst.mockResolvedValue({ status: "rejeitada" });
+    queryFor("issuedDocuments").findMany.mockResolvedValue([
+      { id: "decision-current", kind: "decision", version: 2 },
+      { id: "decision-old", kind: "decision", version: 1 },
+      { id: "contract-current", kind: "contract", version: 1 },
+    ]);
+    await expect(getCurrentIssuedDocuments("app-1")).resolves.toEqual([{ id: "decision-current", kind: "decision", version: 2 }]);
+  });
+
+  it("keeps issued history Administrator-only", async () => {
+    authAs(secretaria);
+    mockRequireAdmin.mockRejectedValueOnce(new Error("Você não tem permissão para realizar esta ação."));
+    await expect(getIssuedDocumentHistory("app-1")).rejects.toThrow("permissão");
+  });
+
+  it("denies a superseded final-document ID to Secretaria", async () => {
+    authAs(secretaria);
+    queryFor("issuedDocuments").findFirst.mockResolvedValue({ id: "old", application_id: "app-1", storage_path: "applications/app-1/issued/decision/old.pdf" });
+    queryFor("applications").findFirst.mockResolvedValue({ status: "aprovada" });
+    queryFor("issuedDocuments").findMany.mockResolvedValue([{ id: "current", kind: "decision", version: 2 }]);
+    await expect(getIssuedDocumentUrl("old")).resolves.toEqual({ error: "Documento final não encontrado." });
+    expect(mockSize).not.toHaveBeenCalled();
+  });
+});
+
+describe("Secretaria projection boundaries", () => {
+  const secretaria = { id: "secretaria-1", email: "sec@test.com", role: "secretaria" as const, ativo: true };
+
+  it("uses an explicit restricted application projection", async () => {
+    authAs(secretaria);
+    queryFor("applications").findMany.mockResolvedValue([]);
+    await getApplications();
+    const options = queryFor("applications").findMany.mock.calls[0][0];
+    expect(options.columns).toEqual({ id: true, status: true, escola: true, pai_nome: true, mae_nome: true, telefone: true, email: true, data_decisao: true });
+    expect(options.with.students.columns).toEqual({ id: true, nome: true });
+  });
+
+  it("does not call restricted actions when Administrator authorization rejects Secretaria", async () => {
+    authAs(secretaria);
+    mockRequireAdmin.mockRejectedValueOnce(new Error("Você não tem permissão para realizar esta ação."));
+    await expect(getApplicationDetail("app-1")).rejects.toThrow("permissão");
+    expect(queryFor("applications").findFirst).not.toHaveBeenCalled();
+  });
+
+  it("uses the operational donor allowlist for Secretaria", async () => {
+    authAs(secretaria);
+    queryFor("donorPledges").findMany.mockResolvedValue([]);
+    await getDonorPledges();
+    const options = queryFor("donorPledges").findMany.mock.calls[0][0];
+    expect(options.columns).toMatchObject({ id: true, nome: true, email: true, telefone: true, valor: true });
+    expect(options.columns.cpf).toBeUndefined();
+    expect(options.columns.endereco).toBeUndefined();
   });
 });
 
@@ -500,6 +586,8 @@ describe("exportDecision", () => {
 
     expect(result.pdfBase64).toBe(Buffer.from("PDF").toString("base64"));
     expect(result.filename).toMatch(/^decisao_aprovacao_.*\.pdf$/);
+    expect(mockPut).toHaveBeenCalledOnce();
+    expect(inserted.some((write) => write.table === issuedDocuments)).toBe(true);
 
     const resolved = mockRenderDecisionPdf.mock.calls[0][0] as {
       cabecalho: string;
@@ -531,6 +619,13 @@ describe("exportDecision", () => {
 
     expect("error" in result).toBe(true);
     expect(mockRenderDecisionPdf).not.toHaveBeenCalled();
+  });
+
+  it("does not return a decision PDF when its audit record cannot be persisted", async () => {
+    queryFor("applications").findFirst.mockResolvedValue(approvedApp);
+    queryFor("decisionTemplates").findFirst.mockResolvedValue(template);
+    failWrites();
+    await expect(exportDecision("app-1")).resolves.toEqual({ error: "Não foi possível registrar a emissão da decisão." });
   });
 
   it("reports a missing decision template", async () => {
@@ -636,6 +731,8 @@ describe("exportContract", () => {
 
     expect(result.filename).toMatch(/^contrato_.*\.pdf$/);
     expect(result.pdfBase64).toBe(Buffer.from("PDF").toString("base64"));
+    expect(mockPut).toHaveBeenCalledOnce();
+    expect(inserted.some((write) => write.table === issuedDocuments)).toBe(true);
 
     const resolved = mockRenderContractPdf.mock.calls[0][0] as {
       cabecalho: string;
@@ -660,5 +757,12 @@ describe("exportContract", () => {
 
     expect("error" in result).toBe(true);
     expect(mockRenderContractPdf).not.toHaveBeenCalled();
+  });
+
+  it("does not return a contract PDF when its audit record cannot be persisted", async () => {
+    queryFor("applications").findFirst.mockResolvedValue(approvedApp);
+    queryFor("contractTemplates").findFirst.mockResolvedValue(template);
+    failWrites();
+    await expect(exportContract("app-1")).resolves.toEqual({ error: "Não foi possível registrar a emissão do contrato." });
   });
 });

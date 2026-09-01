@@ -43,6 +43,13 @@
       "when": 1786052388201,
       "tag": "0005_donor_priorado_capela",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788226985765,
+      "tag": "0006_flimsy_spacker_dave",
+      "breakpoints": true
     }
   ]
 }

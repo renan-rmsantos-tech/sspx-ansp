@@ -1,7 +1,9 @@
 import { getContractTemplate } from "../_actions/admin-actions";
 import { ContractTemplateEditor } from "../_components/contract-template-editor";
+import { requireAdmin } from "@/lib/auth/authorization";
 
 export default async function ContratoPage() {
+  await requireAdmin();
   const { data: template } = await getContractTemplate();
 
   return (

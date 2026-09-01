@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import type { StaffRole } from "@/lib/auth/authorization";
 
 const NAV_SECTIONS = [
   {
@@ -30,6 +31,12 @@ const NAV_SECTIONS = [
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
           </svg>
         ),
+      },
+      {
+        label: "Usuários",
+        href: "/admin/usuarios",
+        adminOnly: true,
+        icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-[18px] shrink-0"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7" /></svg>,
       },
     ],
   },
@@ -84,7 +91,7 @@ const NAV_SECTIONS = [
   },
 ] as const;
 
-export function Sidebar() {
+export function Sidebar({ role = "admin" }: { role?: StaffRole }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const asideRef = useRef<HTMLElement>(null);
@@ -180,13 +187,16 @@ export function Sidebar() {
       >
         <div className="px-4">
           <nav aria-label="Menu administrativo" className="flex flex-col gap-5">
-            {NAV_SECTIONS.map((section) => (
+            {NAV_SECTIONS.map((section) => {
+              const items = section.items.filter((item) => !("adminOnly" in item && item.adminOnly && role !== "admin"));
+              if (!items.length || (section.title === "Configurações" && role !== "admin")) return null;
+              return (
               <div key={section.title}>
                 <div className="mb-2 px-3 text-xs font-medium uppercase tracking-wider text-muted">
                   {section.title}
                 </div>
                 <ul className="flex flex-col gap-0.5">
-                  {section.items.map((item) => {
+                  {items.map((item) => {
                     const isActive = pathname.startsWith(item.href);
                     return (
                       <li key={item.href}>
@@ -207,7 +217,7 @@ export function Sidebar() {
                   })}
                 </ul>
               </div>
-            ))}
+            )})}
           </nav>
         </div>
       </aside>

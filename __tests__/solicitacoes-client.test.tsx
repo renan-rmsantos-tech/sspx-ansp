@@ -8,6 +8,11 @@ const {
   mockExportDecision,
   mockExportContract,
   mockGetDocumentUrl,
+  mockGetCurrentIssuedDocuments,
+  mockGetIssuedDocumentHistory,
+  mockGetIssuedDocumentUrl,
+  mockGetApplicationObservations,
+  mockAddApplicationObservation,
 } = vi.hoisted(() => ({
   mockGetApplicationDetail: vi.fn(),
   mockApproveApplication: vi.fn(),
@@ -15,6 +20,11 @@ const {
   mockExportDecision: vi.fn(),
   mockExportContract: vi.fn(),
   mockGetDocumentUrl: vi.fn(),
+  mockGetCurrentIssuedDocuments: vi.fn(),
+  mockGetIssuedDocumentHistory: vi.fn(),
+  mockGetIssuedDocumentUrl: vi.fn(),
+  mockGetApplicationObservations: vi.fn(),
+  mockAddApplicationObservation: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -34,9 +44,21 @@ vi.mock("@/app/admin/_actions/admin-actions", () => ({
   exportDecision: mockExportDecision,
   exportContract: mockExportContract,
   getDocumentUrl: mockGetDocumentUrl,
+  getCurrentIssuedDocuments: mockGetCurrentIssuedDocuments,
+  getIssuedDocumentHistory: mockGetIssuedDocumentHistory,
+  getIssuedDocumentUrl: mockGetIssuedDocumentUrl,
 }));
 
-import { SolicitacoesClient } from "@/app/admin/solicitacoes/client";
+vi.mock("@/app/admin/_actions/observation-actions", () => ({
+  getApplicationObservations: mockGetApplicationObservations,
+  addApplicationObservation: mockAddApplicationObservation,
+}));
+
+vi.mock("@/app/admin/_components/application-observations", () => ({
+  ApplicationObservations: () => null,
+}));
+
+import { SecretariatApplicationsClient, SolicitacoesClient } from "@/app/admin/solicitacoes/client";
 import type { ApplicationSummary } from "@/app/admin/_components/application-card";
 
 function makeApp(overrides: Partial<ApplicationSummary> = {}): ApplicationSummary {
@@ -76,6 +98,8 @@ describe("SolicitacoesClient", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGetCurrentIssuedDocuments.mockResolvedValue([]);
+    mockGetIssuedDocumentHistory.mockResolvedValue([]);
     mockGetApplicationDetail.mockResolvedValue({
       data: {
         id: "app-1",
@@ -574,5 +598,57 @@ describe("SolicitacoesClient", () => {
     });
     render(<SolicitacoesClient initialApplications={[app]} />);
     expect(screen.getByTestId("student-count")).toHaveTextContent("2 alunos");
+  });
+});
+
+describe("SecretariatApplicationsClient", () => {
+  afterEach(cleanup);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetApplicationObservations.mockResolvedValue([]);
+    mockGetCurrentIssuedDocuments.mockResolvedValue([{ id: "decision-1", kind: "decision", version: 1 }]);
+    mockGetIssuedDocumentUrl.mockResolvedValue({ url: "https://example.test/document" });
+    mockAddApplicationObservation.mockResolvedValue({ success: true });
+  });
+
+  it("permite acompanhamento e observações sem expor controles de decisão", async () => {
+    render(
+      <SecretariatApplicationsClient
+        initialApplications={[{
+          id: "app-1",
+          status: "pendente",
+          escola: "Colégio São José",
+          pai_nome: "João Silva",
+          mae_nome: "Maria Silva",
+          telefone: "(11) 99999-0000",
+          email: "joao@email.com",
+          data_decisao: null,
+          students: [{ id: "s1", nome: "Pedro Silva" }],
+        }]}
+      />
+    );
+
+    expect(screen.getByText("Aguardando decisão")).toBeInTheDocument();
+    expect(screen.queryByText("Aprovar solicitação")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Acompanhar" }));
+    expect(await screen.findByText("Documentos finais")).toBeInTheDocument();
+    await vi.waitFor(() => {
+      expect(mockGetApplicationObservations).toHaveBeenCalledWith("app-1");
+      expect(mockGetCurrentIssuedDocuments).toHaveBeenCalledWith("app-1");
+    });
+    const open = vi.spyOn(window, "open").mockImplementation(() => null);
+    fireEvent.click(await screen.findByRole("button", { name: "Baixar decisão" }));
+    await vi.waitFor(() => expect(mockGetIssuedDocumentUrl).toHaveBeenCalledWith("decision-1"));
+    open.mockRestore();
+
+    fireEvent.change(screen.getByPlaceholderText("Registrar observação interna"), {
+      target: { value: "Ligar para a família." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Registrar observação" }));
+
+    await vi.waitFor(() => {
+      expect(mockAddApplicationObservation).toHaveBeenCalledWith("app-1", "Ligar para a família.");
+    });
   });
 });

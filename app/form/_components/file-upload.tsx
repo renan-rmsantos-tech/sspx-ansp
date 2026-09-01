@@ -23,9 +23,6 @@ interface FileUploadProps {
   onChange: (files: UploadedFile[]) => void;
   required?: boolean;
   error?: string;
-  /** Quando true, oculta a área de upload e mostra a mensagem. */
-  disabled?: boolean;
-  disabledMessage?: string;
 }
 
 let uploadSeq = 0;
@@ -43,8 +40,6 @@ export function FileUpload({
   onChange,
   required,
   error,
-  disabled = false,
-  disabledMessage = "Envio de arquivos temporariamente desativado.",
 }: FileUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const inputId = useId();
@@ -156,18 +151,6 @@ export function FileUpload({
     },
     [patchFiles]
   );
-
-  if (disabled) {
-    return (
-      <div
-        className="rounded-md border border-dashed border-border bg-bg px-3 py-3 text-[13px] text-muted"
-        data-testid="upload-disabled"
-        role="status"
-      >
-        {disabledMessage}
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-1">

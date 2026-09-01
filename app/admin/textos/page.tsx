@@ -1,7 +1,9 @@
 import { getTemplates } from "../_actions/admin-actions";
 import { TemplateEditor } from "../_components/template-editor";
+import { requireAdmin } from "@/lib/auth/authorization";
 
 export default async function TextosPage() {
+  await requireAdmin();
   const { data: templates } = await getTemplates();
 
   return (

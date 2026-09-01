@@ -4,6 +4,8 @@ import { useState, useCallback } from "react";
 import { ApplicationDetail } from "./application-detail";
 import { DecisionActions } from "./decision-actions";
 import { PdfPreviewModal } from "./pdf-preview-modal";
+import { IssuedDocuments } from "./issued-documents";
+import { ApplicationObservations } from "./application-observations";
 import {
   getApplicationDetail,
   exportDecision,
@@ -306,7 +308,7 @@ export function ApplicationCard({ application, onDecision }: ApplicationCardProp
           {loadingDetail ? (
             <p className="py-4 text-center text-sm text-muted">Carregando...</p>
           ) : detail ? (
-            <ApplicationDetail detail={detail} decisionPanel={decisionPanel} />
+            <><ApplicationDetail detail={detail} decisionPanel={decisionPanel} /><IssuedDocuments applicationId={application.id} /><ApplicationObservations applicationId={application.id} /></>
           ) : (
             <p className="py-4 text-center text-sm text-danger">
               Erro ao carregar detalhes.

@@ -1,8 +1,11 @@
 import { getDonorPledges } from "../_actions/admin-actions";
 import { BenfeitoresClient } from "./client";
 import type { DonorPledge } from "../_components/donor-card";
+import { requireStaff } from "@/lib/auth/authorization";
+import { SecretariatDonorsClient, type SecretariatDonorPledge } from "./client";
 
 export default async function BenfeitoresPage() {
+  const staff = await requireStaff();
   const { data: donors } = await getDonorPledges();
 
   return (
@@ -14,7 +17,11 @@ export default async function BenfeitoresPage() {
         Cadastros recebidos pelo formulário público &ldquo;Seja um benfeitor&rdquo;.
       </p>
       <div className="mt-6">
-        <BenfeitoresClient initialDonors={(donors as DonorPledge[]) ?? []} />
+        {staff.role === "secretaria" ? (
+          <SecretariatDonorsClient initialDonors={(donors as SecretariatDonorPledge[]) ?? []} />
+        ) : (
+          <BenfeitoresClient initialDonors={(donors as unknown as DonorPledge[]) ?? []} />
+        )}
       </div>
     </div>
   );

@@ -41,7 +41,12 @@ async function bootstrapAdmin() {
 
   await db
     .insert(adminUsers)
-    .values({ email, password_hash: await hashPassword(password) });
+    .values({
+      email,
+      password_hash: await hashPassword(password),
+      role: "admin",
+      ativo: true,
+    });
 
   log(`admin ${email} criado.`);
 }

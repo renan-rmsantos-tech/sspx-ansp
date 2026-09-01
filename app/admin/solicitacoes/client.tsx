@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { addApplicationObservation, getApplicationObservations } from "../_actions/observation-actions";
+import { getCurrentIssuedDocuments, getIssuedDocumentUrl } from "../_actions/admin-actions";
 import {
   StatsDashboard,
   computeStats,
@@ -64,6 +66,76 @@ function sortApplications(apps: ApplicationSummary[], sort: SortKey): Applicatio
 
 interface SolicitacoesClientProps {
   initialApplications: ApplicationSummary[];
+}
+
+export interface SecretariatApplicationSummary {
+  id: string;
+  status: "pendente" | "aprovada" | "rejeitada";
+  escola: string;
+  pai_nome: string;
+  mae_nome: string;
+  telefone: string;
+  email: string | null;
+  data_decisao: string | null;
+  students: Array<{ id: string; nome: string }>;
+}
+
+export function SecretariatApplicationsClient({
+  initialApplications,
+}: {
+  initialApplications: SecretariatApplicationSummary[];
+}) {
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted">Dados operacionais para acompanhamento das famílias.</p>
+      {initialApplications.length === 0 ? (
+        <p className="py-8 text-center text-sm text-muted">Nenhuma solicitação encontrada.</p>
+      ) : initialApplications.map((application) => (
+        <SecretariatApplicationCard key={application.id} application={application} />
+      ))}
+    </div>
+  );
+}
+
+function SecretariatApplicationCard({ application }: { application: SecretariatApplicationSummary }) {
+  const [open, setOpen] = useState(false);
+  const [note, setNote] = useState("");
+  const [notes, setNotes] = useState<Array<{ id: string; body: string; created_at: string; author_user?: { email: string } }>>([]);
+  const [documents, setDocuments] = useState<Array<{ id: string; kind: "decision" | "contract"; version: number }>>([]);
+  useEffect(() => {
+    if (!open) return;
+    void Promise.all([getApplicationObservations(application.id), getCurrentIssuedDocuments(application.id)]).then(([history, current]) => {
+      setNotes(history as typeof notes);
+      setDocuments(current as typeof documents);
+    });
+  }, [application.id, open]);
+  async function saveNote() {
+    const result = await addApplicationObservation(application.id, note);
+    if (result.success) {
+      setNote("");
+      const history = await getApplicationObservations(application.id);
+      setNotes(history as typeof notes);
+    }
+  }
+  async function download(id: string) {
+    const result = await getIssuedDocumentUrl(id);
+    if ("url" in result) window.open(result.url, "_blank", "noopener,noreferrer");
+  }
+  return (
+    <article className="rounded-lg border border-border bg-surface p-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="font-semibold text-fg">{application.pai_nome} &amp; {application.mae_nome}</h2>
+            <span className="rounded-full bg-bg px-2 py-0.5 text-xs font-medium text-muted">
+              {application.status === "pendente" ? "Aguardando decisão" : application.status === "aprovada" ? "Aprovada" : "Rejeitada"}
+            </span>
+          </div>
+          <p className="mt-1 text-sm text-muted">{application.escola} · {application.telefone}{application.email ? ` · ${application.email}` : ""}</p>
+          <p className="mt-2 text-sm text-muted">Alunos: {application.students.map((student) => student.nome).join(", ")}</p>
+          {application.data_decisao && <p className="mt-1 text-sm text-muted">Decisão: {new Date(application.data_decisao).toLocaleDateString("pt-BR")}</p>}
+      <button type="button" className="mt-3 text-sm font-medium text-accent hover:underline" onClick={() => setOpen((value) => !value)}>{open ? "Ocultar acompanhamento" : "Acompanhar"}</button>
+      {open && <div className="mt-3 space-y-3 border-t border-border pt-3"><div><h3 className="text-sm font-semibold">Documentos finais</h3>{documents.length ? documents.map((document) => <button key={document.id} type="button" onClick={() => void download(document.id)} className="mr-3 mt-1 text-sm text-accent hover:underline">Baixar {document.kind === "decision" ? "decisão" : "contrato"}</button>) : <p className="text-sm text-muted">Nenhum documento final emitido.</p>}</div><div><h3 className="text-sm font-semibold">Observações internas</h3><p className="mt-1 text-xs text-muted">Registre apenas informações operacionais, de forma concisa; não inclua dados sensíveis desnecessários.</p>{notes.map((item) => <p key={item.id} className="mt-1 text-sm text-muted">{item.body} <span className="text-xs">— {item.author_user?.email ?? "Secretaria"}, {new Date(item.created_at).toLocaleDateString("pt-BR")}</span></p>)}<textarea value={note} onChange={(event) => setNote(event.target.value)} maxLength={2000} className="mt-2 w-full rounded border border-border p-2 text-sm" placeholder="Registrar observação interna" /><button type="button" disabled={!note.trim()} onClick={() => void saveNote()} className="mt-1 text-sm font-medium text-accent disabled:opacity-50">Registrar observação</button></div></div>}
+    </article>
+  );
 }
 
 export function SolicitacoesClient({ initialApplications }: SolicitacoesClientProps) {

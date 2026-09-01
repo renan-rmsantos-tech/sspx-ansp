@@ -15,7 +15,6 @@ import type { FormData } from "./form-types";
 import { MSG_OBRIGATORIO } from "./field-ui";
 import { isValidCPF } from "@/lib/validations/cpf";
 import type { ApplicationSubmission } from "@/lib/validations/application-schema";
-import { SCHOLARSHIP_UPLOADS_ENABLED } from "@/lib/form/scholarship-uploads";
 
 const TOTAL_STEPS = 6;
 
@@ -50,7 +49,7 @@ function validateStep1(data: FormData): Record<string, string> {
     errors.mae_cpf = "CPF inválido";
   }
   if (!data.mae_profissao.trim()) errors.mae_profissao = M;
-  if (SCHOLARSHIP_UPLOADS_ENABLED) {
+  {
     const declaracaoVaga = docError(data.declaracao_vaga);
     if (declaracaoVaga) errors.declaracao_vaga = declaracaoVaga;
     const docPai = docError(data.doc_pai);
@@ -100,7 +99,7 @@ function validateStep2(data: FormData): Record<string, string> {
     }
     if (!a.serie.trim()) errors[`aluno_${i}_serie`] = M;
     if (!a.mensalidade.trim()) errors[`aluno_${i}_mensalidade`] = M;
-    if (SCHOLARSHIP_UPLOADS_ENABLED) {
+    {
       const rgErr = docError(a.docRg);
       if (rgErr) errors[`aluno_${i}_docRg`] = rgErr;
       const certErr = docError(a.docCertidao);
@@ -125,7 +124,7 @@ function validateStep3(data: FormData): Record<string, string> {
   if (!data.pessoas_domicilio || Number(data.pessoas_domicilio) < 1) {
     errors.pessoas_domicilio = M;
   }
-  if (SCHOLARSHIP_UPLOADS_ENABLED) {
+  {
     const irErr = docError(data.extrato_ir);
     if (irErr) errors.extrato_ir = irErr;
   }
@@ -135,8 +134,8 @@ function validateStep3(data: FormData): Record<string, string> {
 function validateStep4(data: FormData): Record<string, string> {
   const errors: Record<string, string> = {};
   // Os valores de despesa são opcionais; o extrato bancário é obrigatório
-  // quando os uploads estão habilitados.
-  if (SCHOLARSHIP_UPLOADS_ENABLED) {
+  // em toda solicitação.
+  {
     const extratoErr = docError(data.extratos_bancarios);
     if (extratoErr) errors.extratos_bancarios = extratoErr;
   }
@@ -281,10 +280,8 @@ export function ScholarshipForm() {
         cpf: a.cpf || undefined,
         serie: a.serie,
         mensalidade: parseMoney(a.mensalidade),
-        documentos: [
-          ...a.docRg.filter((f) => f.path).map((f) => f.path),
-          ...a.docCertidao.filter((f) => f.path).map((f) => f.path),
-        ],
+        documento_identidade: a.docRg.filter((f) => f.path && !f.error && !f.uploading).map((f) => f.path),
+        certidao_nascimento: a.docCertidao.filter((f) => f.path && !f.error && !f.uploading).map((f) => f.path),
       })),
       desconto_solicitado: parseMoney(formData.desconto_solicitado),
       renda: {

@@ -6,12 +6,6 @@ vi.mock("@/lib/db", async () => ({
   db: (await import("./helpers/fake-db")).fakeDb,
 }));
 
-vi.mock("@/lib/form/scholarship-uploads", () => ({
-  SCHOLARSHIP_UPLOADS_ENABLED: true,
-  SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE:
-    "O envio de documentos está temporariamente desativado nesta fase de testes.",
-}));
-
 import { verifyTicket } from "@/lib/storage/tickets";
 import {
   createUploadUrl,
@@ -108,6 +102,18 @@ describe("createUploadUrl", () => {
     }
 
     expect(first.path).not.toBe(second.path);
+  });
+
+  it.each([
+    "declaracao_vaga", "rg_pai", "rg_mae", "certidao", "comprovante_endereco",
+    "extrato_ir", "extrato_bancario", "recibo_pagamento", "rg_aluno_0", "certidao_nascimento_12",
+  ])("accepts the supported category %s", async (category) => {
+    await expect(createUploadUrl("doc.pdf", category)).resolves.toMatchObject({ path: expect.stringContaining(`/${category}/`) });
+  });
+
+  it.each(["doc_pai", "../rg_pai", "rg_aluno_x", "rg_aluno_1/x", "unknown"])
+  ("rejects an unsupported category %s", async (category) => {
+    await expect(createUploadUrl("doc.pdf", category)).resolves.toEqual({ error: "Categoria de documento inválida." });
   });
 
   it("returns an error when the signing secret is missing", async () => {

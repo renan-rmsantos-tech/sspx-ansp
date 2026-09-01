@@ -12,11 +12,11 @@ vi.mock("@/app/form/_components/scholarship-form", () => ({
 }));
 
 import { getActiveSchoolYear } from "@/app/form/_actions/form-actions";
-import FormPage from "@/app/form/page";
+import FormPage from "@/app/solicitar-bolsa/page";
 
 const mockGetActiveSchoolYear = vi.mocked(getActiveSchoolYear);
 
-describe("FormPage (enrollment check)", () => {
+describe("SolicitarBolsaPage (enrollment check)", () => {
   afterEach(() => {
     cleanup();
   });

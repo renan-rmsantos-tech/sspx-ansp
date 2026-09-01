@@ -58,7 +58,11 @@ async function authenticate(
     where: eq(adminUsers.email, normalized),
   });
 
-  if (!user || !(await verifyPassword(password ?? "", user.password_hash))) {
+  if (
+    !user ||
+    !user.ativo ||
+    !(await verifyPassword(password ?? "", user.password_hash))
+  ) {
     recordFailure(normalized);
     return { error: INVALID };
   }

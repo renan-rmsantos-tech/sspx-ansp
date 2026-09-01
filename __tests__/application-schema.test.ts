@@ -21,7 +21,7 @@ function validApplication(): ApplicationSubmission {
       profissao: "Professora",
       documentos: ["pending/uuid1/rg_mae/rg.pdf"],
     },
-    certidao_casamento: ["pending/uuid1/certidao/cert.pdf"],
+    certidao_casamento: ["pending/uuid1/certidao_casamento/cert.pdf"],
     endereco: "Rua das Flores, 123",
     cep: "13250-000",
     telefone: "(11) 99999-9999",
@@ -36,7 +36,8 @@ function validApplication(): ApplicationSubmission {
         cpf: "529.982.247-25",
         serie: "5º ano",
         mensalidade: 1200,
-        documentos: ["pending/uuid1/rg_aluno/rg.pdf"],
+        documento_identidade: ["pending/uuid1/aluno_0_rg/rg.pdf"],
+        certidao_nascimento: ["pending/uuid1/aluno_0_certidao/certidao.pdf"],
       },
     ],
     desconto_solicitado: 50,
@@ -134,7 +135,7 @@ describe("applicationSubmissionSchema", () => {
     expect(applicationSubmissionSchema.safeParse(under).success).toBe(false);
   });
 
-  it("accepts application with minimal optional data", () => {
+  it("rejects application missing mandatory documents", () => {
     const data = validApplication();
     delete (data as Record<string, unknown>).certidao_casamento;
     data.pai.profissao = undefined;
@@ -147,6 +148,22 @@ describe("applicationSubmissionSchema", () => {
     data.despesas = {};
     data.renda = { pessoas: 2 };
     const result = applicationSubmissionSchema.safeParse(data);
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
+  });
+
+  it.each([
+    "declaracao_vaga", "certidao_casamento", "comprovante_endereco", "extrato_ir", "extratos_bancarios",
+  ])("rejects each missing required document group: %s", (field) => {
+    const data = validApplication() as Record<string, unknown>;
+    data[field] = [];
+    expect(applicationSubmissionSchema.safeParse(data).success).toBe(false);
+  });
+
+  it("requires both student identity and birth-certificate groups", () => {
+    for (const field of ["documento_identidade", "certidao_nascimento"] as const) {
+      const data = validApplication();
+      data.alunos[0][field] = [];
+      expect(applicationSubmissionSchema.safeParse(data).success).toBe(false);
+    }
   });
 });

@@ -1,11 +1,16 @@
 "use server";
 
 import { and, asc, desc, eq } from "drizzle-orm";
+import {
+  requireAdmin,
+  requireCapability,
+  type StaffIdentity,
+} from "@/lib/auth/authorization";
 import { BYPASS_USER, isAuthBypass } from "@/lib/auth/bypass";
-import { getSessionUser } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import {
   applications,
+  adminUsers,
   contractTemplates,
   decisionTemplates,
   documentHeader,
@@ -21,6 +26,7 @@ import {
   type ContractTokenData,
 } from "@/lib/templates/contract-tokens";
 import { replaceTokens, type TokenData } from "@/lib/templates/token-replacer";
+import { findIssuedDocument, listCurrentIssuedDocuments, listIssuedDocumentHistory, persistIssuedDocument } from "@/lib/documents/issued-documents";
 
 type ActionResult = { success: boolean; error?: string };
 
@@ -34,14 +40,17 @@ function resolveDecidedBy(userId: string): string | null {
   return userId;
 }
 
-async function requireAuth() {
-  const user = await getSessionUser();
+async function requireAuth(): Promise<{ user: StaffIdentity }> {
+  return { user: await requireAdmin() };
+}
 
-  if (!user) {
-    throw new Error("Não autorizado. Faça login para continuar.");
-  }
-
-  return { user };
+async function issuanceActorId(user: StaffIdentity): Promise<string | null> {
+  if (!isAuthBypass() || user.id !== BYPASS_USER.id) return user.id;
+  const actor = await db.query.adminUsers.findFirst({
+    columns: { id: true },
+    where: eq(adminUsers.role, "admin"),
+  });
+  return actor?.id ?? null;
 }
 
 // --- Applications ---
@@ -49,9 +58,29 @@ async function requireAuth() {
 export async function getApplications(
   filter?: "pendente" | "aprovada" | "rejeitada"
 ) {
-  await requireAuth();
+  const user = await requireCapability("applications:read-operational");
 
   try {
+    if (user.role === "secretaria") {
+      const data = await db.query.applications.findMany({
+        columns: {
+          id: true,
+          status: true,
+          escola: true,
+          pai_nome: true,
+          mae_nome: true,
+          telefone: true,
+          email: true,
+          data_decisao: true,
+        },
+        with: { students: { columns: { id: true, nome: true } } },
+        where: filter ? eq(applications.status, filter) : undefined,
+        orderBy: desc(applications.data_envio),
+      });
+
+      return { data, error: null };
+    }
+
     const data = await db.query.applications.findMany({
       with: { students: true },
       where: filter ? eq(applications.status, filter) : undefined,
@@ -96,9 +125,31 @@ export async function getApplicationDetail(id: string) {
 // --- Donor Pledges ---
 
 export async function getDonorPledges() {
-  await requireAuth();
+  const user = await requireCapability("donors:read-operational");
 
   try {
+    if (user.role === "secretaria") {
+      const data = await db.query.donorPledges.findMany({
+        columns: {
+          id: true,
+          nome: true,
+          email: true,
+          frequencia: true,
+          duracao: true,
+          valor: true,
+          meio_pagamento: true,
+          data_pagamento: true,
+          lembrete_canal: true,
+          telefone: true,
+          priorado_capela: true,
+          observacoes: true,
+          created_at: true,
+        },
+        orderBy: desc(donorPledges.created_at),
+      });
+      return { data, error: null };
+    }
+
     const data = await db.query.donorPledges.findMany({
       orderBy: desc(donorPledges.created_at),
     });
@@ -182,6 +233,12 @@ export async function getDocumentUrl(
   applicationId?: string
 ): Promise<{ url: string } | { error: string }> {
   await requireAuth();
+
+  // PDFs finais possuem uma fronteira própria: são resolvidos exclusivamente
+  // pelo ID persistido em getIssuedDocumentUrl, nunca por caminho fornecido.
+  if (/^applications\/[^/]+\/issued\//.test(path)) {
+    return { error: "Use o documento final emitido para gerar o download." };
+  }
 
   const storage = getStorage();
 
@@ -434,7 +491,7 @@ export async function saveTemplate(input: {
 export async function exportDecision(
   id: string
 ): Promise<{ pdfBase64: string; filename: string } | { error: string }> {
-  await requireAuth();
+  const { user } = await requireAuth();
 
   const app = await db.query.applications.findFirst({
     where: eq(applications.id, id),
@@ -489,6 +546,13 @@ export async function exportDecision(
     .replace(/[^a-zA-Z0-9À-ú ]/g, "")
     .replace(/\s+/g, "_");
   const filename = `decisao_${templateTipo}_${safeNome}.pdf`;
+  const issuedBy = await issuanceActorId(user);
+  if (!issuedBy) return { error: "Não foi possível identificar o emissor da decisão." };
+  try {
+    await persistIssuedDocument({ applicationId: app.id, kind: "decision", issuedBy, filename, pdf });
+  } catch {
+    return { error: "Não foi possível registrar a emissão da decisão." };
+  }
 
   return { pdfBase64: pdf.toString("base64"), filename };
 }
@@ -677,7 +741,7 @@ function formatDateBR(isoDate: string): string {
 export async function exportContract(
   id: string
 ): Promise<{ pdfBase64: string; filename: string } | { error: string }> {
-  await requireAuth();
+  const { user } = await requireAuth();
 
   const app = await db.query.applications.findFirst({
     where: eq(applications.id, id),
@@ -737,6 +801,43 @@ export async function exportContract(
     .replace(/[^a-zA-Z0-9À-ú ]/g, "")
     .replace(/\s+/g, "_");
   const filename = `contrato_${safeNome}.pdf`;
+  const issuedBy = await issuanceActorId(user);
+  if (!issuedBy) return { error: "Não foi possível identificar o emissor do contrato." };
+  try {
+    await persistIssuedDocument({ applicationId: app.id, kind: "contract", issuedBy, filename, pdf });
+  } catch {
+    return { error: "Não foi possível registrar a emissão do contrato." };
+  }
 
   return { pdfBase64: pdf.toString("base64"), filename };
+}
+
+export async function getCurrentIssuedDocuments(applicationId: string) {
+  await requireCapability("issued-documents:read");
+  const application = await db.query.applications.findFirst({
+    columns: { status: true },
+    where: eq(applications.id, applicationId),
+  });
+  if (!application || application.status === "pendente") return [];
+  const documents = await listCurrentIssuedDocuments(applicationId);
+  return application.status === "aprovada"
+    ? documents
+    : documents.filter((document) => document.kind === "decision");
+}
+
+export async function getIssuedDocumentUrl(id: string): Promise<{ url: string } | { error: string }> {
+  const staff = await requireCapability("issued-documents:read");
+  const document = await findIssuedDocument(id);
+  if (document && staff.role === "secretaria") {
+    const current = await getCurrentIssuedDocuments(document.application_id);
+    if (!current.some((item) => item.id === id)) return { error: "Documento final não encontrado." };
+  }
+  if (!document || (await getStorage().size(document.storage_path)) == null) return { error: "Documento final não encontrado." };
+  const ticket = createTicket(document.storage_path, "download", DOCUMENT_TICKET_TTL_SECONDS);
+  return { url: `/api/documents?ticket=${encodeURIComponent(ticket)}` };
+}
+
+export async function getIssuedDocumentHistory(applicationId: string) {
+  await requireAdmin();
+  return listIssuedDocumentHistory(applicationId);
 }

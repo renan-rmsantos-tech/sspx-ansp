@@ -74,6 +74,32 @@ interface BenfeitoresClientProps {
   initialDonors: DonorPledge[];
 }
 
+export interface SecretariatDonorPledge {
+  id: string;
+  nome: string;
+  email: string;
+  telefone: string | null;
+  frequencia: "unica" | "mensal";
+  duracao: "um_ano" | "indeterminado" | null;
+  valor: number;
+  meio_pagamento: "cartao" | "boleto" | "transferencia" | "pix" | null;
+  data_pagamento: string | null;
+  lembrete_canal: "whatsapp" | "email" | null;
+  priorado_capela: string | null;
+  observacoes: string | null;
+  created_at: string;
+}
+
+export function SecretariatDonorsClient({ initialDonors }: { initialDonors: SecretariatDonorPledge[] }) {
+  const [search, setSearch] = useState("");
+  const query = normalizeSearch(search);
+  const donors = initialDonors.filter((donor) => [donor.nome, donor.email, donor.telefone ?? ""].join(" ").toLowerCase().includes(query));
+  return <>
+    <div className="relative max-w-xs"><label htmlFor="secretariat-donor-search" className="sr-only">Buscar benfeitores</label><input id="secretariat-donor-search" type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por nome, e-mail ou telefone..." className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm" /></div>
+    <div className="mt-4 space-y-3">{donors.length === 0 ? <p className="py-8 text-center text-sm text-muted">Nenhum benfeitor encontrado.</p> : donors.map((donor) => <article key={donor.id} className="rounded-lg border border-border bg-surface p-4"><h2 className="font-semibold text-fg">{donor.nome}</h2><p className="mt-1 text-sm text-muted">{donor.email}{donor.telefone ? ` · ${donor.telefone}` : ""}</p><p className="mt-2 text-sm text-muted">{donor.frequencia === "mensal" ? "Mensal" : "Única"} · {currency.format(donor.valor)}{donor.duracao ? ` · ${donor.duracao === "um_ano" ? "por um ano" : "indeterminado"}` : ""}</p><p className="mt-1 text-sm text-muted">Pagamento: {donor.meio_pagamento ?? "não informado"}{donor.data_pagamento ? ` · dia ${donor.data_pagamento}` : ""}{donor.lembrete_canal ? ` · lembrete por ${donor.lembrete_canal}` : ""}</p>{donor.priorado_capela && <p className="mt-1 text-sm text-muted">Capela/Priorado: {donor.priorado_capela}</p>}{donor.observacoes && <p className="mt-2 text-sm text-muted">Observações: {donor.observacoes}</p>}</article>)}</div>
+  </>;
+}
+
 export function BenfeitoresClient({ initialDonors }: BenfeitoresClientProps) {
   const [donors, setDonors] = useState<DonorPledge[]>(initialDonors);
   const [filter, setFilter] = useState<FrequenciaFilter>("todos");

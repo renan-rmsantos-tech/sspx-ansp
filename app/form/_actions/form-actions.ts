@@ -19,7 +19,6 @@ import {
   applicationSubmissionSchema,
   type ApplicationSubmission,
 } from "@/lib/validations/application-schema";
-import { SCHOLARSHIP_UPLOADS_ENABLED } from "@/lib/form/scholarship-uploads";
 
 interface SchoolYear {
   id: string;
@@ -30,6 +29,35 @@ interface SchoolYear {
 }
 
 const UPLOAD_TICKET_TTL_SECONDS = 30 * 60;
+const FIXED_UPLOAD_CATEGORIES = new Set([
+  "declaracao_vaga", "rg_pai", "rg_mae", "certidao", "comprovante_endereco",
+  "extrato_ir", "extrato_bancario", "recibo_pagamento",
+]);
+const isAllowedUploadCategory = (category: string) =>
+  FIXED_UPLOAD_CATEGORIES.has(category) || /^(rg_aluno|certidao_nascimento)_\d+$/.test(category);
+
+function pathsMatchCategory(paths: string[], category: string, seen: Set<string>) {
+  const expression = new RegExp(`^pending/[^/]+/${category.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/[^/]+$`);
+  return paths.every((path) => expression.test(path) && !seen.has(path) && (seen.add(path), true));
+}
+
+function validateDocumentCategories(data: ApplicationSubmission): boolean {
+  const seen = new Set<string>();
+  const required: Array<[string[], string]> = [
+    [data.declaracao_vaga, "declaracao_vaga"],
+    [data.pai.documentos, "rg_pai"],
+    [data.mae.documentos, "rg_mae"],
+    [data.certidao_casamento, "certidao"],
+    [data.comprovante_endereco, "comprovante_endereco"],
+    [data.extrato_ir, "extrato_ir"],
+    [data.extratos_bancarios, "extrato_bancario"],
+    ...data.alunos.flatMap((student, index): Array<[string[], string]> => [
+      [student.documento_identidade, `rg_aluno_${index}`],
+      [student.certidao_nascimento, `certidao_nascimento_${index}`],
+    ]),
+  ];
+  return required.every(([paths, category]) => pathsMatchCategory(paths, category, seen));
+}
 
 // Data de hoje em São Paulo como "YYYY-MM-DD". O container roda em UTC; sem o
 // fuso explícito a janela de inscrição fecharia 3 horas mais cedo no último dia.
@@ -68,17 +96,11 @@ export async function createUploadUrl(
   category: string
 ): Promise<{ url: string; path: string } | { error: string }> {
   try {
-    // Uploads do formulário de bolsa ficam desativados na fase de testes;
-    // o comprovante de benfeitor continua permitido.
-    if (!SCHOLARSHIP_UPLOADS_ENABLED && category !== "recibo_pagamento") {
-      return {
-        error:
-          "O envio de documentos está temporariamente desativado nesta fase de testes.",
-      };
-    }
+    if (!isAllowedUploadCategory(category)) return { error: "Categoria de documento inválida." };
 
     const uuid = randomUUID();
     const sanitized = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
+    if (!sanitized || sanitized === "." || sanitized === "..") return { error: "Nome de arquivo inválido." };
     const path = `pending/${uuid}/${category}/${sanitized}`;
     const ticket = createTicket(path, "upload", UPLOAD_TICKET_TTL_SECONDS);
 
@@ -104,6 +126,10 @@ export async function submitApplication(
   }
 
   const data = result.data;
+
+  if (!validateDocumentCategories(data)) {
+    return { success: false, errors: { _form: ["Os documentos enviados não correspondem às categorias exigidas."] } };
+  }
 
   const activeYear = await db.query.schoolYears.findFirst({
     columns: { id: true, data_inicio: true, data_fim: true },
@@ -278,7 +304,7 @@ function collectDocumentRows(
   addDocs(data.declaracao_vaga, "declaracao_vaga");
   addDocs(data.pai.documentos, "rg_pai");
   addDocs(data.mae.documentos, "rg_mae");
-  if (data.certidao_casamento) addDocs(data.certidao_casamento, "certidao");
+  addDocs(data.certidao_casamento, "certidao_casamento");
   addDocs(data.comprovante_endereco, "comprovante_endereco");
   addDocs(data.extrato_ir, "extrato_ir");
   addDocs(data.extratos_bancarios, "extrato_bancario");
@@ -286,7 +312,8 @@ function collectDocumentRows(
   // `RETURNING` preserva a ordem do insert, então o aluno i corresponde a
   // students[i] — casar por nome vincularia errado alunos homônimos.
   data.alunos.forEach((aluno, i) => {
-    addDocs(aluno.documentos, "rg_aluno", students[i]?.id ?? null);
+    addDocs(aluno.documento_identidade, "rg_aluno", students[i]?.id ?? null);
+    addDocs(aluno.certidao_nascimento, "certidao_nascimento", students[i]?.id ?? null);
   });
 
   return rows;
@@ -296,7 +323,11 @@ async function fillDocumentSizes(documentRows: DocumentRow[]) {
   const storage = getStorage();
 
   for (const doc of documentRows) {
-    doc.tamanho_bytes = (await storage.size(doc.storage_path)) ?? 0;
+    const size = await storage.size(doc.storage_path);
+    if (!size || size <= 0) {
+      throw new Error("Documento obrigatório não foi enviado");
+    }
+    doc.tamanho_bytes = size;
   }
 }
 
@@ -315,10 +346,8 @@ async function moveFilesToApplication(
   for (const doc of documentRows) {
     if (!doc.storage_path.startsWith("pending/")) continue;
 
-    const newPath = doc.storage_path.replace(
-      /^pending\/[^/]+/,
-      `applications/${appId}`
-    );
+    const [, uploadId, ...relativeParts] = doc.storage_path.split("/");
+    const newPath = `applications/${appId}/${uploadId}/${relativeParts.join("/")}`;
 
     try {
       await storage.move(doc.storage_path, newPath);

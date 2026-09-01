@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import { Reveal } from "./_landing/reveal";
+import { SealLogo } from "@/components/ui/seal-logo";
 
 export const metadata: Metadata = {
   title: "Arca Nossa Senhora da Providência — Bolsa de estudos",
@@ -330,65 +331,11 @@ export default function LandingPage() {
         Pular para o conteúdo
       </a>
 
-      {/* Reusable seal symbol */}
-      <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
-        <defs>
-          <clipPath id="seal-clip" clipPathUnits="userSpaceOnUse">
-            <circle cx="110" cy="110" r="84" />
-          </clipPath>
-          <radialGradient id="seal-navy" cx="50%" cy="45%" r="55%">
-            <stop offset="0%" stopColor="#1e2a4a" />
-            <stop offset="100%" stopColor="#0f1729" />
-          </radialGradient>
-          <g id="seal-art">
-            <circle cx="110" cy="110" r="106" fill="url(#seal-navy)" />
-            <circle cx="110" cy="110" r="98" fill="none" stroke="#c9a84c" strokeWidth="0.6" opacity="0.35" />
-            <image
-              href="/base1.png"
-              x="22"
-              y="30"
-              width="176"
-              height="184"
-              clipPath="url(#seal-clip)"
-              preserveAspectRatio="xMidYMid slice"
-            />
-            <circle cx="110" cy="110" r="84" fill="none" stroke="#0f1729" strokeWidth="12" opacity="0.2" />
-            <path id="seal-arc-top" d="M 18,110 a 92,92 0 0,1 184,0" fill="none" />
-            <text
-              fill="#c9a84c"
-              fontFamily="'Iowan Old Style','Charter','Palatino',Georgia,serif"
-              fontSize="12.5"
-              fontWeight="700"
-              letterSpacing="0.18em"
-            >
-              <textPath href="#seal-arc-top" startOffset="50%" textAnchor="middle">
-                ARCA
-              </textPath>
-            </text>
-            <path id="seal-arc-bottom" d="M 20,118 a 90,90 0 0,0 180,0" fill="none" />
-            <text
-              fill="#c9a84c"
-              fontFamily="'Iowan Old Style','Charter','Palatino',Georgia,serif"
-              fontSize="11"
-              fontWeight="700"
-              letterSpacing="0.14em"
-            >
-              <textPath href="#seal-arc-bottom" startOffset="50%" textAnchor="middle">
-                N. S. DA PROVIDÊNCIA
-              </textPath>
-            </text>
-            <circle cx="110" cy="110" r="106" fill="none" stroke="#c9a84c" strokeWidth="3" />
-          </g>
-        </defs>
-      </svg>
-
       {/* ══════════ NAV ══════════ */}
       <header className="nav">
         <div className="shell">
           <a href="#topo" className="nav-brand" aria-label="Arca Nossa Senhora da Providência — início">
-            <svg className="seal" viewBox="0 0 220 220" role="img" aria-label="Selo da Arca">
-              <use href="#seal-art" />
-            </svg>
+            <SealLogo size={54} className="seal" decorative />
             <span className="nb-text">
               <span className="nb-name">Arca N. S. da Providência</span>
               <span className="nb-sub">Mantenedora · FSSPX</span>
@@ -396,12 +343,12 @@ export default function LandingPage() {
           </a>
           <nav className="nav-links" aria-label="Navegação principal">
             <a href="#missao">Quem somos</a>
-            <a href="#solicitar">Solicitar bolsa</a>
-            <a href="/benfeitor">Seja um benfeitor</a>
+            <a href="/seja-um-benfeitor">Seja um benfeitor</a>
+            <a href="/solicitar-bolsa">Solicitar bolsa</a>
             <a href="#contato">Contato</a>
           </nav>
-          <a href="/form" className="nav-cta">
-            Solicitar bolsa
+          <a href="/seja-um-benfeitor" className="nav-cta">
+            Seja um benfeitor
           </a>
         </div>
       </header>
@@ -420,24 +367,17 @@ export default function LandingPage() {
               Deus.
             </p>
             <div className="hero-actions">
-              <a href="/form" className="btn btn-gold">
-                Faça sua solicitação de bolsa
+              <a href="/seja-um-benfeitor" className="btn btn-gold">
+                Seja um benfeitor
                 {arrowIcon}
               </a>
-              <a href="#missao" className="btn btn-ghost">
-                Conheça a Arca
+              <a href="/solicitar-bolsa" className="btn btn-ghost">
+                Solicitar bolsa
               </a>
             </div>
           </div>
           <div className="hero-seal">
-            <svg
-              className="seal"
-              viewBox="0 0 220 220"
-              role="img"
-              aria-label="Selo da Arca Nossa Senhora da Providência"
-            >
-              <use href="#seal-art" />
-            </svg>
+            <SealLogo size={220} className="seal" decorative />
           </div>
         </div>
       </section>
@@ -515,6 +455,30 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ══════════ BENFEITOR — CTA ══════════ */}
+      <section className="benfeitor-band" id="benfeitor">
+        <div className="shell">
+          <div>
+            <span className="kicker on-light">Seja um benfeitor</span>
+            <h2>Sustente a formação católica de um aluno</h2>
+            <p>
+              A cada 15 pessoas que doam apenas R$ 80,00 por mês, um aluno tem acesso a uma formação
+              integralmente católica. Todos os meses, uma missa é rezada por todos os nossos benfeitores.
+            </p>
+          </div>
+          <div className="benfeitor-actions">
+            <a href="/seja-um-benfeitor" className="btn btn-gold">
+              Quero ser benfeitor
+              {arrowIcon}
+            </a>
+            <p className="benfeitor-note">
+              Por nosso compromisso de garantir a bolsa do ano escolar completo, preferimos doações
+              regulares.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* ══════════ SOLICITAR — CTA ══════════ */}
       <section className="solicitar" id="solicitar">
         <div className="shell">
@@ -529,7 +493,7 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="solicitar-actions">
-            <a href="/form" className="btn btn-gold">
+            <a href="/solicitar-bolsa" className="btn btn-gold">
               Abrir formulário de solicitação
               {arrowIcon}
             </a>
@@ -544,30 +508,6 @@ export default function LandingPage() {
                 <b>03</b> Aguarde a análise da comissão avaliadora
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════ BENFEITOR — CTA ══════════ */}
-      <section className="benfeitor-band" id="benfeitor">
-        <div className="shell">
-          <div>
-            <span className="kicker on-light">Seja um benfeitor</span>
-            <h2>Sustente a formação católica de um aluno</h2>
-            <p>
-              A cada 15 pessoas que doam apenas R$ 80,00 por mês, um aluno tem acesso a uma formação
-              integralmente católica. Todos os meses, uma missa é rezada por todos os nossos benfeitores.
-            </p>
-          </div>
-          <div className="benfeitor-actions">
-            <a href="/benfeitor" className="btn btn-gold">
-              Quero ser benfeitor
-              {arrowIcon}
-            </a>
-            <p className="benfeitor-note">
-              Por nosso compromisso de garantir a bolsa do ano escolar completo, preferimos doações
-              regulares.
-            </p>
           </div>
         </div>
       </section>
@@ -590,7 +530,7 @@ export default function LandingPage() {
               </div>
               <div className="lbl">E-mail</div>
               <div className="val">
-                <a href="mailto:contato@arcaprovidencia.org">contato@arcaprovidencia.org</a>
+                <a href="mailto:contato@arcaprovidencia.com.br">contato@arcaprovidencia.com.br</a>
               </div>
             </div>
           </div>
@@ -603,9 +543,7 @@ export default function LandingPage() {
           <div className="footer-top">
             <div className="footer-brand-col">
               <div className="footer-brand">
-                <svg className="seal" viewBox="0 0 220 220" role="img" aria-label="Selo da Arca">
-                  <use href="#seal-art" />
-                </svg>
+                <SealLogo size={54} className="seal" decorative />
                 <div>
                   <div className="fb-name">Arca Nossa Senhora da Providência</div>
                   <p className="fb-desc">
@@ -626,16 +564,15 @@ export default function LandingPage() {
               <h4>Navegação</h4>
               <ul>
                 <li><a href="#missao">Quem somos</a></li>
-                <li><a href="#solicitar">Solicitar bolsa</a></li>
+                <li><a href="/solicitar-bolsa">Solicitar bolsa</a></li>
                 <li><a href="#contato">Contato</a></li>
               </ul>
             </div>
             <div className="footer-col">
               <h4>Acesso rápido</h4>
               <ul>
-                <li><a href="/form">Formulário de bolsa</a></li>
-                <li><a href="/benfeitor">Seja um benfeitor</a></li>
-                <li><a href="/admin">Área administrativa</a></li>
+                <li><a href="/seja-um-benfeitor">Seja um benfeitor</a></li>
+                <li><a href="/solicitar-bolsa">Formulário de bolsa</a></li>
               </ul>
             </div>
           </div>

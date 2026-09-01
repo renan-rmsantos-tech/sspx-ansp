@@ -1,6 +1,7 @@
-import { relations, sql } from "drizzle-orm";
+import { desc, relations, sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   date,
   index,
   integer,
@@ -22,10 +23,14 @@ export const adminUsers = pgTable("admin_users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
   password_hash: text("password_hash").notNull(),
+  role: text("role").$type<"admin" | "secretaria">().notNull().default("admin"),
+  ativo: boolean("ativo").notNull().default(true),
   created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
     .notNull()
     .defaultNow(),
-});
+}, (t) => [
+  check("admin_users_role_check", sql`${t.role} in ('admin', 'secretaria')`),
+]);
 
 export const schoolYears = pgTable(
   "school_years",
@@ -333,6 +338,71 @@ export const donorPledges = pgTable(
   (t) => [index("donor_pledges_created_at_idx").on(t.created_at)]
 );
 
+/** Histórico operacional interno, apenas de inclusão. */
+export const applicationObservations = pgTable(
+  "application_observations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    application_id: uuid("application_id")
+      .notNull()
+      .references(() => applications.id, { onDelete: "cascade" }),
+    author_user_id: uuid("author_user_id")
+      .notNull()
+      .references(() => adminUsers.id, { onDelete: "restrict" }),
+    body: text("body").notNull(),
+    created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("application_observations_application_created_at_idx").on(
+      t.application_id,
+      t.created_at
+    ),
+    index("application_observations_author_user_id_idx").on(t.author_user_id),
+  ]
+);
+
+/** Versões imutáveis dos documentos finais emitidos por Administradores. */
+export const issuedDocuments = pgTable(
+  "issued_documents",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    application_id: uuid("application_id")
+      .notNull()
+      .references(() => applications.id, { onDelete: "cascade" }),
+    kind: text("kind").$type<"decision" | "contract">().notNull(),
+    version: integer("version").notNull(),
+    storage_path: text("storage_path").notNull(),
+    filename: text("filename").notNull(),
+    mime_type: text("mime_type").notNull().default("application/pdf"),
+    size_bytes: integer("size_bytes").notNull(),
+    issued_by: uuid("issued_by")
+      .notNull()
+      .references(() => adminUsers.id, { onDelete: "restrict" }),
+    issued_at: timestamp("issued_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    check("issued_documents_kind_check", sql`${t.kind} in ('decision', 'contract')`),
+    check("issued_documents_mime_type_check", sql`${t.mime_type} = 'application/pdf'`),
+    check("issued_documents_version_positive", sql`${t.version} > 0`),
+    check("issued_documents_size_bytes_positive", sql`${t.size_bytes} > 0`),
+    uniqueIndex("issued_documents_application_kind_version_unique").on(
+      t.application_id,
+      t.kind,
+      t.version
+    ),
+    index("issued_documents_application_kind_version_idx").on(
+      t.application_id,
+      t.kind,
+      desc(t.version)
+    ),
+    index("issued_documents_issued_by_idx").on(t.issued_by),
+  ]
+);
+
 // As relações mantêm os nomes das chaves usadas pelas actions e pelos PDFs
 // (`students`, `school_years`, …), por isso não são pluralizadas em camelCase.
 
@@ -342,6 +412,8 @@ export const applicationsRelations = relations(applications, ({ one, many }) => 
   vehicles: many(vehicles),
   benefactors: many(benefactors),
   documents: many(documents),
+  application_observations: many(applicationObservations),
+  issued_documents: many(issuedDocuments),
   collaboration: one(collaboration, {
     fields: [applications.id],
     references: [collaboration.application_id],
@@ -349,6 +421,36 @@ export const applicationsRelations = relations(applications, ({ one, many }) => 
   school_years: one(schoolYears, {
     fields: [applications.school_year_id],
     references: [schoolYears.id],
+  }),
+}));
+
+export const adminUsersRelations = relations(adminUsers, ({ many }) => ({
+  application_observations: many(applicationObservations),
+  issued_documents: many(issuedDocuments),
+}));
+
+export const applicationObservationsRelations = relations(
+  applicationObservations,
+  ({ one }) => ({
+    application: one(applications, {
+      fields: [applicationObservations.application_id],
+      references: [applications.id],
+    }),
+    author_user: one(adminUsers, {
+      fields: [applicationObservations.author_user_id],
+      references: [adminUsers.id],
+    }),
+  })
+);
+
+export const issuedDocumentsRelations = relations(issuedDocuments, ({ one }) => ({
+  application: one(applications, {
+    fields: [issuedDocuments.application_id],
+    references: [applications.id],
+  }),
+  issued_by_user: one(adminUsers, {
+    fields: [issuedDocuments.issued_by],
+    references: [adminUsers.id],
   }),
 }));
 

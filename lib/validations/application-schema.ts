@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { isValidCPF } from "./cpf";
-import { SCHOLARSHIP_UPLOADS_ENABLED } from "@/lib/form/scholarship-uploads";
 
 const cpfSchema = z
   .string()
@@ -25,23 +24,17 @@ const uploadedPath = z
     message: "Caminho de arquivo inválido",
   });
 
-const filePathArray = z.array(uploadedPath).default([]);
-
 const requiredFileArray = z
   .array(uploadedPath)
   .min(1, "Envie pelo menos um arquivo");
-
-// Em fase de testes, documentos ficam opcionais (lista vazia permitida).
-const docsField = SCHOLARSHIP_UPLOADS_ENABLED
-  ? requiredFileArray
-  : filePathArray;
 
 const studentSchema = z.object({
   nome: z.string().min(1, "Nome do aluno é obrigatório"),
   cpf: optionalCpfSchema,
   serie: z.string().min(1, "Série é obrigatória"),
   mensalidade: nonNegativeNumber,
-  documentos: docsField,
+  documento_identidade: requiredFileArray,
+  certidao_nascimento: requiredFileArray,
 });
 
 const otherChildSchema = z.object({
@@ -81,29 +74,29 @@ const collaborationSchema = z.object({
 
 export const applicationSubmissionSchema = z.object({
   escola: z.string().min(1, "Nome da escola é obrigatório"),
-  declaracao_vaga: docsField,
+  declaracao_vaga: requiredFileArray,
 
   pai: z.object({
     nome: z.string().min(1, "Nome do pai é obrigatório"),
     rg: z.string().min(1, "RG do pai é obrigatório"),
     cpf: cpfSchema,
     profissao: z.string().optional(),
-    documentos: docsField,
+    documentos: requiredFileArray,
   }),
 
   mae: z.object({
     nome: z.string().min(1, "Nome da mãe é obrigatório"),
     cpf: cpfSchema,
     profissao: z.string().optional(),
-    documentos: docsField,
+    documentos: requiredFileArray,
   }),
 
-  certidao_casamento: filePathArray.optional(),
+  certidao_casamento: requiredFileArray,
   endereco: z.string().min(1, "Endereço é obrigatório"),
   cep: z.string().optional(),
   telefone: z.string().min(1, "Telefone é obrigatório"),
   email: z.string().email("Email inválido").optional().or(z.literal("")),
-  comprovante_endereco: docsField,
+  comprovante_endereco: requiredFileArray,
 
   outros_filhos: z.array(otherChildSchema).default([]),
 
@@ -123,7 +116,7 @@ export const applicationSubmissionSchema = z.object({
     pessoas: z.number().int().positive("Número de pessoas deve ser positivo"),
   }),
 
-  extrato_ir: docsField,
+  extrato_ir: requiredFileArray,
 
   despesas: z.object({
     aluguel: optionalNonNegative,
@@ -134,7 +127,7 @@ export const applicationSubmissionSchema = z.object({
     internet: optionalNonNegative,
   }),
 
-  extratos_bancarios: docsField,
+  extratos_bancarios: requiredFileArray,
 
   veiculos: z.array(vehicleSchema).default([]),
 

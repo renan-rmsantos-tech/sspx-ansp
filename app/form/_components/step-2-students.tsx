@@ -6,10 +6,6 @@ import { FileUpload } from "./file-upload";
 import type { UploadedFile } from "./file-upload";
 import { RequiredMark, FieldError, fieldBorder } from "./field-ui";
 import { useMemo } from "react";
-import {
-  SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE,
-  SCHOLARSHIP_UPLOADS_ENABLED,
-} from "@/lib/form/scholarship-uploads";
 
 interface Step2Props {
   data: FormData;
@@ -44,6 +40,9 @@ export function Step2Students({ data, onChange, errors }: Step2Props) {
 
   const removeStudent = (index: number) => {
     if (data.alunos.length <= 1) return;
+    // As categorias assinadas carregam o índice do aluno. Não deslocamos um
+    // aluno que já tenha anexos, pois isso invalidaria seus tickets existentes.
+    if (data.alunos.slice(index + 1).some((student) => student.docRg.length || student.docCertidao.length)) return;
     onChange({ alunos: data.alunos.filter((_, i) => i !== index) });
   };
 
@@ -80,7 +79,8 @@ export function Step2Students({ data, onChange, errors }: Step2Props) {
                 <button
                   type="button"
                   onClick={() => removeStudent(i)}
-                  className="grid h-9 w-9 place-items-center rounded-md border border-border bg-surface text-lg text-muted transition-colors hover:border-danger hover:text-danger"
+                  disabled={data.alunos.length <= 1 || data.alunos.slice(i + 1).some((student) => student.docRg.length || student.docCertidao.length)}
+                  className="grid h-9 w-9 place-items-center rounded-md border border-border bg-surface text-lg text-muted transition-colors hover:border-danger hover:text-danger disabled:cursor-not-allowed disabled:opacity-40"
                   title="Remover aluno"
                   data-testid="remove-student"
                 >
@@ -185,32 +185,28 @@ export function Step2Students({ data, onChange, errors }: Step2Props) {
                 <div>
                   <label className="mb-1 block text-xs font-medium tracking-wide text-muted">
                     RG ou CPF do aluno
-                    {SCHOLARSHIP_UPLOADS_ENABLED && <RequiredMark />}
+                    <RequiredMark />
                   </label>
                   <FileUpload
                     label="RG ou CPF do aluno"
                     category={`rg_aluno_${i}`}
                     files={aluno.docRg}
                     onChange={(f) => updateStudent(i, "docRg", f)}
-                    required={SCHOLARSHIP_UPLOADS_ENABLED}
-                    disabled={!SCHOLARSHIP_UPLOADS_ENABLED}
-                    disabledMessage={SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE}
+                    required
                     error={errors[`aluno_${i}_docRg`]}
                   />
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-medium tracking-wide text-muted">
                     Certidão de Nascimento
-                    {SCHOLARSHIP_UPLOADS_ENABLED && <RequiredMark />}
+                    <RequiredMark />
                   </label>
                   <FileUpload
                     label="Certidão de Nascimento"
                     category={`certidao_nascimento_${i}`}
                     files={aluno.docCertidao}
                     onChange={(f) => updateStudent(i, "docCertidao", f)}
-                    required={SCHOLARSHIP_UPLOADS_ENABLED}
-                    disabled={!SCHOLARSHIP_UPLOADS_ENABLED}
-                    disabledMessage={SCHOLARSHIP_UPLOADS_DISABLED_MESSAGE}
+                    required
                     error={errors[`aluno_${i}_docCertidao`]}
                   />
                 </div>
