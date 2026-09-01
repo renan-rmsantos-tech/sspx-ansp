@@ -31,6 +31,12 @@ services:
       - traefik.http.routers.ansp.entrypoints=websecure
       - traefik.http.routers.ansp.tls=true
       - traefik.http.routers.ansp.tls.certresolver=letsencrypt
+      # Solicita explicitamente um certificado único para o domínio principal
+      # e sua variante www; sem estes nomes, o Traefik só emite para o primeiro
+      # host da regra do router.
+      - traefik.http.routers.ansp.tls.domains[0].main=${APP_HOST}
+      - traefik.http.routers.ansp.tls.domains[0].sans=${APP_HOST_WWW}
+      - traefik.http.routers.ansp.tls.domains[1].main=${APP_HOST_LEGACY}
       - traefik.http.services.ansp.loadbalancer.server.port=3000
     security_opt:
       - no-new-privileges:true
