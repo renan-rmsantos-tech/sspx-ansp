@@ -24,10 +24,10 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=proxy
-      # O domínio principal e o legado permanecem atendidos durante a
-      # transição. APP_HOST_LEGACY pode ficar igual ao principal quando não
-      # houver domínio anterior a preservar.
-      - traefik.http.routers.ansp.rule=Host(`${APP_HOST}`) || Host(`${APP_HOST_LEGACY}`)
+      # O domínio principal, a variante www e o legado permanecem atendidos
+      # durante a transição. Os aliases podem ficar iguais ao principal
+      # quando não houver endereço anterior a preservar.
+      - traefik.http.routers.ansp.rule=Host(`${APP_HOST}`) || Host(`${APP_HOST_WWW}`) || Host(`${APP_HOST_LEGACY}`)
       - traefik.http.routers.ansp.entrypoints=websecure
       - traefik.http.routers.ansp.tls=true
       - traefik.http.routers.ansp.tls.certresolver=letsencrypt
