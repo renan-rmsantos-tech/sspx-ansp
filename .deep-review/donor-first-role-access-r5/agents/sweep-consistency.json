@@ -1,0 +1,46 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 64,
+      "hunk": "new:64-81",
+      "candidate": "Secretariat application and donor projections may expose fields from the full administrator queries.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The role branch selects explicit operational columns (applications: id/status/school/parent names/contact/decision date and student id/name; donor pledges: the documented operational allowlist) before data reaches the Secretariat components. The full queries run only after the non-secretaria branch."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 809,
+      "hunk": "new:809-836",
+      "candidate": "Secretariat could use an old or ineligible issued-document ID to obtain a final-document ticket.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "getIssuedDocumentUrl resolves the persisted record server-side and, for Secretaria, compares it with getCurrentIssuedDocuments. The latter rejects pending applications and filters rejected applications to decisions, while administrators alone can call history."
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 23,
+      "hunk": "new:19-39",
+      "candidate": "Decision and contract reissues may allocate duplicate versions across concurrent calls.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Each persistence transaction locks the application row before reading the latest version and inserting the new record; the migration also enforces unique (application_id, kind, version). This coordinates both kinds per application and prevents same-kind duplicates."
+    },
+    {
+      "file": "app/page.tsx",
+      "line": 344,
+      "hunk": "new:344-351",
+      "candidate": "Public donor-first links and canonical route relocation remain inconsistent across landing-page entry points.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The primary navigation, hero CTA, benefactor band, and quick-access list point to /seja-um-benfeitor before /solicitar-bolsa; legacy route components contain only permanent redirects to these canonical destinations."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

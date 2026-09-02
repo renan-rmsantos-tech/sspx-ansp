@@ -1,0 +1,110 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "line": 12,
+      "end_line": 12,
+      "in_diff": true,
+      "hunk": "new:1-13",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Format the new public page trees into reviewable units",
+      "body": "Both newly introduced route components place their complete layout, page copy, and conditional rendering in one physical JSX line. Splitting the markup into normal JSX blocks makes individual sections, accessibility attributes, and future edits readable in diffs and allows the donor transfer panel or form header to be extracted independently when either route evolves.",
+      "also_applies": [
+        "app/solicitar-bolsa/page.tsx:16"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/seja-um-benfeitor/page.tsx:12 contains the complete page header, transfer instructions, and donor form in one JSX expression; app/solicitar-bolsa/page.tsx:16 does the same for its header and form/unavailable branch → Improvement: individual sections and control-flow boundaries become locally reviewable and maintainable → Fix: format the route trees into multiline JSX and extract a small transfer-details section if it remains substantial.",
+        "package.json → the project provides no Prettier dependency or formatting script, so this readability improvement is not formatter-owned.",
+        "git diff 5c90842fe230 -- app/seja-um-benfeitor/page.tsx app/solicitar-bolsa/page.tsx → both dense route trees were introduced by this change."
+      ]
+    },
+    {
+      "file": "docs/changes/2026-07-27.md",
+      "line": 18,
+      "end_line": 18,
+      "in_diff": true,
+      "hunk": "new:15-18",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Remove the trailing blank line in the change brief",
+      "body": "The edited change brief now ends with a blank line, which causes Git's whitespace check to report the file. Removing that final blank line keeps the changed documentation clean in repository-wide whitespace validation.",
+      "also_applies": [],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: docs/changes/2026-07-27.md:18 is a new blank final line → Improvement: `git diff --check` becomes clean for the edited brief → Fix: remove the final blank line.",
+        "git diff --check 5c90842fe230 -- docs/changes/2026-07-27.md → reports `new blank line at EOF` at line 18."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "components/ui/seal-logo.tsx",
+      "line": 10,
+      "hunk": "new:10-11",
+      "candidate": "Replace the static SVG img with next/image",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The asset is a small local SVG with explicit intrinsic dimensions; no inspected behavior or project rule establishes a concrete benefit from adding Next image optimization."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 26,
+      "hunk": "new:1-40",
+      "candidate": "Reformat Drizzle statement-breakpoint SQL layout",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "The migration follows the Drizzle-generated statement-breakpoint convention; manual presentation changes would not improve its generated migration contract."
+    },
+    {
+      "file": "app/page.tsx",
+      "line": 338,
+      "hunk": "new:338-338",
+      "candidate": "Deduplicate the SealLogo instances in the landing page",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The three instances intentionally have distinct semantic locations and sizes, and no common abstraction has a concrete maintenance benefit beyond an extra wrapper."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":"app/page.tsx","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"old:333-384","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:338-338","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:346-347","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:350-351","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:370-371","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:380-380","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:458-481","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:496-496","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"old:551-574","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:533-533","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:546-546","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:567-567","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:574-575","checks":["polish"],"outcome":"clear"},
+      {"file":"app/seja-um-benfeitor/page.tsx","hunk":"new:1-13","checks":["polish"],"outcome":"reported"},
+      {"file":"app/solicitar-bolsa/page.tsx","hunk":"new:1-17","checks":["polish"],"outcome":"reported"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:7-8","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:10-11","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"old:12-16","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:15-17","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:1-1","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:6-7","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:9-9","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:11-12","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"old:11-11","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:15-18","checks":["polish"],"outcome":"reported"},
+      {"file":"drizzle/0006_flimsy_spacker_dave.sql","hunk":"new:1-40","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

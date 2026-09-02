@@ -1,0 +1,48 @@
+{
+  "defects": [
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 26,
+      "end_line": 31,
+      "in_diff": true,
+      "hunk": "new:1-40",
+      "category": "potential-issue",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Populated-database migration behavior lacks deploy-gate coverage",
+      "body": "Premise: `0006` changes populated `admin_users` rows by adding nullable `role`, backfilling it, and then enforcing the role constraint and non-null state at lines 26–31, but the automated suite does not invoke the migration from the preceding schema. → Path: a future change to the DDL order, legacy backfill, or constraints can leave fake-DB action tests green while failing on the deployed database containing existing users and `applications.decided_by` references. → Verdict: the required additive rollout behavior can regress without detection before deployment.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: populated admin_users is mutated in ordered DDL → Path: no test applies 0006 from snapshot 0005 with a legacy account and decision reference → Verdict: rollout compatibility is unguarded.",
+        "drizzle/0006_flimsy_spacker_dave.sql:26-31 → role is added nullable, backfilled to admin, constrained, made non-null, then given a default.",
+        ".compozy/tasks/donor-first-role-access/task_01.md:105-111 → requires integration coverage that applies the migration to legacy staff and decisions, validates constraints and foreign keys, and proves additive migration behavior.",
+        "rg -n -i 'migration|migrate|0006|legacy|backfill|populated' __tests__ → no automated test invokes the Drizzle migration or establishes the required pre-0006 database state."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 26,
+      "hunk": "new:1-40",
+      "candidate": "Role constraints could reject existing accounts during rollout",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The SQL adds role as nullable, backfills all null values to admin, then adds the check and non-null requirement; this is the required compatibility sequence."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 32,
+      "hunk": "new:1-40",
+      "candidate": "New observation and issued-document foreign keys could invalidate legacy rows",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Both new tables begin empty, reference existing primary keys, and encode the specified application cascade and author/issuer restrict actions."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

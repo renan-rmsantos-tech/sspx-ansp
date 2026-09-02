@@ -1,0 +1,46 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/page.tsx",
+      "line": 346,
+      "hunk": "new:346",
+      "candidate": "Legacy public links left after canonical-route migration",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Every owned public CTA and navigation link now targets /seja-um-benfeitor or /solicitar-bolsa; the only remaining /form and /benfeitor references are imports/test paths or the dedicated permanent redirects."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 64,
+      "hunk": "new:64",
+      "candidate": "Secretariat projection could omit the cross-role download invariant",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The operational application projection is deliberately limited to identity, school, contact, decision date, and student names; current final documents are fetched separately through getCurrentIssuedDocuments, which applies status and current-version filtering before the ticket action validates the same invariant."
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 16,
+      "hunk": "new:16",
+      "candidate": "Issued-document paths might overlap ordinary application document paths",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Final documents use the distinct applications/{applicationId}/issued/{kind}/{uuid}.pdf namespace, while submitted uploads preserve their pending upload UUID below applications/{applicationId}; issued-document lookup and download are ID-based."
+    },
+    {
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "line": 12,
+      "hunk": "new:12",
+      "candidate": "Displayed ACIPEC CNPJ conflicts with repository guidance",
+      "reason": "phantom-knowledge",
+      "rule_ids": [],
+      "note": "CLAUDE.md names 62.611.908/0001-99, but the existing contract bootstrap explicitly identifies ACIPEC as 42.736.079/0001-63, matching the new donor page. The repository provides conflicting institutional sources, so a concrete incorrect-value verdict cannot be substantiated by this sweep."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

@@ -1,0 +1,163 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "__tests__/issued-documents.test.ts",
+      "line": 12,
+      "end_line": 17,
+      "in_diff": true,
+      "hunk": "new:1-36",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Name the issuance test after the behavior it exercises",
+      "body": "The test title claims that allocation is serialized, but it executes one call with a pre-seeded latest version and does not exercise concurrent calls or a locking boundary. Rename it to cover next-version allocation, or add a separate concurrency test, so a future reader does not mistake this unit assertion for proof of the serialization invariant.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: __tests__/issued-documents.test.ts:12 calls `persistIssuedDocument` once after stubbing `findFirst` to version 2 → Improvement: aligns the test name with its observable scope and keeps the serialization guarantee discoverable → Fix: rename this test to next-version allocation or add a separate concurrent-allocation test.",
+        "__tests__/issued-documents.test.ts:13-17 → the only assertions cover version 3, storage put, and inserted metadata; no competing issuance is started."
+      ]
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 43,
+      "end_line": 45,
+      "in_diff": true,
+      "hunk": "new:43-45",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Name the helper for its admin-only contract",
+      "body": "`requireAuth` now delegates directly to `requireAdmin`, so its broad name no longer describes the authorization boundary of every caller. Rename it to `requireAdminUser` (or call `requireAdmin` directly) to make the stronger contract visible at call sites.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: app/admin/_actions/admin-actions.ts:43-45 returns only `requireAdmin()` while its name is `requireAuth` → Improvement: makes the role boundary immediately clear during maintenance and prevents callers from assuming it merely checks login → Fix: rename the helper to reflect admin authorization or inline `requireAdmin`.",
+        "rg -n 'requireAuth\\(' app/admin/_actions/admin-actions.ts → the helper remains the authorization entry point for multiple admin actions."
+      ]
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 543,
+      "end_line": 549,
+      "in_diff": true,
+      "hunk": "new:543-549",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Centralize the duplicated issued-PDF persistence sequence",
+      "body": "Decision and contract export now repeat actor resolution, missing-actor handling, persistence, and persistence-failure mapping. Extracting a small helper parameterized by document kind and message keeps the immutable-issuance policy synchronized as export behavior evolves.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "also_applies": [
+        "app/admin/_actions/admin-actions.ts:798-804"
+      ],
+      "evidence": [
+        "Premise: app/admin/_actions/admin-actions.ts:543-549 and 798-804 contain parallel issuance-actor lookup, null handling, `persistIssuedDocument` call, and catch mapping → Improvement: one helper gives future issuance-policy changes a single maintenance point → Fix: extract a private persistence helper accepting application id, kind, filename, PDF, actor, and localized labels.",
+        "app/admin/_actions/admin-actions.ts:543-549 → the decision path implements the complete sequence.",
+        "app/admin/_actions/admin-actions.ts:798-804 → the contract path repeats the same sequence with only kind and messages changed."
+      ]
+    },
+    {
+      "file": "app/admin/_actions/staff-actions.ts",
+      "line": 47,
+      "end_line": 56,
+      "in_diff": true,
+      "hunk": "new:1-76",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Remove the redundant Secretariat pre-read before updates",
+      "body": "Both mutation paths first fetch the account and then run an update that already restricts its `WHERE` clause to `role = secretaria` and reports failure when no row is returned. Rely on the returned update rows directly to avoid a duplicated authorization predicate and one database round trip per action.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "also_applies": [
+        "app/admin/_actions/staff-actions.ts:62-72"
+      ],
+      "evidence": [
+        "Premise: app/admin/_actions/staff-actions.ts:49-55 reads the same id/role predicate that the update at line 55 enforces and the result at line 56 already distinguishes zero rows → Improvement: removes duplicated policy logic and a database request without changing the externally returned generic error → Fix: issue the restricted update directly and preserve the existing `rows.length` result handling.",
+        "app/admin/_actions/staff-actions.ts:65-72 → password reset repeats the same pre-read followed by an identically restricted update."
+      ]
+    },
+    {
+      "file": "app/admin/benfeitores/client.tsx",
+      "line": 93,
+      "end_line": 100,
+      "in_diff": true,
+      "hunk": "new:77-102",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Give the Secretariat donor view readable component boundaries",
+      "body": "The new role-specific view places filtering, input markup, and the complete donor-card rendering tree into a few dense lines. Split the JSX into normal multiline markup and extract a small `SecretariatDonorCard` (with a named props type) so future changes to the permitted donor projection are reviewable field by field.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: app/admin/benfeitores/client.tsx:93-100 combines component props, local filtering, search input, and every displayed operational donor field in one compact block → Improvement: makes privacy-sensitive field additions and UI changes locally auditable → Fix: format the component normally and extract the repeated article into a named card component.",
+        "app/admin/benfeitores/client.tsx:77-90 → `SecretariatDonorPledge` is the allowlisted projection whose fields the dense renderer consumes."
+      ]
+    }
+  ],
+  "suppressions": [],
+  "coverage": {
+    "hunks": [
+      {"file":"__tests__/authorization.test.ts","hunk":"new:1-124","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-actions.test.ts","hunk":"old:9-14","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-actions.test.ts","hunk":"new:107-118","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-page.test.tsx","hunk":"new:15-15","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-page.test.tsx","hunk":"new:19-19","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/helpers/fake-db.ts","hunk":"new:123-123","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/issued-documents.test.ts","hunk":"new:1-36","checks":["polish"],"outcome":"reported"},
+      {"file":"__tests__/export-decision.test.tsx","hunk":"new:23-26","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/scholarship-form.test.tsx","hunk":"old:15-21","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/solicitacoes-client.test.tsx","hunk":"new:11-15","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/solicitacoes-client.test.tsx","hunk":"new:23-27","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/solicitacoes-client.test.tsx","hunk":"new:47-58","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/solicitacoes-client.test.tsx","hunk":"new:101-102","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/staff-and-observations.test.ts","hunk":"new:1-47","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/step-1-applicant.test.tsx","hunk":"old:7-12","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/submit-application.test.ts","hunk":"new:58-58","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/submit-application.test.ts","hunk":"new:61-61","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/submit-application.test.ts","hunk":"new:68-69","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/submit-application.test.ts","hunk":"new:232-242","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:4-8","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"old:5-5","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:13-13","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:29-29","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:43-45","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:47-53","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:61-61","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:64-83","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:128-128","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:131-152","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:488-488","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:543-549","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:738-738","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:798-804","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:808-837","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/observation-actions.ts","hunk":"new:1-37","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/staff-actions.ts","hunk":"new:1-76","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:7-7","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:35-40","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:94-94","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:190-193","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:199-199","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:220-220","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/application-card.tsx","hunk":"new:7-8","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/application-card.tsx","hunk":"new:311-311","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/issued-documents.tsx","hunk":"new:1-14","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/application-observations.tsx","hunk":"new:1-10","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/benfeitores/client.tsx","hunk":"new:77-102","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/benfeitores/page.tsx","hunk":"new:4-5","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/benfeitores/page.tsx","hunk":"new:8-8","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/benfeitores/page.tsx","hunk":"new:20-24","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

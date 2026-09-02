@@ -1,0 +1,94 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "app/solicitar-bolsa/layout.tsx",
+      "line": 11,
+      "end_line": 104,
+      "in_diff": true,
+      "hunk": "new:1-104",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Evite manter duas cópias idênticas do layout do formulário",
+      "body": "O novo layout canônico é byte a byte idêntico a `app/form/layout.tsx`. Qualquer correção de acessibilidade, texto ou composição terá de ser aplicada e revisada duas vezes, e as duas rotas podem divergir silenciosamente. Extraia o conteúdo para um componente/layout compartilhado consumido pelas duas rotas, ou remova o layout legado se ele não for necessário durante o redirecionamento.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/solicitar-bolsa/layout.tsx:11-104 é idêntico a app/form/layout.tsx:11-104 → Improvement: uma única fonte elimina duas superfícies de manutenção para o mesmo cabeçalho e conteúdo institucional → Fix: mover a composição para um componente compartilhado e usá-lo nos dois layouts, ou eliminar a cópia legada após confirmar que o redirect não a requer.",
+        "cmp -s app/form/layout.tsx app/solicitar-bolsa/layout.tsx → retornou 0, confirmando que os dois arquivos são idênticos."
+      ]
+    },
+    {
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "line": 12,
+      "end_line": 12,
+      "in_diff": true,
+      "hunk": "new:1-13",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Formate a árvore JSX da página de benfeitor",
+      "body": "Toda a árvore JSX, incluindo os dados bancários que tendem a receber alterações, está em uma única linha. Isso torna diffs, revisão e mudanças localizadas desnecessariamente difíceis. Quebre os elementos e atributos em linhas estruturadas, seguindo o padrão já usado no layout de solicitação.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/seja-um-benfeitor/page.tsx:12 concentra a árvore completa de página em uma linha → Improvement: linhas estruturadas tornam alterações nos campos bancários e na semântica revisáveis isoladamente → Fix: reformatar o retorno JSX em blocos aninhados sem alterar comportamento.",
+        "app/solicitar-bolsa/layout.tsx:17-103 → a outra nova página pública usa JSX estruturado, oferecendo o padrão local a seguir."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "components/ui/seal-logo.tsx",
+      "line": 10,
+      "hunk": "new:10-11",
+      "candidate": "Substituir img por next/image para otimização automática",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "O selo SVG tem dimensões explícitas e o contexto não estabelece um requisito de otimização; a mudança de componente não oferece benefício local demonstrado."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 25,
+      "hunk": "new:1-40",
+      "candidate": "Separar os statements de migração em uma nova migração",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "A migração é o artefato atômico correto para as novas tabelas e a evolução de papéis; não há benefício de manutenção concreto em fragmentá-la."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":"app/page.tsx","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"old:333-384","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:338-338","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:346-347","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:350-351","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:370-371","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:374-375","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:380-380","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:458-481","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:496-496","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"old:551-574","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:533-533","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:546-546","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:567-567","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:574-575","checks":["polish"],"outcome":"clear"},
+      {"file":"app/seja-um-benfeitor/page.tsx","hunk":"new:1-13","checks":["polish"],"outcome":"reported"},
+      {"file":"app/solicitar-bolsa/page.tsx","hunk":"new:1-16","checks":["polish"],"outcome":"clear"},
+      {"file":"app/solicitar-bolsa/layout.tsx","hunk":"new:1-104","checks":["polish"],"outcome":"reported"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:7-8","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:10-11","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"old:12-16","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:15-17","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:1-1","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:6-7","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:9-9","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:11-12","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"old:11-11","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:15-18","checks":["polish"],"outcome":"clear"},
+      {"file":"drizzle/0006_flimsy_spacker_dave.sql","hunk":"new:1-40","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

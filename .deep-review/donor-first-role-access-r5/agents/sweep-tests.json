@@ -1,0 +1,108 @@
+{
+  "defects": [
+    {
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 96,
+      "end_line": 103,
+      "in_diff": true,
+      "hunk": "new:96-103",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Role boundaries for sensitive actions are not regression-tested",
+      "body": "Premise: the new role-separation tests mock both authorization helpers as successful for every non-null user at __tests__/admin-actions.test.ts:94-103, and the guard suite at :114-147 only exercises an unauthenticated caller. → Path: a future change can replace requireAuth()/requireAdmin() on getApplicationDetail, decision actions, donor mutation/export, template/settings actions, or issued-document history with requireCapability(), while keeping the request authenticated. → Verdict: Secretaria would gain full family data or an administrator-only mutation, yet the current suite would pass because it never invokes those actions with a Secretaria identity and a rejecting requireAdmin mock. Add table-driven action-level tests that model Secretaria as allowed only for the intended operational list/document-read calls and assert no DB access for each restricted action.",
+      "rule_ids": [],
+      "also_applies": [
+        "__tests__/staff-and-observations.test.ts",
+        "app/admin/_actions/admin-actions.ts",
+        "app/admin/_actions/staff-actions.ts",
+        "app/admin/_actions/observation-actions.ts"
+      ],
+      "guideline": null,
+      "suggestion": "Introduce a Secretaria fixture whose requireAdmin mock rejects and requireCapability mock grants only the enumerated capabilities; cover every public server action in the new access surface.",
+      "evidence": [
+        "Premise: the authenticated fixture resolves both authorization helpers → Path: an admin-only action is changed to a Secretaria-granted capability → Verdict: sensitive data or mutation access can expand while the suite passes.",
+        "__tests__/admin-actions.test.ts:94-103 → every authenticated fixture resolves both requireAdmin and requireCapability, so it cannot distinguish their use.",
+        "__tests__/admin-actions.test.ts:114-147 → the only exhaustive guard test covers unauthenticated calls.",
+        "app/admin/_actions/admin-actions.ts:96-109 → getApplicationDetail returns full household, financial, and document data behind the admin-only helper."
+      ]
+    },
+    {
+      "file": "__tests__/issued-documents.test.ts",
+      "line": 15,
+      "end_line": 34,
+      "in_diff": true,
+      "hunk": "new:1-36",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Issued-document protections are covered only in isolation",
+      "body": "Premise: the new issued-document unit suite calls persistIssuedDocument directly with a fake transaction and only a single sequential latest-version response at __tests__/issued-documents.test.ts:15-27; export tests assert the returned preview PDF but not an issued metadata row or its failure behavior. → Path: removing the persistence call from exportDecision/exportContract, removing the row lock, or allowing Secretaria to obtain an old issued-document URL would leave normal PDF preview tests green. → Verdict: the immutable-final-document contract can regress in production (no auditable artifact, duplicate/racing version allocation, or disclosure of superseded documents) while npm test still passes. Add action-level assertions that successful decision/contract exports persist immutable rows, persistence failure does not report a successful export, Secretaria receives only the current eligible decision/contract, and a DB-backed concurrency test proves the lock/unique-version behavior.",
+      "rule_ids": [],
+      "also_applies": [
+        "__tests__/admin-actions.test.ts",
+        "app/admin/_actions/admin-actions.ts",
+        "lib/documents/issued-documents.ts"
+      ],
+      "guideline": null,
+      "suggestion": "Cover the export-to-issued-document boundary and the role-filtered URL/history boundary with non-mocked persistence semantics; retain the narrow cleanup unit test.",
+      "evidence": [
+        "Premise: issued persistence and lock behavior are tested only through isolated mocks → Path: export persistence, concurrency serialization, or role-filtered retrieval regresses → Verdict: immutable documents can be absent, race, or leak while the suite passes.",
+        "__tests__/issued-documents.test.ts:15-21 → version allocation is simulated by one mocked findFirst result; the test neither creates concurrent callers nor observes the SQL lock.",
+        "__tests__/admin-actions.test.ts:393-475 → exportDecision tests assert rendered content and returned base64, with no assertion that issuedDocuments was inserted or that persistence failure changes the result.",
+        "app/admin/_actions/admin-actions.ts:543-548 and :800-804 → export success now depends on persistIssuedDocument, a behavior not asserted at the action boundary.",
+        "app/admin/_actions/admin-actions.ts:809-836 → current-version filtering and admin-only history have no direct test coverage."
+      ]
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 44,
+      "end_line": 59,
+      "in_diff": true,
+      "hunk": "new:32-60",
+      "category": "potential-issue",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Upload category binding lacks a mismatch regression test",
+      "body": "Premise: submitApplication's only adversarial document-path case substitutes an applications/ path at __tests__/submit-application.test.ts:222-229. → Path: a caller can retain the pending path shape but put the father's document under rg_mae, use the wrong student index/category, or repeat the same pending path; these are the cases validateDocumentCategories at app/form/_actions/form-actions.ts:44-59 is meant to reject. → Verdict: weakening/removing category-to-field binding while keeping the generic pending-path check would pass the current suite and permit a submitted application to associate a required document slot with the wrong uploaded file. Add table-driven mismatch and duplicate-path cases that assert no inserts.",
+      "rule_ids": [],
+      "also_applies": [
+        "__tests__/form-actions.test.ts",
+        "app/form/_actions/form-actions.ts"
+      ],
+      "guideline": null,
+      "suggestion": "Mutate each valid fixture path category one at a time, including a duplicate path, and assert the _form category error before the transaction begins.",
+      "evidence": [
+        "Premise: adversarial submission coverage only rejects a non-pending path → Path: a pending path uses another field's category or repeats an uploaded path → Verdict: wrong document binding can be accepted while the suite passes.",
+        "__tests__/submit-application.test.ts:222-229 → the sole server-side path rejection tests only a non-pending prefix.",
+        "app/form/_actions/form-actions.ts:39-59 → production code additionally enforces exact field category and single-use paths.",
+        "__tests__/form-actions.test.ts:73-82 → upload-url category tests exercise issuance allowlisting, not binding submitted paths to their form fields."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "__tests__/application-schema.test.ts",
+      "line": 151,
+      "hunk": "new:151-167",
+      "candidate": "Required-document schema could be untested",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The parameterized tests cover each top-level mandatory document group and both required student document groups, so there is no concrete unprotected schema branch." 
+    },
+    {
+      "file": "__tests__/authorization.test.ts",
+      "line": 67,
+      "hunk": "new:1-124",
+      "candidate": "Authorization capability table could be untested",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The unit tests exercise current database identity, inactive revocation, Secretaria denial of an admin capability, and production bypass denial; the surviving gap is action-to-capability wiring reported above." 
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

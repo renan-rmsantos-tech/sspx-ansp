@@ -1,0 +1,78 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 207,
+      "end_line": 216,
+      "in_diff": true,
+      "hunk": "new:1-707",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Remove the unrelated Go authorization mirror",
+      "body": "The TypeScript contract already defines the authorization identity and helpers. Keeping a documentation-only Go type that has no runtime consumer creates a second, differently named representation that can become stale and distracts implementers in this Next.js/TypeScript repository. Remove the Go block instead of maintaining an unused mirror.",
+      "rule_ids": [],
+      "suggestion": null,
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:207-216 adds a documentation-only Go CapabilityContext beside the TypeScript interfaces → Improvement: one authoritative authorization contract eliminates an unused, independently named mirror → Fix: remove the explanatory paragraph and Go fenced block.",
+        "rg -n -i 'workflow-template compliance|type CapabilityContext|Go runtime|CapabilityContext' .compozy/tasks/donor-first-role-access → the Go type is the only occurrence in the task documentation.",
+        "rg -n 'getCurrentStaff|requireStaff\\(|CapabilityContext' app lib __tests__ .compozy/tasks/donor-first-role-access → runtime and tests use the TypeScript requireStaff contract; no Go consumer exists."
+      ]
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 407,
+      "end_line": 409,
+      "in_diff": true,
+      "hunk": "new:1-707",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Use the exported final-document action names in the surface table",
+      "body": "The final-document action table names three functions differently from the exported server-action surface. This makes the specification less useful as an implementation and test map. Rename the entries to exportDecision, exportContract, and getIssuedDocumentHistory, or explicitly document an adapter if those are intentionally separate actions.",
+      "rule_ids": [],
+      "suggestion": "| `exportDecision` | Administrator | Renders, stores, versions, and records a decision |\n| `exportContract` | Administrator | Renders, stores, versions, and records a contract |\n| `getIssuedDocumentHistory` | Administrator | Lists all versions |",
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:407-409 identifies issueDecision, issueContract, and listIssuedDocumentHistory as actions → Improvement: matching the documented surface to the callable exports gives implementers and tests one unambiguous action map → Fix: rename the three table entries to the actual exported function names.",
+        "rg -n 'export (async )?function (exportDecision|exportContract|getCurrentIssuedDocuments|getIssuedDocumentUrl|getIssuedDocumentHistory)|issueDecision|issueContract|listIssuedDocumentHistory' app/admin lib → app/admin/_actions/admin-actions.ts exports exportDecision, exportContract, and getIssuedDocumentHistory; only listIssuedDocumentHistory exists as an internal helper."
+      ]
+    }
+  ],
+  "suppressions": [],
+  "coverage": {
+    "hunks": [
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+        "hunk": "new:1-330",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+        "hunk": "new:1-11",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+        "hunk": "new:1-707",
+        "checks": ["polish"],
+        "outcome": "reported"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md",
+        "hunk": "new:1-67",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md",
+        "hunk": "new:1-76",
+        "checks": ["polish"],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

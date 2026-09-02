@@ -1,0 +1,37 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 51,
+      "hunk": "new:51-66",
+      "candidate": "Current-document projection shares metadata with Administrator history",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The shared projection deliberately omits storage_path and is the TechSpec's IssuedDocumentSummary contract, which includes issuer metadata; the separate Administrator-only history action controls access to prior versions."
+    },
+    {
+      "file": "app/admin/ano-letivo/page.tsx",
+      "line": 5,
+      "hunk": "new:1-19",
+      "candidate": "Role-hidden configuration navigation could remain reachable by direct URL",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Every unavailable configuration page and /admin/usuarios invokes requireAdmin at the page boundary, while its backing action independently invokes requireAdmin; the sidebar is not the authorization boundary."
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 37,
+      "hunk": "new:26-59",
+      "candidate": "Ticket categories and submitted document categories use different labels",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The path category is validated before persistence and the normalized database categories intentionally group per-student documents while retaining student_id; marriage's path category certidao is validated before its persisted certidao_casamento label is assigned."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

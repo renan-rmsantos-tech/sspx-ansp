@@ -1,0 +1,1727 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 21,
+      "hunk": "new:1-67",
+      "candidate": "Cast transaction as root Drizzle client",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "Inspected the transaction calls and the database contract; no concrete runtime failure was established from the type-only cast."
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 349,
+      "hunk": "new:349-350",
+      "candidate": "Best-effort path update after storage move",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The adjacent implementation and URL resolver preserve access through the deterministic application path when the row retains pending/."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 831,
+      "hunk": "new:814-843",
+      "candidate": "Administrator access to issued document history",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The role design explicitly permits administrators to inspect version history; secretariat is restricted to the current eligible document."
+    },
+    {
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "line": 11,
+      "hunk": "new:1-13",
+      "candidate": "Compressed JSX formatting",
+      "reason": "formatting",
+      "rule_ids": [],
+      "note": "The formatting is formatter-owned and does not establish a functional issue."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+        "hunk": "new:1-330",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+        "hunk": "new:1-11",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+        "hunk": "new:1-707",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md",
+        "hunk": "new:1-67",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md",
+        "hunk": "new:1-76",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-003.md",
+        "hunk": "new:1-69",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-004.md",
+        "hunk": "new:1-65",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-005.md",
+        "hunk": "new:1-68",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-006.md",
+        "hunk": "new:1-63",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-007.md",
+        "hunk": "new:1-62",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-008.md",
+        "hunk": "new:1-63",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/task_01.md",
+        "hunk": "new:1-124",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/task_02.md",
+        "hunk": "new:1-139",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/task_03.md",
+        "hunk": "new:1-131",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/task_04.md",
+        "hunk": "new:1-138",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/task_05.md",
+        "hunk": "new:1-143",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:13-14",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:16-17",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:22-23",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:25-26",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:39-43",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:45-45",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:74-75",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:94-94",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:98-105",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:190-230",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/application-schema.test.ts",
+        "hunk": "new:24-24",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/application-schema.test.ts",
+        "hunk": "new:39-40",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/application-schema.test.ts",
+        "hunk": "new:138-138",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/application-schema.test.ts",
+        "hunk": "new:151-167",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/auth-actions.test.ts",
+        "hunk": "new:48-48",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/auth-actions.test.ts",
+        "hunk": "new:68-68",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/auth-actions.test.ts",
+        "hunk": "new:83-96",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/authorization.test.ts",
+        "hunk": "new:1-124",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/form-actions.test.ts",
+        "hunk": "old:9-14",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/form-actions.test.ts",
+        "hunk": "new:107-118",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/form-page.test.tsx",
+        "hunk": "new:15-15",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/form-page.test.tsx",
+        "hunk": "new:19-19",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/helpers/fake-db.ts",
+        "hunk": "new:123-123",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/issued-documents.test.ts",
+        "hunk": "new:1-36",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/export-decision.test.tsx",
+        "hunk": "new:23-26",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/scholarship-form.test.tsx",
+        "hunk": "old:15-21",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/solicitacoes-client.test.tsx",
+        "hunk": "new:11-15",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/solicitacoes-client.test.tsx",
+        "hunk": "new:23-27",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/solicitacoes-client.test.tsx",
+        "hunk": "new:47-58",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/solicitacoes-client.test.tsx",
+        "hunk": "new:101-102",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/staff-and-observations.test.ts",
+        "hunk": "new:1-47",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/step-1-applicant.test.tsx",
+        "hunk": "old:7-12",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/submit-application.test.ts",
+        "hunk": "new:58-58",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/submit-application.test.ts",
+        "hunk": "new:61-61",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/submit-application.test.ts",
+        "hunk": "new:68-69",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/submit-application.test.ts",
+        "hunk": "new:160-160",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/submit-application.test.ts",
+        "hunk": "new:170-170",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "__tests__/submit-application.test.ts",
+        "hunk": "new:232-242",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:4-8",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "old:5-5",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:13-13",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:29-29",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:43-45",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:47-53",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:61-61",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:64-83",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:128-128",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:131-152",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:237-242",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:494-494",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:549-555",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:744-744",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:804-810",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:814-843",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_actions/observation-actions.ts",
+        "hunk": "new:1-37",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_actions/staff-actions.ts",
+        "hunk": "new:1-76",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_components/sidebar.tsx",
+        "hunk": "new:7-7",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_components/sidebar.tsx",
+        "hunk": "new:35-40",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_components/sidebar.tsx",
+        "hunk": "new:94-94",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_components/sidebar.tsx",
+        "hunk": "new:190-193",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_components/sidebar.tsx",
+        "hunk": "new:199-199",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_components/sidebar.tsx",
+        "hunk": "new:220-220",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_components/application-card.tsx",
+        "hunk": "new:7-8",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_components/application-card.tsx",
+        "hunk": "new:311-311",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_components/issued-documents.tsx",
+        "hunk": "new:1-14",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/_components/application-observations.tsx",
+        "hunk": "new:1-10",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/benfeitores/client.tsx",
+        "hunk": "new:77-102",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/benfeitores/page.tsx",
+        "hunk": "new:4-5",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/benfeitores/page.tsx",
+        "hunk": "new:8-8",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/benfeitores/page.tsx",
+        "hunk": "new:20-24",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/layout.tsx",
+        "hunk": "new:3-3",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/layout.tsx",
+        "hunk": "new:5-5",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/layout.tsx",
+        "hunk": "new:10-10",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/layout.tsx",
+        "hunk": "new:15-15",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/solicitacoes/client.tsx",
+        "hunk": "new:3-5",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/solicitacoes/client.tsx",
+        "hunk": "new:71-140",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/solicitacoes/page.tsx",
+        "hunk": "new:2-7",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/solicitacoes/page.tsx",
+        "hunk": "new:10-10",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/solicitacoes/page.tsx",
+        "hunk": "new:19-23",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/usuarios/client.tsx",
+        "hunk": "new:1-17",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/usuarios/page.tsx",
+        "hunk": "new:1-9",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/ano-letivo/page.tsx",
+        "hunk": "new:3-3",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/ano-letivo/page.tsx",
+        "hunk": "new:6-6",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/cabecalho/page.tsx",
+        "hunk": "new:3-3",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/cabecalho/page.tsx",
+        "hunk": "new:6-6",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/contrato/page.tsx",
+        "hunk": "new:3-3",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/contrato/page.tsx",
+        "hunk": "new:6-6",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/textos/page.tsx",
+        "hunk": "new:3-3",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/admin/textos/page.tsx",
+        "hunk": "new:6-6",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/benfeitor/page.tsx",
+        "hunk": "new:1-1",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/benfeitor/page.tsx",
+        "hunk": "new:4-4",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "old:22-22",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:32-60",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:99-99",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:103-103",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:130-133",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:307-307",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:315-316",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:326-330",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:349-350",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/file-upload.tsx",
+        "hunk": "old:26-28",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/file-upload.tsx",
+        "hunk": "old:46-47",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/file-upload.tsx",
+        "hunk": "old:160-171",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/scholarship-form.tsx",
+        "hunk": "old:18-18",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/scholarship-form.tsx",
+        "hunk": "new:52-52",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/scholarship-form.tsx",
+        "hunk": "new:102-102",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/scholarship-form.tsx",
+        "hunk": "new:127-127",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/scholarship-form.tsx",
+        "hunk": "new:137-138",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/scholarship-form.tsx",
+        "hunk": "new:283-284",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "old:8-11",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:83-83",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:94-94",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:139-139",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:146-146",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:183-183",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:190-190",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:200-200",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:207-207",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:256-256",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:263-263",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "old:9-12",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "new:43-45",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "new:82-83",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "new:188-188",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "new:195-195",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "new:202-202",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "new:209-209",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-3-income.tsx",
+        "hunk": "old:10-13",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-3-income.tsx",
+        "hunk": "new:93-93",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-3-income.tsx",
+        "hunk": "new:104-104",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-4-expenses.tsx",
+        "hunk": "old:9-12",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-4-expenses.tsx",
+        "hunk": "new:78-78",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/_components/step-4-expenses.tsx",
+        "hunk": "new:93-93",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/layout.tsx",
+        "hunk": "new:3-3",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/layout.tsx",
+        "hunk": "new:30-30",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/layout.tsx",
+        "hunk": "old:190-204",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/page.tsx",
+        "hunk": "new:1-1",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/form/page.tsx",
+        "hunk": "new:3-4",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/login/_actions/auth-actions.ts",
+        "hunk": "new:61-65",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/page.tsx",
+        "hunk": "new:4-4",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/page.tsx",
+        "hunk": "old:333-384",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/page.tsx",
+        "hunk": "new:338-338",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/page.tsx",
+        "hunk": "new:346-347",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/page.tsx",
+        "hunk": "new:350-351",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/page.tsx",
+        "hunk": "new:370-371",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/page.tsx",
+        "hunk": "new:374-375",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/page.tsx",
+        "hunk": "new:380-380",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/page.tsx",
+        "hunk": "new:458-481",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/page.tsx",
+        "hunk": "new:496-496",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/page.tsx",
+        "hunk": "old:551-574",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/page.tsx",
+        "hunk": "new:533-533",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/page.tsx",
+        "hunk": "new:546-546",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/page.tsx",
+        "hunk": "new:567-567",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/page.tsx",
+        "hunk": "new:574-575",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/seja-um-benfeitor/page.tsx",
+        "hunk": "new:1-13",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/solicitar-bolsa/page.tsx",
+        "hunk": "new:1-16",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "app/solicitar-bolsa/layout.tsx",
+        "hunk": "new:1-104",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "components/ui/seal-logo.tsx",
+        "hunk": "new:4-4",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "components/ui/seal-logo.tsx",
+        "hunk": "new:7-8",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "components/ui/seal-logo.tsx",
+        "hunk": "new:10-11",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "components/ui/seal-logo.tsx",
+        "hunk": "old:12-16",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "components/ui/seal-logo.tsx",
+        "hunk": "new:15-17",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "docs/changes/2026-07-27.md",
+        "hunk": "new:1-1",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "docs/changes/2026-07-27.md",
+        "hunk": "new:6-7",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "docs/changes/2026-07-27.md",
+        "hunk": "new:9-9",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "docs/changes/2026-07-27.md",
+        "hunk": "new:11-12",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "docs/changes/2026-07-27.md",
+        "hunk": "old:11-11",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "docs/changes/2026-07-27.md",
+        "hunk": "new:15-18",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "drizzle/0006_flimsy_spacker_dave.sql",
+        "hunk": "new:1-40",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "drizzle/meta/0006_snapshot.json",
+        "hunk": "new:1-1596",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "drizzle/meta/_journal.json",
+        "hunk": "new:46-52",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/auth/authorization.ts",
+        "hunk": "new:1-83",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/db/schema.ts",
+        "hunk": "new:1-1",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/db/schema.ts",
+        "hunk": "new:4-4",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/db/schema.ts",
+        "hunk": "new:26-27",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/db/schema.ts",
+        "hunk": "new:31-33",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/db/schema.ts",
+        "hunk": "new:341-404",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/db/schema.ts",
+        "hunk": "new:414-415",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/db/schema.ts",
+        "hunk": "new:426-455",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/documents/issued-documents.ts",
+        "hunk": "new:1-67",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/form/scholarship-uploads.ts",
+        "hunk": "old:1-9",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "old:3-3",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "old:28-29",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "old:34-38",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:36-37",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:77-77",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:84-84",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:91-91",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:94-94",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:99-99",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:119-119",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:130-130",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "public/seal-arca.svg",
+        "hunk": "new:1-17",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "scripts/bootstrap.ts",
+        "hunk": "new:44-49",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

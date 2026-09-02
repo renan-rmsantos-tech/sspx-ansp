@@ -1,0 +1,5275 @@
+{
+  "source_snapshot": "3db1b883ede5a50ff3c78ef491408d0edbd6f2316579c960fdb5db25a6ade66f",
+  "summary": {
+    "raw": 12,
+    "canonical": 12,
+    "merged_raw": 0,
+    "round_status": {
+      "new": 12
+    },
+    "defect_severity": {
+      "major": 4
+    },
+    "advisory_category": {
+      "refactor": 8
+    }
+  },
+  "findings": [
+    {
+      "raw_id": "RD0001",
+      "source_job": "sweep-tests",
+      "fingerprint": "12123d42536a55f2",
+      "result_kind": "defect",
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 96,
+      "end_line": 142,
+      "in_diff": true,
+      "hunk": null,
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Privileged action tests do not exercise a real Secretaria denial matrix",
+      "body": "Premise: __tests__/admin-actions.test.ts:96-105 makes both mocked guards resolve for any non-null identity, including the Secretaria fixture at :191, while :117-142 tests only an unauthenticated caller. → Path: a future change that replaces requireAdmin() in approve/reject, applicant-detail/evidence, donor mutation/export, templates, or school-year actions with a Secretariat capability will still make every current test pass. → Verdict: the suite cannot detect a regression that grants a Secretaria role prohibited administrative operations, despite Task 2 requiring a deny assertion for every exported action outside the explicit matrix. Add a table-driven test that configures requireAdmin to reject and requireCapability to resolve for Secretaria, then verifies every privileged export rejects before any database/storage call; keep separate positive tests only for the approved operational actions.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: __tests__/admin-actions.test.ts:96-105 resolves both authorization mocks for every authenticated identity → Path: a privileged action is weakened from requireAdmin() to an operational capability that resolves for Secretaria → Verdict: the suite stays green while Secretaria gains a prohibited administrative operation.",
+        "__tests__/admin-actions.test.ts:117-142 → the exhaustive guard test covers no-session access only.",
+        "__tests__/admin-actions.test.ts:190-208 → the only Secretaria cases cover current issued documents and manually force a single history rejection.",
+        ".compozy/tasks/donor-first-role-access/task_02.md → requires every exported administrative action to accept Administrator and deny Secretaria unless explicitly granted."
+      ],
+      "raw_ids": [
+        "RD0001"
+      ],
+      "source_jobs": [
+        "sweep-tests"
+      ],
+      "also_applies": [],
+      "round_status": "new"
+    },
+    {
+      "raw_id": "RD0002",
+      "source_job": "sweep-tests",
+      "fingerprint": "0572c36824cb0f6f",
+      "result_kind": "defect",
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 154,
+      "end_line": 188,
+      "in_diff": true,
+      "hunk": null,
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": true,
+      "title": "Secretariat projections have no field-level regression test",
+      "body": "Premise: __tests__/admin-actions.test.ts:154-188 exercises getApplications only with the default Administrator identity and asserts returned fixture data, while no test invokes getApplications or getDonorPledges as Secretaria or inspects the Drizzle columns. → Path: adding cpf, income, discounts, rationale, documents, receipt metadata, or another sensitive field to either Secretaria query in app/admin/_actions/admin-actions.ts will leave the current suite green. → Verdict: the changed server-side privacy boundary has no failing-capable protection against leaking family or donor data to the Secretaria client. Add role-specific tests that assert the exact selected and returned key sets (including nested students) and that forbidden fields are absent for both application and donor projections.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: __tests__/admin-actions.test.ts:154-188 calls getApplications only as the default Administrator and asserts no selected/returned keys → Path: a forbidden sensitive column is added to a Secretaria application or donor projection → Verdict: family or donor data reaches the Secretaria client while npm test remains green.",
+        "rg --files __tests__ → no dedicated benfeitores role-access/projection test exists in the current suite.",
+        "app/admin/_actions/admin-actions.ts:43-86 → the Secretariat application projection is an explicit columns allowlist distinct from the Administrator query.",
+        "app/admin/_actions/admin-actions.ts:103-132 → the Secretariat donor projection is an explicit columns allowlist distinct from the Administrator query."
+      ],
+      "raw_ids": [
+        "RD0002"
+      ],
+      "source_jobs": [
+        "sweep-tests"
+      ],
+      "also_applies": [],
+      "round_status": "new"
+    },
+    {
+      "raw_id": "RD0003",
+      "source_job": "sweep-tests",
+      "fingerprint": "0bdc0f64c3f83ff0",
+      "result_kind": "defect",
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 536,
+      "end_line": 706,
+      "in_diff": true,
+      "hunk": null,
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": true,
+      "title": "PDF export tests do not prove immutable issuance is wired to exports",
+      "body": "Premise: __tests__/issued-documents.test.ts:15-34 verifies persistIssuedDocument in isolation, but the decision and contract export tests at __tests__/admin-actions.test.ts:536-706 assert only base64/filename/template rendering and never inspect storage or issued_documents writes. → Path: deleting or bypassing persistIssuedDocument after either render leaves exports visually successful and all current tests passing. → Verdict: the primary Task 3 contract—each final export creates an immutable persisted version—is unprotected at the action boundary. Add one success test per export asserting storage write plus an issued_documents row with kind, actor, version, immutable path, and a compensating failure test for metadata persistence.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: __tests__/issued-documents.test.ts:15-34 tests persistence directly while export tests assert only rendered output → Path: persistIssuedDocument is removed or bypassed after a decision or contract render → Verdict: a final PDF is returned without an immutable issued-document version and all current tests pass.",
+        "__tests__/admin-actions.test.ts:536-566 → exportDecision asserts rendered PDF content but no mockPut or issuedDocuments insert.",
+        "__tests__/admin-actions.test.ts:672-706 → exportContract likewise asserts rendering/status only.",
+        "app/admin/_actions/admin-actions.ts → exportDecision/exportContract are the integration boundary that calls persistIssuedDocument after rendering."
+      ],
+      "raw_ids": [
+        "RD0003"
+      ],
+      "source_jobs": [
+        "sweep-tests"
+      ],
+      "also_applies": [],
+      "round_status": "new"
+    },
+    {
+      "raw_id": "RD0004",
+      "source_job": "sweep-tests",
+      "fingerprint": "6e761d562684e0a6",
+      "result_kind": "defect",
+      "file": "__tests__/form-page.test.tsx",
+      "line": 1,
+      "end_line": 60,
+      "in_diff": true,
+      "hunk": null,
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "The donor-first route and identity migration has no regression suite",
+      "body": "Premise: the changed public surface adds canonical donor/scholarship routes, permanent legacy redirects, link hierarchy, contact replacement, and shared seal usage, but the current test directory contains no public-experience test and form-page coverage is limited to the scholarship page. → Path: changing /benfeitor or /form to a temporary/chained redirect, restoring an old public CTA/email/admin shortcut, or breaking SealLogo accessibility would pass npm test. → Verdict: the Task 4 route and public-identity contract lacks failing-capable automated protection. Add a focused public-experience suite covering direct 308 targets, DOM order/CTA destinations, old-link/email absence, SealLogo informative/decorative semantics, canonical dynamic page behavior, and the FSSPX responsive acceptance with rendered checks.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: rg --files __tests__ finds no public-experience, canonical-route, or seal-logo suite → Path: a legacy route becomes temporary/chained or a public CTA/email/seal semantic regresses → Verdict: the donor-first public contract breaks while npm test remains green.",
+        "__tests__/form-page.test.tsx → current public-page test imports only the canonical scholarship page.",
+        "app/benfeitor/page.tsx:1-5 and app/form/page.tsx:1-5 → legacy permanent redirects are newly introduced behavior.",
+        ".compozy/tasks/donor-first-role-access/task_04.md → explicitly requires unit and integration coverage for redirects, hierarchy, contact, footer, and seal semantics."
+      ],
+      "raw_ids": [
+        "RD0004"
+      ],
+      "source_jobs": [
+        "sweep-tests"
+      ],
+      "also_applies": [],
+      "round_status": "new"
+    }
+  ],
+  "advisories": [
+    {
+      "raw_id": "RA0001",
+      "source_job": "polish-c01-p02",
+      "fingerprint": "2b55029766623809",
+      "result_kind": "advisory",
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 194,
+      "end_line": 205,
+      "in_diff": true,
+      "hunk": "new:190-210",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Model the Secretaria fixture without an Administrator cast",
+      "body": "The role-boundary tests pass a Secretaria fixture through `as typeof MOCK_USER`, which asserts at compile time that `role` is the literal `admin`. Giving `authAs` a shared staff-identity type lets the fixture retain its actual role and keeps these authorization tests honest as their helper evolves.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: __tests__/admin-actions.test.ts:194 and :205 cast a `{ role: \"secretaria\" }` fixture to the Administrator fixture type → Improvement: the mock input preserves the role under test and cannot silently rely on an unsound cast → Fix: type `authAs` against a role-union staff fixture (or `StaffIdentity`) and pass `secretaria` directly.",
+        "__tests__/admin-actions.test.ts:74-84 → `authAs` currently derives its parameter type from `MOCK_USER`, whose `role` literal is `admin`."
+      ],
+      "raw_ids": [
+        "RA0001"
+      ],
+      "source_jobs": [
+        "polish-c01-p02"
+      ],
+      "also_applies": [],
+      "round_status": "new"
+    },
+    {
+      "raw_id": "RA0002",
+      "source_job": "polish-c01-p03",
+      "fingerprint": "b12ebfb87364cdf8",
+      "result_kind": "advisory",
+      "file": "app/admin/_components/sidebar.tsx",
+      "line": 94,
+      "end_line": 94,
+      "in_diff": true,
+      "hunk": "new:94-94",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Require the rendered staff role",
+      "body": "The component defaults an omitted role to `admin`, so a future authenticated caller that forgets the prop silently renders privileged navigation rather than failing at compile time. Make `role` required and update isolated component tests to pass the intended role explicitly.",
+      "rule_ids": [],
+      "also_applies": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: app/admin/_components/sidebar.tsx:94 assigns `role = \"admin\"` when no identity is supplied → Improvement: missing role propagation becomes a TypeScript error instead of an implicit privileged UI → Fix: make `role: StaffRole` mandatory and pass `role=\"admin\"` in tests.",
+        "app/admin/layout.tsx:15 → the production caller already has `staff.role`, so requiring the prop does not add a runtime dependency."
+      ],
+      "raw_ids": [
+        "RA0002"
+      ],
+      "source_jobs": [
+        "polish-c01-p03"
+      ],
+      "round_status": "new"
+    },
+    {
+      "raw_id": "RA0003",
+      "source_job": "polish-c01-p03",
+      "fingerprint": "b9c435d2e2fa4d2f",
+      "result_kind": "advisory",
+      "file": "app/admin/benfeitores/page.tsx",
+      "line": 23,
+      "end_line": 23,
+      "in_diff": true,
+      "hunk": "new:20-24",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Avoid the double assertion for the admin donor projection",
+      "body": "Casting through `unknown` hides any future mismatch between the admin query result and `DonorPledge`, including a missing field that the administrative card consumes. Expose role-specific return types from `getDonorPledges` (or construct a typed admin projection) so this boundary is checked by TypeScript.",
+      "rule_ids": [],
+      "also_applies": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: app/admin/benfeitores/page.tsx:23 converts `donors` with `as unknown as DonorPledge[]` → Improvement: changes to the database projection remain type-checked at the rendering boundary → Fix: give `getDonorPledges` discriminated/role-specific result types and remove the `unknown` bridge.",
+        "app/admin/_components/donor-card.tsx:11-29 → `BenfeitoresClient` depends on fields such as `cpf` and receipt paths that are not represented by the secretariat projection."
+      ],
+      "raw_ids": [
+        "RA0003"
+      ],
+      "source_jobs": [
+        "polish-c01-p03"
+      ],
+      "round_status": "new"
+    },
+    {
+      "raw_id": "RA0004",
+      "source_job": "polish-c01-p04",
+      "fingerprint": "0cb11adc44af3fcc",
+      "result_kind": "advisory",
+      "file": "app/admin/solicitacoes/client.tsx",
+      "line": 103,
+      "end_line": 136,
+      "in_diff": true,
+      "hunk": "new:71-140",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Split the Secretariat card into readable units",
+      "body": "The new card keeps its state, asynchronous data loading, mutations, and both UI sections in densely packed single-line expressions. Splitting the document and observation sections into named components/functions and formatting their handlers makes the role-restricted surface auditable and lowers the cost of changing either action.",
+      "rule_ids": [],
+      "also_applies": [
+        "app/admin/usuarios/client.tsx:13-16",
+        "app/admin/usuarios/page.tsx:8"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: app/admin/solicitacoes/client.tsx:103-136 → Improvement: separating the 34-line dense card flow makes its independent async actions and sensitive-data UI straightforward to inspect → Fix: extract the document and observation subsections plus their handlers into readable named units.",
+        "app/admin/usuarios/client.tsx:13-16 → the other newly added staff-management surface uses the same dense one-line handler/JSX style, so the refactor convention applies there as well.",
+        "package.json:5-18 → no configured formatter script owns this structural readability change."
+      ],
+      "raw_ids": [
+        "RA0004"
+      ],
+      "source_jobs": [
+        "polish-c01-p04"
+      ],
+      "round_status": "new"
+    },
+    {
+      "raw_id": "RA0005",
+      "source_job": "polish-c01-p04",
+      "fingerprint": "2596cfb24d3adda1",
+      "result_kind": "advisory",
+      "file": "app/admin/solicitacoes/page.tsx",
+      "line": 20,
+      "end_line": 22,
+      "in_diff": true,
+      "hunk": "new:19-23",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Expose the role-specific application projection in the action type",
+      "body": "Both render branches assert the untyped result of getApplications, including an as unknown as cast for the admin view. Those casts make a future projection change compile while silently breaking either client contract. Return a typed, role-discriminated result (or dedicated typed queries) and narrow it before rendering.",
+      "rule_ids": [],
+      "also_applies": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: app/admin/solicitacoes/page.tsx:20-22 → Improvement: a typed role-specific result lets TypeScript verify every field consumed by each client → Fix: model the two projections in the server-action return type and narrow on role instead of casting at the JSX boundary.",
+        "app/admin/_actions/admin-actions.ts:58-90 → getApplications conditionally selects two different shapes but has no declared discriminated return type, which necessitates the assertions."
+      ],
+      "raw_ids": [
+        "RA0005"
+      ],
+      "source_jobs": [
+        "polish-c01-p04"
+      ],
+      "round_status": "new"
+    },
+    {
+      "raw_id": "RA0006",
+      "source_job": "polish-c01-p05",
+      "fingerprint": "fa7a4fc1d449f8ea",
+      "result_kind": "advisory",
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "line": 12,
+      "end_line": 12,
+      "in_diff": true,
+      "hunk": "new:1-13",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Format the canonical donor page as readable JSX",
+      "body": "The whole page body is emitted as one 2,000+ character JSX line. Breaking the header, bank-details section, and form into normal JSX blocks makes future copy and accessibility changes reviewable without changing behavior.",
+      "also_applies": [],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/seja-um-benfeitor/page.tsx:12 contains the complete component tree on one physical line → Improvement: individual semantic sections and attributes become locally reviewable → Fix: format the returned JSX into the repository's normal multiline component style.",
+        "app/seja-um-benfeitor/page.tsx:1-13 → this new canonical implementation is the only current donor-page source and has no configured formatter script to apply this automatically."
+      ],
+      "raw_ids": [
+        "RA0006"
+      ],
+      "source_jobs": [
+        "polish-c01-p05"
+      ],
+      "round_status": "new"
+    },
+    {
+      "raw_id": "RA0007",
+      "source_job": "polish-c01-p05",
+      "fingerprint": "be778157dfbc3f43",
+      "result_kind": "advisory",
+      "file": "app/solicitar-bolsa/layout.tsx",
+      "line": 11,
+      "end_line": 104,
+      "in_diff": true,
+      "hunk": "new:1-104",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Share the duplicated scholarship layout",
+      "body": "The new canonical layout is byte-for-byte identical to app/form/layout.tsx. Keeping two route layouts means institutional copy, logo semantics, and responsive styling can silently diverge even though /form redirects to the canonical flow.",
+      "also_applies": [
+        "app/form/layout.tsx:1-104"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/solicitar-bolsa/layout.tsx:11-104 and app/form/layout.tsx:1-104 have identical contents → Improvement: one authoritative layout removes duplicate maintenance and future drift → Fix: extract the layout body to a shared component and have both route layouts delegate to it, or make the redirect-only legacy route reuse the canonical layout.",
+        "cmp app/form/layout.tsx app/solicitar-bolsa/layout.tsx → returned success, confirming the two source files are identical."
+      ],
+      "raw_ids": [
+        "RA0007"
+      ],
+      "source_jobs": [
+        "polish-c01-p05"
+      ],
+      "round_status": "new"
+    },
+    {
+      "raw_id": "RA0008",
+      "source_job": "polish-c01-p07",
+      "fingerprint": "0f0c7c6c976aa92c",
+      "result_kind": "advisory",
+      "file": "lib/documents/issued-documents.ts",
+      "line": 20,
+      "end_line": 20,
+      "in_diff": true,
+      "hunk": "new:1-67",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Give the transaction client its actual type",
+      "body": "The double assertion makes the transaction client appear to have exactly the root database type, bypassing static checking of the transaction API. Defining and using the Drizzle transaction type keeps relation queries and inserts checked when the database setup changes.",
+      "also_applies": [],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:20 coerces tx through unknown to typeof db → Improvement: changes to the transaction API remain type-checked instead of being masked by an opaque assertion → Fix: export or derive the concrete transaction type from the configured Drizzle client and annotate tx/queryable with it.",
+        "lib/db/index.ts:1-20 → the database is created from postgres.js and schema; its transaction callback has a distinct concrete client type that is currently erased by the assertion."
+      ],
+      "raw_ids": [
+        "RA0008"
+      ],
+      "source_jobs": [
+        "polish-c01-p07"
+      ],
+      "round_status": "new"
+    }
+  ],
+  "suppressions": [
+    {
+      "source_job": "cohort-c01",
+      "lane": "defect",
+      "file": "lib/documents/issued-documents.ts",
+      "line": 22,
+      "hunk": "new:1-67",
+      "candidate": "Application-level FOR UPDATE serializes versions per kind",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The application row lock serializes every final-document issuance for one application; the unique application/kind/version index remains a database backstop."
+    },
+    {
+      "source_job": "cohort-c01",
+      "lane": "defect",
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 827,
+      "hunk": "new:814-843",
+      "candidate": "Current-document lookup may expose prior versions",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "listCurrentIssuedDocuments orders by version and keeps the first item per kind; the Secretariat URL action separately requires that exact current ID."
+    },
+    {
+      "source_job": "cohort-c01",
+      "lane": "defect",
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 40,
+      "hunk": "new:32-60",
+      "candidate": "Pending upload paths could carry arbitrary categories",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The server allowlists ticket categories and validateDocumentCategories binds each submitted path to its exact required category before any database read or write."
+    },
+    {
+      "source_job": "cohort-c01",
+      "lane": "defect",
+      "file": "app/admin/solicitacoes/client.tsx",
+      "line": 104,
+      "hunk": "new:71-140",
+      "candidate": "Secretariat UI could reach full application detail",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The Secretariat branch renders its own card and only calls observations/current-issued-document actions; full detail remains guarded by requireAdmin."
+    },
+    {
+      "source_job": "cohort-c01",
+      "lane": "defect",
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 47,
+      "hunk": "new:32-60",
+      "candidate": "Marriage certificate database label differs from ticket category",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The transport path is intentionally validated as certidao while persistence keeps the pre-existing domain label certidao_casamento; the database category is not an authorization handle and no caller depends on path/category equality after the validated submission."
+    },
+    {
+      "source_job": "polish-c01-p01",
+      "lane": "polish",
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 207,
+      "hunk": "new:1-707",
+      "candidate": "Remove the documentation-only Go capability context",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The immediately adjacent text explicitly identifies the Go struct as workflow-template compliance and says it introduces no runtime component, so it does not create an ambiguous implementation requirement."
+    },
+    {
+      "source_job": "polish-c01-p02",
+      "lane": "polish",
+      "file": "__tests__/application-schema.test.ts",
+      "line": 151,
+      "hunk": "new:151-167",
+      "candidate": "Reformat the parameterized document-group test",
+      "reason": "formatting",
+      "rule_ids": [],
+      "note": "The candidate is limited to line wrapping and array formatting; it has no separate clarity or behavior improvement beyond the configured formatter's ownership."
+    },
+    {
+      "source_job": "polish-c01-p02",
+      "lane": "polish",
+      "file": ".compozy/tasks/donor-first-role-access/task_05.md",
+      "line": 1,
+      "hunk": "new:1-143",
+      "candidate": "Add duplicate prose describing the required upload categories",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The task already separates acceptance criteria, success criteria, and implementation checklist so implementers can verify the same requirement at the appropriate workflow stage."
+    },
+    {
+      "source_job": "polish-c01-p03",
+      "lane": "polish",
+      "file": "app/admin/_components/issued-documents.tsx",
+      "line": 11,
+      "hunk": "new:1-14",
+      "candidate": "Reformat the one-line issued-document component",
+      "reason": "formatting",
+      "rule_ids": [],
+      "note": "The candidate concerns only line wrapping and JSX layout; it belongs to the configured formatter rather than a bounded semantic review result."
+    },
+    {
+      "source_job": "polish-c01-p03",
+      "lane": "polish",
+      "file": "app/admin/_actions/staff-actions.ts",
+      "line": 31,
+      "hunk": "new:1-76",
+      "candidate": "Eliminate check-then-insert for duplicate email",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "A uniqueness race would be handled by the insert catch and returns the same generic failure as the pre-check; no maintainability-only local benefit beyond the existing behavior was established in this lane."
+    },
+    {
+      "source_job": "polish-c01-p04",
+      "lane": "polish",
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 32,
+      "hunk": "new:32-60",
+      "candidate": "Consolidate category validation into a single source",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The fixed category allowlist and the submission category/path validation intentionally serve separate trust boundaries; no concrete maintenance conflict was found."
+    },
+    {
+      "source_job": "polish-c01-p04",
+      "lane": "polish",
+      "file": "app/form/_components/file-upload.tsx",
+      "line": 26,
+      "hunk": "old:26-28",
+      "candidate": "Keep the removed disabled-upload props",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The feature now requires uploads, so removal of disabled-mode API and UI is the intended simplification rather than missing configurability."
+    },
+    {
+      "source_job": "polish-c01-p05",
+      "lane": "polish",
+      "file": "docs/changes/2026-07-27.md",
+      "line": 18,
+      "hunk": "new:15-18",
+      "candidate": "Normalize the informal grammar and capitalization in the user change request",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "This file records the supplied product request rather than executable or maintainer-facing implementation guidance; changing its phrasing would not improve the shipped code and can alter the request's intended wording."
+    },
+    {
+      "source_job": "polish-c01-p06",
+      "lane": "polish",
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1,
+      "hunk": "new:1-1200",
+      "candidate": "Hand-maintain generated Drizzle snapshot formatting or structure",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "The assigned hunk is the generated Drizzle schema snapshot; jq confirms valid JSON and its admin_users, application_observations, and issued_documents metadata mirrors the migration-owned schema."
+    },
+    {
+      "source_job": "polish-c01-p07",
+      "lane": "polish",
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1201,
+      "hunk": "new:1201-1596",
+      "candidate": "Reformat or manually simplify the generated Drizzle schema snapshot",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "The snapshot is generated migration metadata; hand-maintaining its serialization would create drift from Drizzle's generator rather than improve the product source."
+    },
+    {
+      "source_job": "polish-c01-p07",
+      "lane": "polish",
+      "file": "public/seal-arca.svg",
+      "line": 11,
+      "hunk": "new:1-17",
+      "candidate": "Replace the embedded approved seal artwork with manually maintained SVG primitives",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "This is the approved copied artwork asset required by the change; its embedded raster content is not application logic to refactor in this lane."
+    },
+    {
+      "source_job": "polish-c01-p07",
+      "lane": "polish",
+      "file": "scripts/bootstrap.ts",
+      "line": 47,
+      "hunk": "new:44-49",
+      "candidate": "Remove explicit default role and active values from the bootstrap insert",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Explicitly bootstrapping a known active Administrator documents the identity invariant and remains correct if database defaults are later adjusted."
+    },
+    {
+      "source_job": "sweep-security",
+      "lane": "sweep",
+      "file": "lib/auth/authorization.ts",
+      "line": 44,
+      "hunk": "new:1-83",
+      "candidate": "A stale session could retain access after a staff account is deactivated or its role changes.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "requireStaff resolves the session only as an account identifier, then reads id, email, role, and ativo from admin_users for every protected operation. Missing or inactive accounts are rejected before capability dispatch."
+    },
+    {
+      "source_job": "sweep-security",
+      "lane": "sweep",
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 64,
+      "hunk": "new:58-84",
+      "candidate": "The Secretariat application list could deliver financial or applicant-evidence data through a broad query.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The Secretaria branch uses explicit application and student column allowlists at the database query boundary before data reaches the client."
+    },
+    {
+      "source_job": "sweep-security",
+      "lane": "sweep",
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 131,
+      "hunk": "new:127-153",
+      "candidate": "The restricted donor list could expose CPF, address, CEP, or receipt metadata.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The Secretaria donor query selects operational fields only and omits CPF, address, CEP, receipt path, and receipt name at the database boundary."
+    },
+    {
+      "source_job": "sweep-security",
+      "lane": "sweep",
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 231,
+      "hunk": "new:231-258",
+      "candidate": "A Secretariat caller could obtain an applicant-evidence ticket by submitting a known storage path.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "getDocumentUrl uses requireAuth, whose only implementation delegates to requireAdmin; Secretariat final-document access is limited to the separate persisted-ID action. The legacy path action also rejects the issued-document namespace."
+    },
+    {
+      "source_job": "sweep-security",
+      "lane": "sweep",
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 828,
+      "hunk": "new:815-843",
+      "candidate": "A Secretariat user could download an old final-document version or a contract for a rejected application by guessing an ID.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The action resolves the ID server-side and, for Secretaria, compares it to the role-aware current-document query. That query excludes all pending documents and contracts for rejected applications, and returns only the latest version per kind."
+    },
+    {
+      "source_job": "sweep-security",
+      "lane": "sweep",
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 94,
+      "hunk": "new:31-110",
+      "candidate": "An anonymous caller could mint an upload ticket with traversal, arbitrary category, or dot-segment path.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Categories are a fixed allowlist plus tightly indexed student patterns; filenames are sanitized and reject dot segments; each signed path is server-generated below a fresh pending/{uuid} namespace. Storage independently enforces root containment."
+    },
+    {
+      "source_job": "sweep-security",
+      "lane": "sweep",
+      "file": "app/admin/_actions/observation-actions.ts",
+      "line": 11,
+      "hunk": "new:1-37",
+      "candidate": "Observation body may execute markup supplied by Secretariat.",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The reviewed renderer places the body in a React text node and has no dangerouslySetInnerHTML use, so supplied markup is escaped rather than executed."
+    },
+    {
+      "source_job": "sweep-security",
+      "lane": "sweep",
+      "file": "app/api/documents/route.ts",
+      "line": 13,
+      "hunk": null,
+      "candidate": "A download ticket is not bound to an active session when redeemed.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The TechSpec retains a ticket-only delivery endpoint and places authorization before ticket issuance; tickets are HMAC-signed, scoped, and expire after 300 seconds."
+    },
+    {
+      "source_job": "sweep-migrations",
+      "lane": "sweep",
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 26,
+      "hunk": "new:1-40",
+      "candidate": "Legacy users could be locked out by enforcing a role before it is populated.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The migration first adds nullable role, gives every existing row admin at line 28, then adds the constrained required shape at lines 29-31; its ordering matches the explicit migration contract in task_01.md:51."
+    },
+    {
+      "source_job": "sweep-migrations",
+      "lane": "sweep",
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 27,
+      "hunk": "new:1-40",
+      "candidate": "Existing accounts could receive a NULL or inactive ativo value during rollout.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "PostgreSQL ADD COLUMN with DEFAULT true NOT NULL supplies true for existing rows and rejects NULLs; this satisfies the required active default without mutating identity, password hash, or decision references."
+    },
+    {
+      "source_job": "sweep-migrations",
+      "lane": "sweep",
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 32,
+      "hunk": "new:1-40",
+      "candidate": "New foreign keys could delete staff-owned history or issued records unexpectedly.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The migration restricts deletion of the author/issuer account (lines 33 and 35), while application-owned records cascade only with their owning application, exactly as the inspected TechSpec data-model contract states at lines 264-265."
+    },
+    {
+      "source_job": "sweep-migrations",
+      "lane": "sweep",
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1,
+      "hunk": "new:1-1596",
+      "candidate": "Drizzle metadata might not describe the SQL migration and cause a later migration to diverge.",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The generated snapshot has public.admin_users, public.application_observations, and public.issued_documents with the same role, constraints, foreign keys, and indexes as 0006; the journal records idx 6 with the matching tag."
+    },
+    {
+      "source_job": "sweep-tests",
+      "lane": "sweep",
+      "file": "__tests__/application-schema.test.ts",
+      "line": 151,
+      "hunk": null,
+      "candidate": "Required scholarship document groups have no isolated schema coverage",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The parameterized test covers every fixed document group, and the following test independently covers both per-student document groups."
+    },
+    {
+      "source_job": "sweep-tests",
+      "lane": "sweep",
+      "file": "__tests__/file-upload-flow.test.tsx",
+      "line": 1,
+      "hunk": null,
+      "candidate": "Upload errors and concurrent removal may be untested after gate removal",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The focused upload-flow suite exercises ticket failure, failed PUT, over-limit client rejection, and removal while another upload resolves."
+    },
+    {
+      "source_job": "sweep-tests",
+      "lane": "sweep",
+      "file": "__tests__/issued-documents.test.ts",
+      "line": 15,
+      "hunk": null,
+      "candidate": "Issued-document allocation and storage compensation are absent",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The service suite explicitly asserts version allocation/current selection and removes the written file when metadata persistence fails; the surviving gap is only action-to-service wiring."
+    },
+    {
+      "source_job": "sweep-consistency",
+      "lane": "sweep",
+      "file": "app/page.tsx",
+      "line": 346,
+      "hunk": null,
+      "candidate": "Old public routes or institutional email remain in the executable public experience",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "Repository-wide executable-source search found public CTA links on app/page.tsx using /seja-um-benfeitor and /solicitar-bolsa, while app/benfeitor/page.tsx and app/form/page.tsx permanently redirect the legacy routes; the landing contact uses contato@arcaprovidencia.com.br. Remaining legacy strings are test fixtures or internal component imports, not public links."
+    },
+    {
+      "source_job": "sweep-consistency",
+      "lane": "sweep",
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 61,
+      "hunk": null,
+      "candidate": "Secretariat projection or direct action paths expose full application data",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "getApplications branches before selection and supplies an explicit operational allowlist for secretaria; the full-detail action uses requireAdmin. The secretariat client consumes only its separately declared summary type and has no full-detail call path."
+    },
+    {
+      "source_job": "sweep-consistency",
+      "lane": "sweep",
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 814,
+      "hunk": null,
+      "candidate": "Issued-document access diverges from decision status or role boundaries",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The current-document query excludes pending applications and strips contracts for rejected applications. The URL action rechecks the current eligible set for secretaria, while history remains requireAdmin-only; this keeps issued final documents separate from applicant evidence and generation actions."
+    },
+    {
+      "source_job": "sweep-consistency",
+      "lane": "sweep",
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 32,
+      "hunk": null,
+      "candidate": "Mandatory upload categories drift between UI payload, schema, ticket issuance, and persistence",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The submission schema requires each document family, createUploadUrl permits the matching fixed/student category set, validateDocumentCategories verifies namespace/category uniqueness, and collectDocumentRows persists the corresponding final categories. No mismatched live path was found."
+    },
+    {
+      "source_job": "sweep-consistency",
+      "lane": "sweep",
+      "file": "app/admin/_actions/staff-actions.ts",
+      "line": 18,
+      "hunk": null,
+      "candidate": "Secretariat account lifecycle can change administrator accounts through a sibling action",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "Listing is constrained by role secretaria; creation assigns that role server-side; activation and password reset both select and update with role secretaria. All lifecycle actions requireAdmin."
+    },
+    {
+      "source_job": "sweep-spec-parity",
+      "lane": "sweep",
+      "file": "lib/documents/issued-documents.ts",
+      "line": 23,
+      "hunk": null,
+      "candidate": "Concurrent final-document reissues could duplicate a version",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The metadata transaction locks the application row before reading the latest version, and the migration enforces unique (application_id, kind, version). This meets TechSpec §Final Documents issuance rules."
+    },
+    {
+      "source_job": "sweep-spec-parity",
+      "lane": "sweep",
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 61,
+      "hunk": null,
+      "candidate": "Secretariat application query could expose restricted family data",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The secretaria branch uses a server-side allowlist for only the specified application, parent-contact, decision-date, and student identity fields; it does not fetch the complete application row."
+    },
+    {
+      "source_job": "sweep-spec-parity",
+      "lane": "sweep",
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 828,
+      "hunk": null,
+      "candidate": "Secretariat could download an unissued, historical, or ineligible final document",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Downloads accept a persisted issued-document ID, resolve storage_path server-side, and the secretaria path compares that ID with the current status-eligible document set. History remains guarded by requireAdmin."
+    },
+    {
+      "source_job": "sweep-spec-parity",
+      "lane": "sweep",
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 44,
+      "hunk": null,
+      "candidate": "Direct scholarship submission could bypass required document categories",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The unconditional Zod requirements execute before school-year lookup and validateDocumentCategories separately verifies every fixed and indexed student category below a pending UUID path."
+    },
+    {
+      "source_job": "sweep-spec-parity",
+      "lane": "sweep",
+      "file": "app/page.tsx",
+      "line": 346,
+      "hunk": null,
+      "candidate": "Donor-first public ordering or legacy route transition could violate the public contract",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Navigation, hero, content bands, and quick access put the canonical benefactor route before scholarship; legacy route pages are direct permanent redirects and the canonical scholarship page retains force-dynamic."
+    },
+    {
+      "source_job": "sweep-spec-parity",
+      "lane": "sweep",
+      "file": "components/ui/seal-logo.tsx",
+      "line": 8,
+      "hunk": null,
+      "candidate": "The executable seal might differ from the approved Open Design master or lack semantic modes",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "public/seal-arca.svg byte-matches docs/design/opendesign/assets/seal-arca-master.svg; SealLogo forwards caller size/class and uses empty alt plus aria-hidden only for decorative use."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+        "hunk": "new:1-330",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+        "hunk": "new:1-11",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+        "hunk": "new:1-707",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md",
+        "hunk": "new:1-67",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md",
+        "hunk": "new:1-76",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-003.md",
+        "hunk": "new:1-69",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-004.md",
+        "hunk": "new:1-65",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-005.md",
+        "hunk": "new:1-68",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-006.md",
+        "hunk": "new:1-63",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-007.md",
+        "hunk": "new:1-62",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-008.md",
+        "hunk": "new:1-63",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": ".compozy/tasks/donor-first-role-access/task_01.md",
+        "hunk": "new:1-124",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": ".compozy/tasks/donor-first-role-access/task_02.md",
+        "hunk": "new:1-139",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": ".compozy/tasks/donor-first-role-access/task_03.md",
+        "hunk": "new:1-131",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": ".compozy/tasks/donor-first-role-access/task_04.md",
+        "hunk": "new:1-138",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": ".compozy/tasks/donor-first-role-access/task_05.md",
+        "hunk": "new:1-143",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:13-14",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:16-17",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:22-23",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:25-26",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:39-43",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:45-45",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:74-75",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:94-94",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:98-105",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:190-210",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/application-schema.test.ts",
+        "hunk": "new:24-24",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/application-schema.test.ts",
+        "hunk": "new:39-40",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/application-schema.test.ts",
+        "hunk": "new:138-138",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/application-schema.test.ts",
+        "hunk": "new:151-167",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/auth-actions.test.ts",
+        "hunk": "new:48-48",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/auth-actions.test.ts",
+        "hunk": "new:68-68",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/auth-actions.test.ts",
+        "hunk": "new:83-96",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/authorization.test.ts",
+        "hunk": "new:1-124",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/form-actions.test.ts",
+        "hunk": "old:9-14",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/form-actions.test.ts",
+        "hunk": "new:107-118",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/form-page.test.tsx",
+        "hunk": "new:15-15",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/form-page.test.tsx",
+        "hunk": "new:19-19",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/helpers/fake-db.ts",
+        "hunk": "new:123-123",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/issued-documents.test.ts",
+        "hunk": "new:1-36",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/export-decision.test.tsx",
+        "hunk": "new:23-26",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/scholarship-form.test.tsx",
+        "hunk": "old:15-21",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/solicitacoes-client.test.tsx",
+        "hunk": "new:11-15",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/solicitacoes-client.test.tsx",
+        "hunk": "new:23-27",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/solicitacoes-client.test.tsx",
+        "hunk": "new:47-58",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/solicitacoes-client.test.tsx",
+        "hunk": "new:101-102",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/staff-and-observations.test.ts",
+        "hunk": "new:1-47",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/step-1-applicant.test.tsx",
+        "hunk": "old:7-12",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/submit-application.test.ts",
+        "hunk": "new:58-58",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/submit-application.test.ts",
+        "hunk": "new:61-61",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/submit-application.test.ts",
+        "hunk": "new:68-69",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/submit-application.test.ts",
+        "hunk": "new:160-160",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/submit-application.test.ts",
+        "hunk": "new:170-170",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "__tests__/submit-application.test.ts",
+        "hunk": "new:232-242",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:4-8",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "old:5-5",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:13-13",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:29-29",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:43-45",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:47-53",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:61-61",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:64-83",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:128-128",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:131-152",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:237-242",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:494-494",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:549-555",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:744-744",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:804-810",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:814-843",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_actions/observation-actions.ts",
+        "hunk": "new:1-37",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_actions/staff-actions.ts",
+        "hunk": "new:1-76",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_components/sidebar.tsx",
+        "hunk": "new:7-7",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_components/sidebar.tsx",
+        "hunk": "new:35-40",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_components/sidebar.tsx",
+        "hunk": "new:94-94",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_components/sidebar.tsx",
+        "hunk": "new:190-193",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_components/sidebar.tsx",
+        "hunk": "new:199-199",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_components/sidebar.tsx",
+        "hunk": "new:220-220",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_components/application-card.tsx",
+        "hunk": "new:7-8",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_components/application-card.tsx",
+        "hunk": "new:311-311",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_components/issued-documents.tsx",
+        "hunk": "new:1-14",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/_components/application-observations.tsx",
+        "hunk": "new:1-10",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/benfeitores/client.tsx",
+        "hunk": "new:77-102",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/benfeitores/page.tsx",
+        "hunk": "new:4-5",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/benfeitores/page.tsx",
+        "hunk": "new:8-8",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/benfeitores/page.tsx",
+        "hunk": "new:20-24",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/layout.tsx",
+        "hunk": "new:3-3",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/layout.tsx",
+        "hunk": "new:5-5",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/layout.tsx",
+        "hunk": "new:10-10",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/layout.tsx",
+        "hunk": "new:15-15",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/solicitacoes/client.tsx",
+        "hunk": "new:3-5",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/solicitacoes/client.tsx",
+        "hunk": "new:71-140",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/solicitacoes/page.tsx",
+        "hunk": "new:2-7",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/solicitacoes/page.tsx",
+        "hunk": "new:10-10",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/solicitacoes/page.tsx",
+        "hunk": "new:19-23",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/usuarios/client.tsx",
+        "hunk": "new:1-17",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/usuarios/page.tsx",
+        "hunk": "new:1-9",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/ano-letivo/page.tsx",
+        "hunk": "new:3-3",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/ano-letivo/page.tsx",
+        "hunk": "new:6-6",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/cabecalho/page.tsx",
+        "hunk": "new:3-3",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/cabecalho/page.tsx",
+        "hunk": "new:6-6",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/contrato/page.tsx",
+        "hunk": "new:3-3",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/contrato/page.tsx",
+        "hunk": "new:6-6",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/textos/page.tsx",
+        "hunk": "new:3-3",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/admin/textos/page.tsx",
+        "hunk": "new:6-6",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/benfeitor/page.tsx",
+        "hunk": "new:1-1",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/benfeitor/page.tsx",
+        "hunk": "new:4-4",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "old:22-22",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:32-60",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:99-99",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:103-103",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:130-133",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:307-307",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:315-316",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:326-330",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:349-350",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/file-upload.tsx",
+        "hunk": "old:26-28",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/file-upload.tsx",
+        "hunk": "old:46-47",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/file-upload.tsx",
+        "hunk": "old:160-171",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/scholarship-form.tsx",
+        "hunk": "old:18-18",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/scholarship-form.tsx",
+        "hunk": "new:52-52",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/scholarship-form.tsx",
+        "hunk": "new:102-102",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/scholarship-form.tsx",
+        "hunk": "new:127-127",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/scholarship-form.tsx",
+        "hunk": "new:137-138",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/scholarship-form.tsx",
+        "hunk": "new:283-284",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "old:8-11",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:83-83",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:94-94",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:139-139",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:146-146",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:183-183",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:190-190",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:200-200",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:207-207",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:256-256",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:263-263",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "old:9-12",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "new:43-45",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "new:82-83",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "new:188-188",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "new:195-195",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "new:202-202",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "new:209-209",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-3-income.tsx",
+        "hunk": "old:10-13",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-3-income.tsx",
+        "hunk": "new:93-93",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-3-income.tsx",
+        "hunk": "new:104-104",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-4-expenses.tsx",
+        "hunk": "old:9-12",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-4-expenses.tsx",
+        "hunk": "new:78-78",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/_components/step-4-expenses.tsx",
+        "hunk": "new:93-93",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/layout.tsx",
+        "hunk": "new:3-3",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/layout.tsx",
+        "hunk": "new:30-30",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/layout.tsx",
+        "hunk": "old:190-204",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/page.tsx",
+        "hunk": "new:1-1",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/form/page.tsx",
+        "hunk": "new:3-4",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/login/_actions/auth-actions.ts",
+        "hunk": "new:61-65",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/page.tsx",
+        "hunk": "new:4-4",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/page.tsx",
+        "hunk": "old:333-384",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/page.tsx",
+        "hunk": "new:338-338",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/page.tsx",
+        "hunk": "new:346-347",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/page.tsx",
+        "hunk": "new:350-351",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/page.tsx",
+        "hunk": "new:370-371",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/page.tsx",
+        "hunk": "new:374-375",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/page.tsx",
+        "hunk": "new:380-380",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/page.tsx",
+        "hunk": "new:458-481",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/page.tsx",
+        "hunk": "new:496-496",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/page.tsx",
+        "hunk": "old:551-574",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/page.tsx",
+        "hunk": "new:533-533",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/page.tsx",
+        "hunk": "new:546-546",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/page.tsx",
+        "hunk": "new:567-567",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/page.tsx",
+        "hunk": "new:574-575",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/seja-um-benfeitor/page.tsx",
+        "hunk": "new:1-13",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/solicitar-bolsa/page.tsx",
+        "hunk": "new:1-16",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "app/solicitar-bolsa/layout.tsx",
+        "hunk": "new:1-104",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "components/ui/seal-logo.tsx",
+        "hunk": "new:4-4",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "components/ui/seal-logo.tsx",
+        "hunk": "new:7-8",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "components/ui/seal-logo.tsx",
+        "hunk": "new:10-11",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "components/ui/seal-logo.tsx",
+        "hunk": "old:12-16",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "components/ui/seal-logo.tsx",
+        "hunk": "new:15-17",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "docs/changes/2026-07-27.md",
+        "hunk": "new:1-1",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "docs/changes/2026-07-27.md",
+        "hunk": "new:6-7",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "docs/changes/2026-07-27.md",
+        "hunk": "new:9-9",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "docs/changes/2026-07-27.md",
+        "hunk": "new:11-12",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "docs/changes/2026-07-27.md",
+        "hunk": "old:11-11",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "docs/changes/2026-07-27.md",
+        "hunk": "new:15-18",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "drizzle/0006_flimsy_spacker_dave.sql",
+        "hunk": "new:1-40",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "drizzle/meta/0006_snapshot.json",
+        "hunk": "new:1-1596",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "drizzle/meta/_journal.json",
+        "hunk": "new:46-52",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/auth/authorization.ts",
+        "hunk": "new:1-83",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/db/schema.ts",
+        "hunk": "new:1-1",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/db/schema.ts",
+        "hunk": "new:4-4",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/db/schema.ts",
+        "hunk": "new:26-27",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/db/schema.ts",
+        "hunk": "new:31-33",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/db/schema.ts",
+        "hunk": "new:341-404",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/db/schema.ts",
+        "hunk": "new:414-415",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/db/schema.ts",
+        "hunk": "new:426-455",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/documents/issued-documents.ts",
+        "hunk": "new:1-67",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/form/scholarship-uploads.ts",
+        "hunk": "old:1-9",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "old:3-3",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "old:28-29",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "old:34-38",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:36-37",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:77-77",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:84-84",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:91-91",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:94-94",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:99-99",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:119-119",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:130-130",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "public/seal-arca.svg",
+        "hunk": "new:1-17",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "cohort-c01",
+        "lane": "defect",
+        "file": "scripts/bootstrap.ts",
+        "hunk": "new:44-49",
+        "checks": [
+          "defect"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p01",
+        "lane": "polish",
+        "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+        "hunk": "new:1-330",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p01",
+        "lane": "polish",
+        "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+        "hunk": "new:1-11",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p01",
+        "lane": "polish",
+        "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+        "hunk": "new:1-707",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p01",
+        "lane": "polish",
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md",
+        "hunk": "new:1-67",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p01",
+        "lane": "polish",
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md",
+        "hunk": "new:1-76",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-003.md",
+        "hunk": "new:1-69",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-004.md",
+        "hunk": "new:1-65",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-005.md",
+        "hunk": "new:1-68",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-006.md",
+        "hunk": "new:1-63",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-007.md",
+        "hunk": "new:1-62",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-008.md",
+        "hunk": "new:1-63",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": ".compozy/tasks/donor-first-role-access/task_01.md",
+        "hunk": "new:1-124",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": ".compozy/tasks/donor-first-role-access/task_02.md",
+        "hunk": "new:1-139",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": ".compozy/tasks/donor-first-role-access/task_03.md",
+        "hunk": "new:1-131",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": ".compozy/tasks/donor-first-role-access/task_04.md",
+        "hunk": "new:1-138",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": ".compozy/tasks/donor-first-role-access/task_05.md",
+        "hunk": "new:1-143",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:13-14",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:16-17",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:22-23",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:25-26",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:39-43",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:45-45",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:74-75",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:94-94",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:98-105",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": "__tests__/admin-actions.test.ts",
+        "hunk": "new:190-210",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "reported"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": "__tests__/application-schema.test.ts",
+        "hunk": "new:24-24",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": "__tests__/application-schema.test.ts",
+        "hunk": "new:39-40",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": "__tests__/application-schema.test.ts",
+        "hunk": "new:138-138",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": "__tests__/application-schema.test.ts",
+        "hunk": "new:151-167",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": "__tests__/auth-actions.test.ts",
+        "hunk": "new:48-48",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": "__tests__/auth-actions.test.ts",
+        "hunk": "new:68-68",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p02",
+        "lane": "polish",
+        "file": "__tests__/auth-actions.test.ts",
+        "hunk": "new:83-96",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/authorization.test.ts",
+        "hunk": "new:1-124",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/form-actions.test.ts",
+        "hunk": "old:9-14",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/form-actions.test.ts",
+        "hunk": "new:107-118",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/form-page.test.tsx",
+        "hunk": "new:15-15",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/form-page.test.tsx",
+        "hunk": "new:19-19",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/helpers/fake-db.ts",
+        "hunk": "new:123-123",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/issued-documents.test.ts",
+        "hunk": "new:1-36",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/export-decision.test.tsx",
+        "hunk": "new:23-26",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/scholarship-form.test.tsx",
+        "hunk": "old:15-21",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/solicitacoes-client.test.tsx",
+        "hunk": "new:11-15",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/solicitacoes-client.test.tsx",
+        "hunk": "new:23-27",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/solicitacoes-client.test.tsx",
+        "hunk": "new:47-58",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/solicitacoes-client.test.tsx",
+        "hunk": "new:101-102",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/staff-and-observations.test.ts",
+        "hunk": "new:1-47",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/step-1-applicant.test.tsx",
+        "hunk": "old:7-12",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/submit-application.test.ts",
+        "hunk": "new:58-58",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/submit-application.test.ts",
+        "hunk": "new:61-61",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/submit-application.test.ts",
+        "hunk": "new:68-69",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/submit-application.test.ts",
+        "hunk": "new:160-160",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/submit-application.test.ts",
+        "hunk": "new:170-170",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "__tests__/submit-application.test.ts",
+        "hunk": "new:232-242",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:4-8",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "old:5-5",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:13-13",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:29-29",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:43-45",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:47-53",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:61-61",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:64-83",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:128-128",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:131-152",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:237-242",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:494-494",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:549-555",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:744-744",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:804-810",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_actions/admin-actions.ts",
+        "hunk": "new:814-843",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_actions/observation-actions.ts",
+        "hunk": "new:1-37",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_actions/staff-actions.ts",
+        "hunk": "new:1-76",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_components/sidebar.tsx",
+        "hunk": "new:7-7",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_components/sidebar.tsx",
+        "hunk": "new:35-40",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_components/sidebar.tsx",
+        "hunk": "new:94-94",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "reported"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_components/sidebar.tsx",
+        "hunk": "new:190-193",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_components/sidebar.tsx",
+        "hunk": "new:199-199",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_components/sidebar.tsx",
+        "hunk": "new:220-220",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_components/application-card.tsx",
+        "hunk": "new:7-8",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_components/application-card.tsx",
+        "hunk": "new:311-311",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_components/issued-documents.tsx",
+        "hunk": "new:1-14",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/_components/application-observations.tsx",
+        "hunk": "new:1-10",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/benfeitores/client.tsx",
+        "hunk": "new:77-102",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/benfeitores/page.tsx",
+        "hunk": "new:4-5",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/benfeitores/page.tsx",
+        "hunk": "new:8-8",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p03",
+        "lane": "polish",
+        "file": "app/admin/benfeitores/page.tsx",
+        "hunk": "new:20-24",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "reported"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/admin/layout.tsx",
+        "hunk": "new:3-3",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/admin/layout.tsx",
+        "hunk": "new:5-5",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/admin/layout.tsx",
+        "hunk": "new:10-10",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/admin/layout.tsx",
+        "hunk": "new:15-15",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/admin/solicitacoes/client.tsx",
+        "hunk": "new:3-5",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/admin/solicitacoes/client.tsx",
+        "hunk": "new:71-140",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "reported"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/admin/solicitacoes/page.tsx",
+        "hunk": "new:2-7",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/admin/solicitacoes/page.tsx",
+        "hunk": "new:10-10",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/admin/solicitacoes/page.tsx",
+        "hunk": "new:19-23",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "reported"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/admin/usuarios/client.tsx",
+        "hunk": "new:1-17",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "reported"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/admin/usuarios/page.tsx",
+        "hunk": "new:1-9",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "reported"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/admin/ano-letivo/page.tsx",
+        "hunk": "new:3-3",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/admin/ano-letivo/page.tsx",
+        "hunk": "new:6-6",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/admin/cabecalho/page.tsx",
+        "hunk": "new:3-3",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/admin/cabecalho/page.tsx",
+        "hunk": "new:6-6",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/admin/contrato/page.tsx",
+        "hunk": "new:3-3",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/admin/contrato/page.tsx",
+        "hunk": "new:6-6",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/admin/textos/page.tsx",
+        "hunk": "new:3-3",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/admin/textos/page.tsx",
+        "hunk": "new:6-6",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/benfeitor/page.tsx",
+        "hunk": "new:1-1",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/benfeitor/page.tsx",
+        "hunk": "new:4-4",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "old:22-22",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:32-60",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:99-99",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:103-103",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:130-133",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:307-307",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:315-316",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:326-330",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_actions/form-actions.ts",
+        "hunk": "new:349-350",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/file-upload.tsx",
+        "hunk": "old:26-28",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/file-upload.tsx",
+        "hunk": "old:46-47",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/file-upload.tsx",
+        "hunk": "old:160-171",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/scholarship-form.tsx",
+        "hunk": "old:18-18",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/scholarship-form.tsx",
+        "hunk": "new:52-52",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/scholarship-form.tsx",
+        "hunk": "new:102-102",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/scholarship-form.tsx",
+        "hunk": "new:127-127",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/scholarship-form.tsx",
+        "hunk": "new:137-138",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/scholarship-form.tsx",
+        "hunk": "new:283-284",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "old:8-11",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:83-83",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:94-94",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:139-139",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:146-146",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:183-183",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:190-190",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:200-200",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:207-207",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:256-256",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-1-applicant.tsx",
+        "hunk": "new:263-263",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "old:9-12",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "new:43-45",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "new:82-83",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "new:188-188",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "new:195-195",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "new:202-202",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-2-students.tsx",
+        "hunk": "new:209-209",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-3-income.tsx",
+        "hunk": "old:10-13",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-3-income.tsx",
+        "hunk": "new:93-93",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-3-income.tsx",
+        "hunk": "new:104-104",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-4-expenses.tsx",
+        "hunk": "old:9-12",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-4-expenses.tsx",
+        "hunk": "new:78-78",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/_components/step-4-expenses.tsx",
+        "hunk": "new:93-93",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/layout.tsx",
+        "hunk": "new:3-3",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/layout.tsx",
+        "hunk": "new:30-30",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/layout.tsx",
+        "hunk": "old:190-204",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/page.tsx",
+        "hunk": "new:1-1",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/form/page.tsx",
+        "hunk": "new:3-4",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p04",
+        "lane": "polish",
+        "file": "app/login/_actions/auth-actions.ts",
+        "hunk": "new:61-65",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "app/page.tsx",
+        "hunk": "new:4-4",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "app/page.tsx",
+        "hunk": "old:333-384",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "app/page.tsx",
+        "hunk": "new:338-338",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "app/page.tsx",
+        "hunk": "new:346-347",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "app/page.tsx",
+        "hunk": "new:350-351",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "app/page.tsx",
+        "hunk": "new:370-371",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "app/page.tsx",
+        "hunk": "new:374-375",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "app/page.tsx",
+        "hunk": "new:380-380",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "app/page.tsx",
+        "hunk": "new:458-481",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "app/page.tsx",
+        "hunk": "new:496-496",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "app/page.tsx",
+        "hunk": "old:551-574",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "app/page.tsx",
+        "hunk": "new:533-533",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "app/page.tsx",
+        "hunk": "new:546-546",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "app/page.tsx",
+        "hunk": "new:567-567",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "app/page.tsx",
+        "hunk": "new:574-575",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "app/seja-um-benfeitor/page.tsx",
+        "hunk": "new:1-13",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "reported"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "app/solicitar-bolsa/page.tsx",
+        "hunk": "new:1-16",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "app/solicitar-bolsa/layout.tsx",
+        "hunk": "new:1-104",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "reported"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "components/ui/seal-logo.tsx",
+        "hunk": "new:4-4",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "components/ui/seal-logo.tsx",
+        "hunk": "new:7-8",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "components/ui/seal-logo.tsx",
+        "hunk": "new:10-11",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "components/ui/seal-logo.tsx",
+        "hunk": "old:12-16",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "components/ui/seal-logo.tsx",
+        "hunk": "new:15-17",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "docs/changes/2026-07-27.md",
+        "hunk": "new:1-1",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "docs/changes/2026-07-27.md",
+        "hunk": "new:6-7",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "docs/changes/2026-07-27.md",
+        "hunk": "new:9-9",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "docs/changes/2026-07-27.md",
+        "hunk": "new:11-12",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "docs/changes/2026-07-27.md",
+        "hunk": "old:11-11",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "docs/changes/2026-07-27.md",
+        "hunk": "new:15-18",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p05",
+        "lane": "polish",
+        "file": "drizzle/0006_flimsy_spacker_dave.sql",
+        "hunk": "new:1-40",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p06",
+        "lane": "polish",
+        "file": "drizzle/meta/0006_snapshot.json",
+        "hunk": "new:1-1200",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "drizzle/meta/0006_snapshot.json",
+        "hunk": "new:1201-1596",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "drizzle/meta/_journal.json",
+        "hunk": "new:46-52",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/auth/authorization.ts",
+        "hunk": "new:1-83",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/db/schema.ts",
+        "hunk": "new:1-1",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/db/schema.ts",
+        "hunk": "new:4-4",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/db/schema.ts",
+        "hunk": "new:26-27",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/db/schema.ts",
+        "hunk": "new:31-33",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/db/schema.ts",
+        "hunk": "new:341-404",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/db/schema.ts",
+        "hunk": "new:414-415",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/db/schema.ts",
+        "hunk": "new:426-455",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/documents/issued-documents.ts",
+        "hunk": "new:1-67",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "reported"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/form/scholarship-uploads.ts",
+        "hunk": "old:1-9",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "old:3-3",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "old:28-29",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "old:34-38",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:36-37",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:77-77",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:84-84",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:91-91",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:94-94",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:99-99",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:119-119",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:130-130",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "public/seal-arca.svg",
+        "hunk": "new:1-17",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "source_job": "polish-c01-p07",
+        "lane": "polish",
+        "file": "scripts/bootstrap.ts",
+        "hunk": "new:44-49",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      }
+    ],
+    "rules": [],
+    "summary": {
+      "selected_hunk_lines": 5406,
+      "lanes": {
+        "defect": {
+          "rows": 210,
+          "covered_lines": 5406,
+          "complete": true
+        },
+        "polish": {
+          "rows": 211,
+          "covered_lines": 5406,
+          "complete": true
+        }
+      },
+      "rules": {}
+    }
+  },
+  "review_stats": {
+    "candidates": 55,
+    "reported": 12,
+    "suppressed": 43,
+    "suppression_reasons": {
+      "formatting": 2,
+      "generated-vendored": 3,
+      "intentional": 29,
+      "speculative": 9
+    },
+    "raw_defects": 4,
+    "raw_advisories": 8,
+    "canonical_defects": 4,
+    "canonical_advisories": 8,
+    "coverage": {
+      "selected_hunk_lines": 5406,
+      "lanes": {
+        "defect": {
+          "rows": 210,
+          "covered_lines": 5406,
+          "complete": true
+        },
+        "polish": {
+          "rows": 211,
+          "covered_lines": 5406,
+          "complete": true
+        }
+      },
+      "rules": {}
+    }
+  },
+  "raw_ledger": [
+    {
+      "raw_id": "RA0001",
+      "source_job": "polish-c01-p02",
+      "fingerprint": "2b55029766623809",
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 194,
+      "severity": "trivial",
+      "title": "Model the Secretaria fixture without an Administrator cast",
+      "result_kind": "advisory",
+      "status": "unique"
+    },
+    {
+      "raw_id": "RA0002",
+      "source_job": "polish-c01-p03",
+      "fingerprint": "b12ebfb87364cdf8",
+      "file": "app/admin/_components/sidebar.tsx",
+      "line": 94,
+      "severity": "minor",
+      "title": "Require the rendered staff role",
+      "result_kind": "advisory",
+      "status": "unique"
+    },
+    {
+      "raw_id": "RA0003",
+      "source_job": "polish-c01-p03",
+      "fingerprint": "b9c435d2e2fa4d2f",
+      "file": "app/admin/benfeitores/page.tsx",
+      "line": 23,
+      "severity": "minor",
+      "title": "Avoid the double assertion for the admin donor projection",
+      "result_kind": "advisory",
+      "status": "unique"
+    },
+    {
+      "raw_id": "RA0004",
+      "source_job": "polish-c01-p04",
+      "fingerprint": "0cb11adc44af3fcc",
+      "file": "app/admin/solicitacoes/client.tsx",
+      "line": 103,
+      "severity": "minor",
+      "title": "Split the Secretariat card into readable units",
+      "result_kind": "advisory",
+      "status": "unique"
+    },
+    {
+      "raw_id": "RA0005",
+      "source_job": "polish-c01-p04",
+      "fingerprint": "2596cfb24d3adda1",
+      "file": "app/admin/solicitacoes/page.tsx",
+      "line": 20,
+      "severity": "minor",
+      "title": "Expose the role-specific application projection in the action type",
+      "result_kind": "advisory",
+      "status": "unique"
+    },
+    {
+      "raw_id": "RA0006",
+      "source_job": "polish-c01-p05",
+      "fingerprint": "fa7a4fc1d449f8ea",
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "line": 12,
+      "severity": "trivial",
+      "title": "Format the canonical donor page as readable JSX",
+      "result_kind": "advisory",
+      "status": "unique"
+    },
+    {
+      "raw_id": "RA0007",
+      "source_job": "polish-c01-p05",
+      "fingerprint": "be778157dfbc3f43",
+      "file": "app/solicitar-bolsa/layout.tsx",
+      "line": 11,
+      "severity": "minor",
+      "title": "Share the duplicated scholarship layout",
+      "result_kind": "advisory",
+      "status": "unique"
+    },
+    {
+      "raw_id": "RA0008",
+      "source_job": "polish-c01-p07",
+      "fingerprint": "0f0c7c6c976aa92c",
+      "file": "lib/documents/issued-documents.ts",
+      "line": 20,
+      "severity": "minor",
+      "title": "Give the transaction client its actual type",
+      "result_kind": "advisory",
+      "status": "unique"
+    },
+    {
+      "raw_id": "RD0001",
+      "source_job": "sweep-tests",
+      "fingerprint": "12123d42536a55f2",
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 96,
+      "severity": "major",
+      "title": "Privileged action tests do not exercise a real Secretaria denial matrix",
+      "result_kind": "defect",
+      "status": "unique"
+    },
+    {
+      "raw_id": "RD0002",
+      "source_job": "sweep-tests",
+      "fingerprint": "0572c36824cb0f6f",
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 154,
+      "severity": "major",
+      "title": "Secretariat projections have no field-level regression test",
+      "result_kind": "defect",
+      "status": "unique"
+    },
+    {
+      "raw_id": "RD0003",
+      "source_job": "sweep-tests",
+      "fingerprint": "0bdc0f64c3f83ff0",
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 536,
+      "severity": "major",
+      "title": "PDF export tests do not prove immutable issuance is wired to exports",
+      "result_kind": "defect",
+      "status": "unique"
+    },
+    {
+      "raw_id": "RD0004",
+      "source_job": "sweep-tests",
+      "fingerprint": "6e761d562684e0a6",
+      "file": "__tests__/form-page.test.tsx",
+      "line": 1,
+      "severity": "major",
+      "title": "The donor-first route and identity migration has no regression suite",
+      "result_kind": "defect",
+      "status": "unique"
+    }
+  ],
+  "reconciliation": {
+    "resolved": [],
+    "still_open_unreviewed": [],
+    "prior_rounds": 0
+  }
+}

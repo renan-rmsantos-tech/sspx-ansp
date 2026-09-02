@@ -1,0 +1,82 @@
+{
+  "defects": [
+    {
+      "file": "app/page.tsx",
+      "line": 400,
+      "end_line": 404,
+      "in_diff": true,
+      "hunk": "new:397-404",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "A hierarquia donor-first ficou só nos destinos, não na experiência",
+      "body": "Premise: a atualização troca os URLs, mas a navegação ainda lista \"Solicitar bolsa\" antes de \"Seja um benfeitor\", a CTA de navegação e a CTA primária do herói ainda apontam para a bolsa, a faixa de bolsa precede a de benfeitor e o acesso rápido conserva a mesma ordem. → Path: um visitante chega à landing e segue os elementos de maior destaque e a ordem do documento. → Verdict: a jornada pública continua priorizando a solicitação de bolsa, contrariando o requisito coordenado de tornar o benfeitor o caminho primário.",
+      "rule_ids": [],
+      "also_applies": [
+        "app/page.tsx:403-405",
+        "app/page.tsx:423-429",
+        "app/page.tsx:514-573",
+        "app/page.tsx:634-638"
+      ],
+      "guideline": null,
+      "suggestion": "Reordene navegação, faixas e acesso rápido; faça as CTAs destacadas de navegação e herói dizerem e levarem a \"Seja um benfeitor\", mantendo a bolsa como ação secundária.",
+      "evidence": [
+        "Premise: app/page.tsx:397-405 mostra \"Solicitar bolsa\" antes de \"Seja um benfeitor\" e mantém a nav-cta para /solicitar-bolsa → Path: app/page.tsx:423-429 mantém a primeira CTA do herói para a bolsa; 514-573 renderiza a faixa de bolsa antes da de benfeitor; 634-638 lista a bolsa antes do benfeitor → Verdict: os quatro pontos que deveriam comunicar a mesma prioridade permanecem contraditórios.",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:441-450 → exige, como unidade coordenada, ordem de benfeitor antes de bolsa, CTAs primárias de benfeitor, faixa de benfeitor antes e acesso rápido nessa ordem.",
+        ".compozy/tasks/donor-first-role-access/_prd.md:61-68 → define o benfeitor como ação primária consistente e a bolsa como secundária."
+      ]
+    },
+    {
+      "file": "app/solicitar-bolsa/page.tsx",
+      "line": 7,
+      "end_line": 10,
+      "in_diff": true,
+      "hunk": "new:1-10",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "As páginas públicas ainda não compartilham o selo aprovado",
+      "body": "Premise: a rota canônica de bolsa renderiza apenas o formulário ou a indisponibilidade, enquanto o layout com o selo pertence ao segmento legado `/form`; a landing e esse layout ainda contêm implementações SVG próprias em vez de `SealLogo`. → Path: o visitante abre `/solicitar-bolsa`, que não herda `app/form/layout.tsx`, ou a landing. → Verdict: a rota canônica não exibe o selo compartilhado e as superfícies web mantêm marcas divergentes, invalidando a consolidação do ativo institucional.",
+      "rule_ids": [],
+      "also_applies": [
+        "app/page.tsx:334-390",
+        "app/page.tsx:433-440",
+        "app/page.tsx:606-608",
+        "app/form/layout.tsx:29-164",
+        "components/ui/seal-logo.tsx:8-18"
+      ],
+      "guideline": null,
+      "suggestion": "Extraia ou mova o layout institucional para o segmento canônico e substitua os selos inline da landing e do fluxo de bolsa por `SealLogo`, usando o ativo aprovado em `public/seal-arca.svg`.",
+      "evidence": [
+        "Premise: app/solicitar-bolsa/page.tsx:7-10 renderiza ScholarshipForm/FormUnavailableMessage sem SealLogo, e o roteamento por segmentos faz app/form/layout.tsx aplicar-se somente a /form → Path: a página canônica não possui esse layout → Verdict: /solicitar-bolsa fica sem o selo institucional que o fluxo público deve exibir.",
+        "Premise: app/page.tsx:334-390, 433-440 e 606-608 ainda declaram/reutilizam o SVG page-level; app/form/layout.tsx:29-164 contém outro SVG próprio, enquanto SealLogo é o componente que usa /seal-arca.svg → Verdict: há múltiplas fontes executáveis para a marca web.",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:143 e 474-482 → landing, bolsa, benfeitor, login e admin devem consumir o componente compartilhado e os selos inline devem ser substituídos."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/admin/solicitacoes/client.tsx",
+      "line": 73,
+      "hunk": "new:69-107",
+      "candidate": "Fluxos operacionais de observações e documentos não aparecem para Secretaria",
+      "reason": "duplicate-within-job",
+      "rule_ids": [],
+      "note": "A hipótese cruzada foi confirmada, mas já é representada pelo achado do cohort c01 com a mesma causa e os mesmos consumidores ausentes; não a duplico neste sweep."
+    },
+    {
+      "file": "app/admin/usuarios/page.tsx",
+      "line": 6,
+      "hunk": "new:1-9",
+      "candidate": "Acesso direto da Secretaria à página de usuários pode depender da navegação oculta",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "A página aplica requireAdmin antes de consultar ou renderizar dados, e as ações de gestão aplicam a mesma checagem; a ausência do item na barra lateral não é a única barreira."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

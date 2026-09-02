@@ -1,0 +1,46 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "lib/auth/authorization.ts",
+      "line": 44,
+      "hunk": "new:1-83",
+      "candidate": "Session-stored role or activity could let a revoked Secretariat account retain access.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "requireStaff resolves the session identity against admin_users for every protected operation and rejects missing/inactive rows before requireAdmin or requireCapability can return." 
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 822,
+      "hunk": "new:808-838",
+      "candidate": "A Secretariat caller could exchange an arbitrary issued-document ID for a ticket or historical artifact.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The action resolves the ID server-side, then Secretariat callers must match the role-aware current-document query; that query hides pending applications and contracts for rejected applications. No raw storage path is accepted." 
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 94,
+      "hunk": "new:31-60",
+      "candidate": "A public caller could create a ticket for a traversal or unapproved upload category.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The category is fixed-set or numeric-index allowlisted before ticket creation; the eventual submitted paths are independently required to match pending/{uuid}/{category}/{filename}, and storage resolves paths under its configured root." 
+    },
+    {
+      "file": "app/admin/_actions/observation-actions.ts",
+      "line": 18,
+      "hunk": "new:1-37",
+      "candidate": "An Administrator could write or mutate internal observations through a direct Server Action call.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The action requires the observations:create capability and then explicitly rejects any role other than secretaria; the selected source surface contains only insert/read operations, with no update/delete action." 
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "target": "worktree:origin/main",
+  "rounds": [
+    {
+      "n": 1,
+      "base": "5c90842fe2309bdc1659268decf3a7ca8358751d",
+      "head": "5c90842fe2309bdc1659268decf3a7ca8358751d",
+      "verdict": "FIX_BEFORE_SHIP",
+      "reviewed_at": "2026-09-01T04:24:34.805104+00:00"
+    }
+  ],
+  "ledger": {
+    "0536d6f5ca06c54d": {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "title": "Projeção restrita de benfeitores não possui teste de regressão",
+      "severity": "major",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "ae643b4cdebf424f": {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "title": "Emissão imutável não é protegida pelos testes de exportação",
+      "severity": "major",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "c44f87be4e3afb59": {
+      "file": "app/admin/solicitacoes/client.tsx",
+      "title": "Fluxo operacional exclusivo da Secretaria não tem cobertura de UI",
+      "severity": "major",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "cb494e8e5a245701": {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "title": "Populated-database migration behavior lacks deploy-gate coverage",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "053e2529b8ec8646": {
+      "file": "lib/documents/issued-documents.ts",
+      "title": "Lock de versão concorrente não é exercitado pela suíte",
+      "severity": "major",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "a2d4514d7f775214": {
+      "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+      "title": "Keep task tracking status aligned with the delivered work",
+      "severity": "trivial",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "9bdc51bf85c453a3": {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "title": "Align the documented application action surface with exported actions",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "01f50a317222fe48": {
+      "file": ".compozy/tasks/donor-first-role-access/task_02.md",
+      "title": "Update completed task tracking",
+      "severity": "trivial",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "80985b1fd053b3c8": {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "title": "Name the administrative authorization guard for its actual policy",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "9d1b162fc7d24519": {
+      "file": "app/admin/solicitacoes/client.tsx",
+      "title": "Decompose the secretariat card into named UI sections",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "d2f7b649b87b3db0": {
+      "file": "app/admin/usuarios/client.tsx",
+      "title": "Give the staff-management flows readable function bodies",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "9a08a7c7d26529aa": {
+      "file": "app/form/_components/scholarship-form.tsx",
+      "title": "Remove vestigial unconditional validation blocks",
+      "severity": "trivial",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "9547c9f325dcced2": {
+      "file": "app/solicitar-bolsa/layout.tsx",
+      "title": "Centralize the duplicated scholarship layout",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "92de4a0864a6f635": {
+      "file": "lib/documents/issued-documents.ts",
+      "title": "Evite converter a transação para o tipo global de banco",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    }
+  }
+}

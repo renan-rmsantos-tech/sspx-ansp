@@ -1,0 +1,68 @@
+{
+  "defects": [
+    {
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 157,
+      "end_line": 184,
+      "in_diff": false,
+      "hunk": null,
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Secretariat projections have no failing-capable coverage",
+      "body": "Premise: __tests__/admin-actions.test.ts:157-184 invokes getApplications only through authAs(), whose changed setup resolves an Administrator identity, and the suite never invokes getDonorPledges or either read action as Secretaria. → Path: a regression that removes the role branch or broadens either columns allowlist at app/admin/_actions/admin-actions.ts:64-79 or :131-149 returns the full application/donor rows to the Secretariat clients. → Verdict: npm test still passes while income, documents, CPF/address/receipt data, or other excluded fields can reach a restricted role.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: __tests__/admin-actions.test.ts:157-184 invokes getApplications only as Administrator and never invokes getDonorPledges as Secretaria. → Path: removing the Secretaria role branches or broadening their columns at app/admin/_actions/admin-actions.ts:64-79 or :131-149 sends full rows to restricted clients. → Verdict: the suite passes while excluded sensitive fields can reach Secretaria.",
+        "__tests__/admin-actions.test.ts:92-103 → authAs() resolves mockRequireCapability with the Administrator-shaped MOCK_USER in the default setup.",
+        "__tests__/admin-actions.test.ts:152-186 → getApplications assertions cover only the generic Administrator result and query predicate; no Secretariat branch or allowlist assertion exists.",
+        "app/admin/_actions/admin-actions.ts:64-79 and :131-149 → data-minimization depends entirely on the unexercised Secretaria branches."
+      ]
+    },
+    {
+      "file": "__tests__/issued-documents.test.ts",
+      "line": 15,
+      "end_line": 35,
+      "in_diff": true,
+      "hunk": "new:1+36",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Issued-document security and concurrency paths are untested",
+      "body": "Premise: __tests__/issued-documents.test.ts:15-35 performs one sequential service call against a transaction double whose execute is only a resolved mock, while no test calls getCurrentIssuedDocuments, getIssuedDocumentUrl, or getIssuedDocumentHistory. → Path: deleting the FOR UPDATE serialization at lib/documents/issued-documents.ts:23 permits a concurrent reissue race, and weakening the Secretariat current-version gate at app/admin/_actions/admin-actions.ts:822-831 permits historic or ineligible artifact download. → Verdict: npm test still passes despite breaking the required concurrency guarantee or exposing final-document history to Secretaria.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: __tests__/issued-documents.test.ts:15-35 uses one sequential issuance and never invokes the issued-document actions. → Path: removing FOR UPDATE at lib/documents/issued-documents.ts:23 or the Secretaria current-version check at app/admin/_actions/admin-actions.ts:825-828 leaves no failing test. → Verdict: the suite passes despite a reissue race or historic/ineligible final-document download.",
+        "__tests__/helpers/fake-db.ts:120-124 → transaction invokes each callback immediately and supplies an execute mock that has no lock or concurrency semantics.",
+        "__tests__/issued-documents.test.ts:15-22 → the purported serialization test runs only one issuance and asserts neither execute nor two interleaved allocations.",
+        "rg over __tests__ for getCurrentIssuedDocuments|getIssuedDocumentUrl|getIssuedDocumentHistory → the names occur only as client mocks, never as action assertions.",
+        "app/admin/_actions/admin-actions.ts:809-836 → eligibility, current-version filtering, ticket authorization, and Administrator-only history are all newly introduced public action behavior."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "__tests__/form-actions.test.ts",
+      "line": 107,
+      "hunk": "new:107+12",
+      "candidate": "Upload category tests do not enumerate every category/path combination",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The parameterized allow/reject coverage plus submitApplication category-mismatch cases exercise the new validator boundary; no concrete uncovered changed branch was established."
+    },
+    {
+      "file": "__tests__/authorization.test.ts",
+      "line": 67,
+      "hunk": "new:1+124",
+      "candidate": "Authorization helper tests use a fake database",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Repository testing guidance designates helpers/fake-db.ts as the server-action stand-in, and these tests directly cover current role/activity resolution and production bypass refusal."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

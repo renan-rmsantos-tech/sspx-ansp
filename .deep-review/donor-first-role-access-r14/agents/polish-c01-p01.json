@@ -1,0 +1,70 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+      "line": 7,
+      "end_line": 10,
+      "in_diff": true,
+      "hunk": "new:1-11",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Atualizar o quadro de acompanhamento das tarefas concluídas",
+      "body": "O quadro ainda marca as tarefas 02–05 como pendentes, embora as implementações correspondentes estejam presentes neste mesmo conjunto de alterações. Atualize os quatro estados para `completed` para que o artefato de execução continue sendo uma fonte de acompanhamento confiável.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_tasks.md:7-10 marca as tarefas 02–05 como `pending` → Improvement: o status passa a refletir a execução efetiva e evita reexecução/relato incorreto → Fix: trocar os quatro estados para `completed`.",
+        "app/admin/_actions/staff-actions.ts:1-76, lib/documents/issued-documents.ts:1-67 e app/solicitar-bolsa/page.tsx:1-16 → mostram as entregas das tarefas que o quadro ainda chama de pendentes."
+      ]
+    }
+  ],
+  "suppressions": [],
+  "coverage": {
+    "hunks": [
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+        "hunk": "new:1-330",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+        "hunk": "new:1-11",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "reported"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+        "hunk": "new:1-707",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md",
+        "hunk": "new:1-67",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md",
+        "hunk": "new:1-76",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

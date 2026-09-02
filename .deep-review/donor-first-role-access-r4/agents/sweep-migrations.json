@@ -1,0 +1,55 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 17,
+      "hunk": "new:1-34",
+      "candidate": "Legacy role backfill loses existing account identities or application decisions",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The additive migration changes only new role/ativo columns. It backfills role before adding the role check and NOT NULL constraint, and does not recreate, alter, or delete admin_users IDs, email/password fields, applications, or applications.decided_by."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 28,
+      "hunk": "new:1-34",
+      "candidate": "Issued-document version lookup lacks a matching latest-version index",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The migration creates both the uniqueness guard on (application_id, kind, version) and the explicit (application_id, kind, version DESC) index required by the specification."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 1,
+      "hunk": "new:1-34",
+      "candidate": "Application deletion leaves issued documents or observations orphaned",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Both child tables receive required application foreign keys with ON DELETE CASCADE, which is the specified lifecycle behavior; author/issuer foreign keys instead use RESTRICT."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 1,
+      "hunk": "new:1-34",
+      "candidate": "Immutable or append-only labels require database triggers that reject UPDATE and DELETE",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The inspected TechSpec requires no update/delete interface, while the migration supplies the required relational constraints and does not introduce such an interface. No concrete application write path or stated database-trigger requirement supports a defect."
+    },
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": null,
+      "hunk": "new:1-1684",
+      "candidate": "Generated Drizzle metadata does not match the SQL migration/schema",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "The generated snapshot parses as JSON and its inspected table definitions, checks, foreign keys, and indexes match the migration and schema; ownership of generator formatting is excluded from an actionable source finding."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

@@ -1,0 +1,180 @@
+{
+  "defects": [
+    {
+      "file": "app/page.tsx",
+      "line": 399,
+      "end_line": 637,
+      "in_diff": true,
+      "hunk": "app/page.tsx:397-637",
+      "category": "potential-issue",
+      "severity": "critical",
+      "quick_win": false,
+      "title": "Landing page retains scholarship-first primary journey",
+      "body": "Premise: `Solicitar bolsa` precedes `Seja um benfeitor` in the navigation, remains the highlighted navigation CTA and hero CTA, and its content band and quick-access entry appear first. → Path: a visitor using any of these landing entry points is directed to `/solicitar-bolsa` as the primary journey. → Verdict: the released landing page contradicts the donor-first contract and its required DOM ordering.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/_techspec.md — Landing and Public Content",
+      "suggestion": "Make benefactor enrollment the first navigation/quick-access item, use it for both prominent CTAs and hero primary CTA, and move the benefactor band before the scholarship band while retaining scholarship as a secondary route.",
+      "also_applies": [
+        "app/page.tsx:403-405",
+        "app/page.tsx:423-426",
+        "app/page.tsx:519-573",
+        "app/page.tsx:636-637"
+      ],
+      "evidence": [
+        "Premise: app/page.tsx:397-405 orders scholarship before donor and highlights scholarship in navigation. → Path: navigation visitor follows the highlighted action. → Verdict: donor is not primary there.",
+        "Premise: app/page.tsx:422-429 makes the hero's first/highlighted action scholarship. → Path: hero visitor follows the primary CTA. → Verdict: the hero contradicts donor-first behavior.",
+        "Premise: app/page.tsx:519-573 places scholarship before benefactor in DOM order. → Path: assistive technology and document-order consumers encounter scholarship first. → Verdict: required band ordering fails.",
+        "Premise: app/page.tsx:634-638 orders quick access scholarship before donor. → Path: quick-access visitor chooses the first public action. → Verdict: required quick-access ordering fails.",
+        "Premise: _prd.md Core Features 1 requires the inverse ordering and donor primary action. → Path: each listed landing surface is an implementation of that contract. → Verdict: the implementation conflicts with the canonical artifact."
+      ]
+    },
+    {
+      "file": "app/admin/solicitacoes/client.tsx",
+      "line": 81,
+      "end_line": 106,
+      "in_diff": true,
+      "hunk": "app/admin/solicitacoes/client.tsx:69-106",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Secretariat application view omits notes and issued documents",
+      "body": "Premise: the new Secretariat client renders only the summary fields and never calls the observation or issued-document actions. → Path: a Secretariat user opening `/admin/solicitacoes` receives this client for every application and therefore has no control to add/read operational observations or consult/download final issued documents. → Verdict: the required Secretariat operational workflow cannot be completed despite the backend actions existing.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/_techspec.md — Role-Aware Administrative Experience / Applications",
+      "suggestion": "Add a restricted per-application detail surface that loads chronological observations, allows Secretariat-only creation with the required concise-operational guidance, and lists/downloads current eligible issued documents by ID.",
+      "also_applies": [
+        "app/admin/solicitacoes/page.tsx:16-20",
+        "app/admin/_actions/observation-actions.ts:8-34",
+        "app/admin/_actions/admin-actions.ts:786-818"
+      ],
+      "evidence": [
+        "Premise: app/admin/solicitacoes/page.tsx:16-20 routes Secretariat users exclusively to `SecretariatApplicationsClient`. → Path: Secretariat opens the application list. → Verdict: only that client can expose its required workflow.",
+        "Premise: app/admin/solicitacoes/client.tsx:81-106 contains no observation history/form or issued-document list/download action. → Path: Secretariat views any rendered application. → Verdict: those required operations are unavailable.",
+        "Premise: observation-actions.ts:8-34 and admin-actions.ts:786-818 expose supporting actions that this client never uses. → Path: no other Secretariat application component invokes them. → Verdict: backend availability does not complete the workflow.",
+        "Premise: _prd.md Secretariat Operational Application View and Final Document Access require both capabilities. → Path: this client is the role-specific surface. → Verdict: the product contract is unmet."
+      ]
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 19,
+      "end_line": 35,
+      "in_diff": true,
+      "hunk": "lib/documents/issued-documents.ts:19-35",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Issued-document version allocation is not serialized",
+      "body": "Premise: the transaction reads the latest issued-document version and inserts `latest + 1`, but never locks the application row or otherwise serializes issuances. → Path: two Administrator reissues for the same application and kind can both read version N, both write distinct PDF files, then race to insert version N+1; one insert fails on the unique index. → Verdict: concurrent issuance does not satisfy the required serialized allocation and leaves a user-visible failed issuance under a realistic concurrent reissue.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/_techspec.md — Final Documents / Issuance rules",
+      "suggestion": "Lock the application row (or use an equivalent per-application serialization strategy) before reading the latest version and inserting metadata, with a regression test that exercises concurrent issuance.",
+      "also_applies": [],
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:19-35 has only a latest-version read and insert, without lock or retry. → Path: concurrent issuances read the same latest version. → Verdict: both allocate the same next version.",
+        "Premise: lib/db/schema.ts:386-389 uniquely constrains `(application_id, kind, version)`. → Path: concurrent duplicate next-version inserts race. → Verdict: one issuance fails rather than being serialized.",
+        "Premise: _techspec.md Final Document Issuance step 6 requires allocation while the application row is locked. → Path: persistIssuedDocument implements that allocation. → Verdict: the required concurrency mechanism is absent."
+      ]
+    },
+    {
+      "file": "lib/validations/application-schema.ts",
+      "line": 20,
+      "end_line": 29,
+      "in_diff": false,
+      "hunk": null,
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Required uploads can be faked with nonexistent pending paths",
+      "body": "Premise: `uploadedPath` accepts any nonempty `pending/` string that lacks `..`; submission later records the storage size as `0` when the path does not exist and still inserts the document rows. → Path: a direct Server Action caller can place the same invented `pending/x` value in every required array, pass the newly mandatory schema, and create an application whose required evidence was never uploaded. → Verdict: server validation does not prove successful required uploads or preserve the required actual-file metadata contract.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/task_05.md — requirements 4, 5, 15",
+      "suggestion": "Validate the exact pending-path shape/category and verify each referenced object exists with a positive actual size before transaction persistence; return field errors for missing uploads.",
+      "also_applies": [
+        "app/form/_actions/form-actions.ts:224-232"
+      ],
+      "evidence": [
+        "Premise: lib/validations/application-schema.ts:20-25 enforces only the `pending/` prefix and absence of `..`. → Path: direct caller submits invented `pending/x` values. → Verdict: schema accepts nonexistent uploads.",
+        "Premise: app/form/_actions/form-actions.ts:224-232 converts a missing object to size `0` without rejection. → Path: accepted invented path reaches metadata construction. → Verdict: absent evidence is treated as a document.",
+        "Premise: app/form/_actions/form-actions.ts:203-206 inserts rows after the weak schema passes. → Path: transaction commits the zero-size rows. → Verdict: application submission succeeds without required files.",
+        "Premise: task_05.md requirements 4, 5, and 15 require successful upload-backed documents and actual metadata. → Path: schema and transaction implement that boundary. → Verdict: their validation is insufficient."
+      ]
+    },
+    {
+      "file": "app/page.tsx",
+      "line": 334,
+      "end_line": 439,
+      "in_diff": false,
+      "hunk": null,
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Canonical public surfaces do not consistently use the approved shared seal",
+      "body": "Premise: the landing retains its independently drawn `seal-art` SVG and the legacy form layout retains another inline seal, while the new canonical scholarship page is outside that legacy layout and renders no `SealLogo`. → Path: visitors to the landing receive a different page-level seal implementation, and visitors to `/solicitar-bolsa` receive no shared seal/header at all. → Verdict: the required single approved web seal asset is not consistently consumed by landing and canonical public pages.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/_techspec.md — Shared Web Logo / Logo Consolidation",
+      "suggestion": "Replace the landing and form-layout inline seal implementations with `SealLogo`, and give the canonical scholarship route the shared public layout/header so it consumes the same component with deliberate decorative or informative semantics.",
+      "also_applies": [
+        "app/page.tsx:389-391",
+        "app/page.tsx:433-440",
+        "app/page.tsx:606-608",
+        "app/form/layout.tsx:28-183",
+        "app/solicitar-bolsa/page.tsx:7-9"
+      ],
+      "evidence": [
+        "Premise: app/page.tsx:334-383 and 389-391 define and consume inline SVG art rather than `SealLogo`/`/seal-arca.svg`. → Path: landing renders its branding. → Verdict: it bypasses the approved shared asset.",
+        "Premise: app/form/layout.tsx:28-183 still owns an executable inline seal. → Path: legacy form route renders its layout. → Verdict: duplicate page-level web seal geometry remains.",
+        "Premise: app/solicitar-bolsa/page.tsx:7-9 renders only availability/content and is not nested in `app/form/layout.tsx`. → Path: canonical scholarship visitor loads the canonical route. → Verdict: that page supplies no shared seal/header.",
+        "Premise: _techspec.md Shared Web Logo and Logo Consolidation require all listed web surfaces to consume the shared asset and remove inline seals. → Path: landing and scholarship are listed surfaces. → Verdict: their implementations fail the contract."
+      ]
+    },
+    {
+      "file": "app/admin/benfeitores/client.tsx",
+      "line": 93,
+      "end_line": 100,
+      "in_diff": true,
+      "hunk": "app/admin/benfeitores/client.tsx:79-101",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Secretariat donor UI discards required operational fields",
+      "body": "Premise: the operational projection includes duration, payment method/date, reminder channel, chapel/priory, and enrollment date, but the new Secretariat client only renders contact, frequency, amount, and optional observations. → Path: a Secretariat user cannot consult the rest of the donor enrollment details needed for the specified follow-up from the only role-aware benefactor page. → Verdict: the operational donor view is incomplete relative to its contract.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/_techspec.md — Benefactors",
+      "suggestion": "Render the remaining allowed operational fields in the restricted donor card while continuing to exclude CPF, address/CEP, receipts, and management controls.",
+      "also_applies": [
+        "app/admin/_actions/admin-actions.ts:127-140"
+      ],
+      "evidence": [
+        "Premise: app/admin/benfeitores/client.tsx:80-90 receives the full allowed operational donor shape. → Path: role-specific client gets an enrollment record. → Verdict: it has all fields needed to render the specified view.",
+        "Premise: app/admin/benfeitores/client.tsx:93-100 omits duration, payment method/date, reminder channel, priorado_capela, and created_at. → Path: Secretariat consults the rendered donor card. → Verdict: required operational details are unavailable.",
+        "Premise: app/admin/_actions/admin-actions.ts:127-140 already returns those permitted fields. → Path: page passes this projection to the client. → Verdict: the gap is a concrete client rendering omission, not authorization.",
+        "Premise: _techspec.md Benefactors lists each of these fields for Secretariat. → Path: `SecretariatDonorsClient` is the corresponding view. → Verdict: the implementation is incomplete."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/form/page.tsx",
+      "line": 3,
+      "hunk": "app/form/page.tsx:1-4",
+      "candidate": "Legacy redirect permanence",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The legacy page calls Next's `permanentRedirect` directly to the exact canonical destination, which is the intended 308 redirect surface."
+    },
+    {
+      "file": "components/ui/seal-logo.tsx",
+      "line": 8,
+      "hunk": "components/ui/seal-logo.tsx:4-19",
+      "candidate": "SealLogo caller sizing and semantics",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The component preserves caller `size`/`className` and provides empty alt plus aria-hidden for decorative usage and a label for informative usage."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

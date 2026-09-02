@@ -1,0 +1,26 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1,
+      "hunk": "new:1-1200",
+      "candidate": "Manual maintainability edits to the Drizzle schema snapshot",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "This is the generated Drizzle migration snapshot. jq validates it and its new role, observation, and issued-document metadata matches the schema/migration change; any formatting or structural adjustment must be made by regenerating it from the authoritative schema rather than editing this artifact."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {
+        "file": "drizzle/meta/0006_snapshot.json",
+        "hunk": "new:1-1200",
+        "checks": ["polish"],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

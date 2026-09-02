@@ -1,0 +1,101 @@
+{
+  "defects": [
+    {
+      "file": "__tests__/issued-documents.test.ts",
+      "line": 15,
+      "end_line": 22,
+      "in_diff": true,
+      "hunk": "@@ -0,0 +1,36 @@",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "A alegada serialização de versões não tem teste concorrente",
+      "body": "Premise: __tests__/issued-documents.test.ts:15-22 só configura uma leitura já serializada de version=2 e afirma version=3; não há duas emissões concorrentes nem asserção de tx.execute/lock → Path: remover pg_advisory_xact_lock (ou alocar a versão antes do lock) ainda deixa todos os testes atuais verdes → Verdict: uma regressão que permita duas emissões simultâneas gravarem a mesma application/kind/version passa na suíte, contrariando a garantia crítica de versionamento imutável.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:19-36 usa advisory lock antes da consulta latest e do insert → Path: a alocação de versão depende desse lock para uma disputa da mesma application/kind → Verdict: remover ou mover o lock reabre a possibilidade de versão duplicada.",
+        "Premise: __tests__/issued-documents.test.ts:15-22 executa só uma persistência com latest pré-configurado → Path: não há disputa nem observação de tx.execute → Verdict: a ausência ou ordem incorreta do lock passa no teste atual.",
+        "Premise: .compozy/tasks/donor-first-role-access/task_03.md:93-97 exige duas emissões concorrentes sem versão duplicada → Path: o cenário exigido não aparece em nenhum teste de emitted documents → Verdict: a cobertura atual não prova esse requisito."
+      ]
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 809,
+      "end_line": 837,
+      "in_diff": true,
+      "hunk": "@@ -738,5 +796,42 @@ export async function exportContract(",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Novas ações de documento final não possuem proteção testada",
+      "body": "Premise: as três ações novas de leitura, URL e histórico foram adicionadas em app/admin/_actions/admin-actions.ts:809-837, mas __tests__/admin-actions.test.ts não as importa nem as chama → Path: remover requireCapability de getCurrentIssuedDocuments/getIssuedDocumentUrl, omitir a filtragem de Secretaria para versão antiga/contrato rejeitado, ou trocar getIssuedDocumentHistory por uma leitura sem requireAdmin deixa a suíte verde → Verdict: a suíte não falha perante vazamento de PDFs finais ou de histórico a uma Secretaria, apesar de essas ações serem a nova fronteira de autorização.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/admin/_actions/admin-actions.ts:809-837 adiciona eligibility por status, filtro de versão atual para Secretaria, ticket por ID e histórico exclusivo de admin → Path: essas ações são a fronteira de acesso aos novos PDFs finais → Verdict: sua regressão pode vazar um documento sem afetar fluxos antigos.",
+        "Premise: __tests__/admin-actions.test.ts:60-72 e :118-139 não importam nem chamam getCurrentIssuedDocuments, getIssuedDocumentUrl ou getIssuedDocumentHistory → Path: os testes de guarda cobrem apenas as ações anteriores → Verdict: remover a autorização/filtro dessas três ações mantém a suíte verde.",
+        "Premise: .compozy/tasks/donor-first-role-access/task_03.md:94-98 exige testes de autorização, visibilidade por papel e download ID-based → Path: nenhum caso de teste exercita essas regras nas ações novas → Verdict: o requisito não possui proteção capaz de falhar."
+      ]
+    },
+    {
+      "file": "__tests__/staff-and-observations.test.ts",
+      "line": 12,
+      "end_line": 47,
+      "in_diff": true,
+      "hunk": "@@ -0,0 +1,47 @@",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Ciclo de contas e observações só é testado como autorizado",
+      "body": "Premise: __tests__/staff-and-observations.test.ts:12 resolve requireAdmin e requireCapability antes de cada caso e nunca os rejeita → Path: retirar requireAdmin de create/list/activate/reset, permitir Admin escrever observação, ou conceder a capability de observação a um usuário não autorizado ainda mantém todos os casos verdes → Verdict: ações novas que criam credenciais e registram notas internas não têm teste capaz de detectar perda de separação de papéis.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: __tests__/staff-and-observations.test.ts:12 sempre resolve requireAdmin e requireCapability → Path: cada teste começa no estado autorizado → Verdict: a remoção de qualquer guard não causa falha na suíte.",
+        "Premise: app/admin/_actions/staff-actions.ts:19-75 e app/admin/_actions/observation-actions.ts:8-36 dependem dos guards para proteger contas e a autoria exclusiva da Secretaria → Path: um chamador direto só é separado por essas chamadas → Verdict: uma regressão de papel altera a segurança sem uma asserção correspondente.",
+        "Premise: .compozy/tasks/donor-first-role-access/task_02.md exige Administração exclusiva para contas e Secretaria exclusiva para criar observações → Path: os papéis proibidos não são exercitados nos testes das ações → Verdict: a cobertura não prova a separação requerida."
+      ]
+    },
+    {
+      "file": "__tests__/submit-application.test.ts",
+      "line": 222,
+      "end_line": 230,
+      "in_diff": false,
+      "hunk": null,
+      "category": "potential-issue",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Validação servidor de categoria aceita somente um caso já inválido",
+      "body": "Premise: o único teste negativo de submit troca um caminho por applications/... (que o schema já rejeita), enquanto a regra nova validateDocumentCategories valida o vínculo semântico entre cada campo e sua categoria pending → Path: substituir, por exemplo, pai.documentos por pending/uuid/rg_mae/rg.pdf, reutilizar o mesmo caminho em dois grupos, ou remover a chamada validateDocumentCategories deixa os testes atuais verdes → Verdict: uma chamada direta à Server Action pode perder a barreira que impede documentos obrigatórios trocados/reutilizados sem que a suíte detecte a regressão.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/form/_actions/form-actions.ts:39-59 e :130-132 diferencia grupos, índices de aluno e caminhos duplicados após o schema → Path: um caminho pending com categoria errada alcança exclusivamente essa barreira → Verdict: sua remoção aceita documentos trocados em chamada direta.",
+        "Premise: __tests__/submit-application.test.ts:222-230 usa applications/... como único negativo → Path: esse caminho já falha no schema antes de validateDocumentCategories → Verdict: o teste não detecta regressão da validação semântica de categoria.",
+        "Premise: .compozy/tasks/donor-first-role-access/task_05.md:130-132 exige validação independente de cada categoria em caminhos pending seguros → Path: não há caso que altere somente a categoria ou reutilize caminho pending → Verdict: a exigência não tem teste falhável."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "__tests__/application-schema.test.ts",
+      "line": 151,
+      "hunk": "@@ -151,17 +151,17 @@",
+      "candidate": "Schema não valida a categoria semântica de cada caminho de upload",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "O schema cobre presença; app/form/_actions/form-actions.ts:39-59 aplica a validação de categoria e de duplicidade no limite da Server Action."
+    },
+    {
+      "file": "__tests__/form-actions.test.ts",
+      "line": 107,
+      "hunk": "@@ -107,12 +107,30 @@ describe(\"createUploadUrl\", () => {",
+      "candidate": "Allowlist de createUploadUrl não testa todos os formatos maliciosos separadamente",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "Os casos existentes cobrem categoria desconhecida, traversal, índice não numérico e separador; sem uma falha concreta adicional isto não ultrapassa o limiar de defeito."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

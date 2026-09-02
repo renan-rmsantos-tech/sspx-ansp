@@ -1,0 +1,55 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/page.tsx",
+      "line": 346,
+      "hunk": null,
+      "candidate": "Old public routes or institutional email remain in the executable public experience",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "Repository-wide executable-source search found public CTA links on app/page.tsx using /seja-um-benfeitor and /solicitar-bolsa, while app/benfeitor/page.tsx and app/form/page.tsx permanently redirect the legacy routes; the landing contact uses contato@arcaprovidencia.com.br. Remaining legacy strings are test fixtures or internal component imports, not public links."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 61,
+      "hunk": null,
+      "candidate": "Secretariat projection or direct action paths expose full application data",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "getApplications branches before selection and supplies an explicit operational allowlist for secretaria; the full-detail action uses requireAdmin. The secretariat client consumes only its separately declared summary type and has no full-detail call path."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 814,
+      "hunk": null,
+      "candidate": "Issued-document access diverges from decision status or role boundaries",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The current-document query excludes pending applications and strips contracts for rejected applications. The URL action rechecks the current eligible set for secretaria, while history remains requireAdmin-only; this keeps issued final documents separate from applicant evidence and generation actions."
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 32,
+      "hunk": null,
+      "candidate": "Mandatory upload categories drift between UI payload, schema, ticket issuance, and persistence",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The submission schema requires each document family, createUploadUrl permits the matching fixed/student category set, validateDocumentCategories verifies namespace/category uniqueness, and collectDocumentRows persists the corresponding final categories. No mismatched live path was found."
+    },
+    {
+      "file": "app/admin/_actions/staff-actions.ts",
+      "line": 18,
+      "hunk": null,
+      "candidate": "Secretariat account lifecycle can change administrator accounts through a sibling action",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "Listing is constrained by role secretaria; creation assigns that role server-side; activation and password reset both select and update with role secretaria. All lifecycle actions requireAdmin."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

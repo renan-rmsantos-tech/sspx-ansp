@@ -1,0 +1,111 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 322,
+      "end_line": 345,
+      "in_diff": true,
+      "hunk": "new:1-707",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Align the documented application action surface with exported actions",
+      "body": "The Server Action table presents `getCurrentStaff` and `getOperationalApplicationDetail`, neither of which is exported, while the actual role-specific projection is performed by `getApplications`. The same table calls the existing `exportApplication` action Administrator-only but does not identify the current export names in the final-document section. Keeping the contract names synchronized avoids implementers and future tests targeting a nonexistent action boundary.",
+      "also_applies": [
+        ".compozy/tasks/donor-first-role-access/_techspec.md:407-408"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:322 and :342 name `getCurrentStaff` and `getOperationalApplicationDetail` → Improvement: the design document becomes an accurate action contract for maintenance and test planning → Fix: remove or rename the nonexistent rows and describe the existing role dispatch in `getApplications`; use the actual final-document export action names.",
+        "rg -n '^export (async )?function ' app/admin/_actions/{admin-actions,staff-actions,observation-actions}.ts → lists `getApplications`, `exportDecision`, and `exportContract`, but no `getCurrentStaff`, `getOperationalApplicationDetail`, `issueDecision`, or `issueContract`."
+      ]
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+      "line": 8,
+      "end_line": 11,
+      "in_diff": true,
+      "hunk": "new:1-11",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Keep task tracking status aligned with the delivered work",
+      "body": "The task list leaves tasks 02 through 05 as `pending`, although their corresponding implementation files and tests are present in this same change set. Updating the tracker when each acceptance checklist is verified makes the Compozy artifact usable as an accurate handoff and avoids asking a later executor to repeat completed work.",
+      "also_applies": [],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_tasks.md:8-11 marks all remaining scoped tasks pending → Improvement: the workflow artifact can reliably show what remains after verification → Fix: set each completed task to completed and retain pending only for unverified acceptance work.",
+        "git status --short → shows scoped implementation and test files for staff profiles, issued documents, public routes, and required uploads alongside this task list."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+      "line": 240,
+      "hunk": "new:1-330",
+      "candidate": "Phased rollout can be read as separate releases despite the coordinated-release goal.",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The headings describe implementation phases and each has exit criteria; the PRD explicitly requires one coordinated release at line 25, so no concrete documentation ambiguity requires a change."
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md",
+      "line": 9,
+      "hunk": "new:1-67",
+      "candidate": "ADR date may become stale over time.",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The date is a normal ADR decision date and no evidence indicates it is incorrect."
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md",
+      "line": 74,
+      "hunk": "new:1-76",
+      "candidate": "External reference URLs may change.",
+      "reason": "phantom-knowledge",
+      "rule_ids": [],
+      "note": "No inspected evidence shows the linked sources are unavailable or unsuitable."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+        "hunk": "new:1-330",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+        "hunk": "new:1-11",
+        "checks": ["polish"],
+        "outcome": "reported"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+        "hunk": "new:1-707",
+        "checks": ["polish"],
+        "outcome": "reported"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md",
+        "hunk": "new:1-67",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md",
+        "hunk": "new:1-76",
+        "checks": ["polish"],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1,
+      "hunk": "new:1-1200",
+      "candidate": "Snapshot field ordering and repeated schema metadata",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "This Drizzle snapshot is generated migration metadata; hand-editing it for maintainability would be overwritten by the generator. Its new schema entries match the migration's declared tables, constraints, and indexes."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {
+        "file": "drizzle/meta/0006_snapshot.json",
+        "hunk": "new:1-1200",
+        "checks": ["polish"],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

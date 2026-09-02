@@ -1,0 +1,104 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "line": 12,
+      "end_line": 12,
+      "in_diff": true,
+      "hunk": "new:1-13",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Formate os JSXs das páginas canônicas",
+      "body": "As duas novas páginas concentram toda a árvore JSX em uma única linha. Isso torna alterações no conteúdo, nas classes Tailwind e na estrutura semântica desnecessariamente difíceis de revisar e aumenta a chance de conflitos de merge. Reestruture cada árvore com quebras e indentação por elemento, mantendo o comportamento atual.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/seja-um-benfeitor/page.tsx:12 contém o formulário, a seção bancária e o cabeçalho em uma única linha → Improvement: uma árvore JSX estruturada permite localizar e alterar cada elemento sem varrer uma linha de centenas de caracteres → Fix: expanda o retorno em elementos e filhos indentados.",
+        "app/solicitar-bolsa/page.tsx:16 → a mesma compactação aparece na outra nova página canônica; aplique a mesma estruturação.",
+        "package.json:scripts → não há formatador configurado que já possua essa correção."
+      ],
+      "also_applies": [
+        "app/solicitar-bolsa/page.tsx:16"
+      ],
+      "guideline": null,
+      "suggestion": null
+    },
+    {
+      "file": "docs/changes/2026-07-27.md",
+      "line": 12,
+      "end_line": 17,
+      "in_diff": true,
+      "hunk": "new:11-12",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Revise a redação dos requisitos de perfis",
+      "body": "O registro que define os limites entre administrador e secretaria contém erros de concordância, capitalização e frases ambíguas. Como este texto é a origem legível dos requisitos de acesso, uma revisão curta reduz a chance de interpretações diferentes em futuras alterações.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: docs/changes/2026-07-27.md:12 escreve \"todos as funcionalidades\" e a seção Secretaria em :17 contém \"observaçÕes\", \"Ver somente só um resultado\" e \"acessa também a os documentos\" → Improvement: requisitos de autorização ficam inequívocos para manutenção futura → Fix: reescreva as duas descrições em português revisado, preservando as permissões pretendidas.",
+        "docs/changes/2026-07-27.md:15-17 → a seção Secretaria é parte do mesmo requisito e deve receber a mesma revisão."
+      ],
+      "also_applies": [
+        "docs/changes/2026-07-27.md:15-17"
+      ],
+      "guideline": null,
+      "suggestion": null
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "components/ui/seal-logo.tsx",
+      "line": 10,
+      "hunk": "new:10-11",
+      "candidate": "Substituir img por next/image.",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "O selo SVG local precisa apenas respeitar dimensões e semântica; não há benefício concreto demonstrado para otimização de imagem neste componente."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 26,
+      "hunk": "new:1-40",
+      "candidate": "Separar os marcadores statement-breakpoint das instruções SQL.",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "A sintaxe dos marcadores é o formato emitido pelo Drizzle e não deve ser reformulada manualmente por motivo de estilo."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":"app/page.tsx","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"old:333-384","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:338-338","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:346-347","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:350-351","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:370-371","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:374-375","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:380-380","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:458-481","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:496-496","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"old:551-574","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:533-533","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:546-546","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:567-567","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:574-575","checks":["polish"],"outcome":"clear"},
+      {"file":"app/seja-um-benfeitor/page.tsx","hunk":"new:1-13","checks":["polish"],"outcome":"reported"},
+      {"file":"app/solicitar-bolsa/page.tsx","hunk":"new:1-17","checks":["polish"],"outcome":"reported"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:7-8","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:10-11","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"old:12-16","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:15-17","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:1-1","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:6-7","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:9-9","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:11-12","checks":["polish"],"outcome":"reported"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"old:11-11","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:15-18","checks":["polish"],"outcome":"reported"},
+      {"file":"drizzle/0006_flimsy_spacker_dave.sql","hunk":"new:1-40","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

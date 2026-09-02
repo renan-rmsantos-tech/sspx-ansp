@@ -1,0 +1,83 @@
+{
+  "defects": [
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 828,
+      "end_line": 837,
+      "in_diff": true,
+      "hunk": "new:815-843",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Protect the Secretariat final-document ID authorization path with a test",
+      "body": "The new persisted-ID download action is the boundary that prevents Secretaria from downloading a prior version or an ineligible contract, but no test invokes `getIssuedDocumentUrl`. The only role test calls `getCurrentIssuedDocuments` directly, so removing the current-ID comparison from the URL action would leak an older or ineligible final document while the suite still passes.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/admin/_actions/admin-actions.ts:828-837 authorizes a guessed issued-document ID for Secretaria by comparing it with the current, status-eligible IDs → Path: a Secretaria caller submits an old decision ID or a contract ID belonging to a rejected application → Verdict: deleting or weakening lines 831-833 produces a sensitive-document disclosure that no existing test exercises.",
+        "__tests__/admin-actions.test.ts:193-207 tests only getCurrentIssuedDocuments and getIssuedDocumentHistory; getIssuedDocumentUrl is not imported or called there.",
+        "rg -n \"getIssuedDocumentUrl\" __tests__ → the only other references are client mocks, not an action-boundary assertion."
+      ]
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 58,
+      "end_line": 150,
+      "in_diff": true,
+      "hunk": "new:58-154",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Add regression tests for the Secretariat data allowlists",
+      "body": "The role-specific application and donor projections protect income, evidence, CPF, address, and receipt metadata at the database boundary, but the test suite never calls either action as Secretaria or asserts its `columns`/nested-student allowlists. A future broad query or a newly added sensitive field would reach the Secretaria payload while all current tests pass.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/admin/_actions/admin-actions.ts:64-79 and :131-150 contain the new security-critical explicit projections → Path: a maintenance change removes `columns` or adds a sensitive column to either Secretaria branch → Verdict: applicant financial/evidence data or donor CPF/receipt data becomes client-delivered without a failing-capable test.",
+        "__tests__/admin-actions.test.ts:150-186 calls getApplications only through the default Administrator mock and has no getDonorPledges coverage.",
+        "__tests__/solicitacoes-client.test.tsx imports SolicitacoesClient, not SecretariatApplicationsClient; the restricted client path is not rendered by a test."
+      ]
+    },
+    {
+      "file": "app/page.tsx",
+      "line": 1,
+      "end_line": 1,
+      "in_diff": true,
+      "hunk": "new:1-145",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Cover the donor-first route and landing-page contract",
+      "body": "The public-route and donor-first hierarchy changes have no dedicated tests: the only canonical-route test exercises the scholarship page’s open/closed state. Reintroducing an old public URL, changing either legacy redirect, restoring the administrative quick link, or reversing the donor/scholarship DOM order would all pass the current suite.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: Task 04 requires exact direct 308 redirects, canonical links, donor-first navigation/hero/quick-access/content order, contact replacement, and shared seal semantics → Path: any of those landing/route regressions is introduced in app/page.tsx, app/form/page.tsx, or app/benfeitor/page.tsx → Verdict: the production public journey regresses with no failing-capable coverage.",
+        "__tests__/form-page.test.tsx:19-50 imports only app/solicitar-bolsa/page and asserts its active-school-year rendering; it does not inspect redirects, landing links, donor page, email, quick access, or seal semantics.",
+        "rg -n \"seja-um-benfeitor|solicitar-bolsa|contato@arcaprovidencia\" __tests__ → only the canonical scholarship-page import appears, with no public-experience regression suite."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 15,
+      "hunk": "new:1-67",
+      "candidate": "Version allocation lacks test coverage",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The focused unit test asserts the version increment, immutable metadata, and storage cleanup; the surviving gap is the public authorization handoff, reported separately."
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 96,
+      "hunk": "new:96-113",
+      "candidate": "Upload-category allowlist lacks failing-capable coverage",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "form-actions.test.ts covers every fixed category, indexed student categories, traversal/separator/unknown rejection, ticket scope, sanitization, and UUID isolation."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

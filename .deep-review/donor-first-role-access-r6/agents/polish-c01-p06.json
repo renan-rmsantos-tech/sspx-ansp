@@ -1,0 +1,26 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1,
+      "hunk": "new:1-1200",
+      "candidate": "Hand-refactor generated Drizzle snapshot metadata",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "The snapshot is Drizzle-generated migration metadata; the reviewed role, observation, and issued-document definitions match the migration/schema and are not a hand-maintainable refactor target."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {
+        "file": "drizzle/meta/0006_snapshot.json",
+        "hunk": "new:1-1200",
+        "checks": ["polish"],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

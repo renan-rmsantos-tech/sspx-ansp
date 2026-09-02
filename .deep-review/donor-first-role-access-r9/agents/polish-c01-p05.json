@@ -1,0 +1,93 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "line": 12,
+      "end_line": 12,
+      "in_diff": true,
+      "hunk": "new:1-13",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Format the canonical donor page as readable JSX",
+      "body": "The whole page body is emitted as one 2,000+ character JSX line. Breaking the header, bank-details section, and form into normal JSX blocks makes future copy and accessibility changes reviewable without changing behavior.",
+      "also_applies": [],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/seja-um-benfeitor/page.tsx:12 contains the complete component tree on one physical line → Improvement: individual semantic sections and attributes become locally reviewable → Fix: format the returned JSX into the repository's normal multiline component style.",
+        "app/seja-um-benfeitor/page.tsx:1-13 → this new canonical implementation is the only current donor-page source and has no configured formatter script to apply this automatically."
+      ]
+    },
+    {
+      "file": "app/solicitar-bolsa/layout.tsx",
+      "line": 11,
+      "end_line": 104,
+      "in_diff": true,
+      "hunk": "new:1-104",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Share the duplicated scholarship layout",
+      "body": "The new canonical layout is byte-for-byte identical to app/form/layout.tsx. Keeping two route layouts means institutional copy, logo semantics, and responsive styling can silently diverge even though /form redirects to the canonical flow.",
+      "also_applies": [
+        "app/form/layout.tsx:1-104"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/solicitar-bolsa/layout.tsx:11-104 and app/form/layout.tsx:1-104 have identical contents → Improvement: one authoritative layout removes duplicate maintenance and future drift → Fix: extract the layout body to a shared component and have both route layouts delegate to it, or make the redirect-only legacy route reuse the canonical layout.",
+        "cmp app/form/layout.tsx app/solicitar-bolsa/layout.tsx → returned success, confirming the two source files are identical."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "docs/changes/2026-07-27.md",
+      "line": 18,
+      "hunk": "new:15-18",
+      "candidate": "Normalize the informal grammar and capitalization in the user change request",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "This file records the supplied product request rather than executable or maintainer-facing implementation guidance; changing its phrasing would not improve the shipped code and can alter the request's intended wording."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":"app/page.tsx","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"old:333-384","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:338-338","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:346-347","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:350-351","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:370-371","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:374-375","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:380-380","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:458-481","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:496-496","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"old:551-574","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:533-533","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:546-546","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:567-567","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:574-575","checks":["polish"],"outcome":"clear"},
+      {"file":"app/seja-um-benfeitor/page.tsx","hunk":"new:1-13","checks":["polish"],"outcome":"reported"},
+      {"file":"app/solicitar-bolsa/page.tsx","hunk":"new:1-16","checks":["polish"],"outcome":"clear"},
+      {"file":"app/solicitar-bolsa/layout.tsx","hunk":"new:1-104","checks":["polish"],"outcome":"reported"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:7-8","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:10-11","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"old:12-16","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:15-17","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:1-1","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:6-7","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:9-9","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:11-12","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"old:11-11","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:15-18","checks":["polish"],"outcome":"clear"},
+      {"file":"drizzle/0006_flimsy_spacker_dave.sql","hunk":"new:1-40","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

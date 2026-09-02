@@ -1,0 +1,172 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "__tests__/authorization.test.ts",
+      "line": 84,
+      "end_line": 96,
+      "in_diff": true,
+      "hunk": "new:1-124",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Make the administrator-capability test match its claim",
+      "body": "The test says it grants every declared capability but exercises only `staff:manage`. Rename it to the capability it covers, or iterate the declared capability list, so a future capability cannot be mistakenly assumed covered.",
+      "rule_ids": [],
+      "also_applies": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: __tests__/authorization.test.ts:84 names every declared capability, while line 92 invokes requireCapability only for staff:manage → Improvement: keeps the test name and its actual contract aligned → Fix: either rename the case or assert each Capability value.",
+        "lib/auth/authorization.ts:8-20 → Capability is a finite explicit union, so an exhaustive table-driven test is bounded."
+      ]
+    },
+    {
+      "file": "__tests__/staff-and-observations.test.ts",
+      "line": 27,
+      "end_line": 31,
+      "in_diff": true,
+      "hunk": "new:1-47",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Do not label the absent-user case as an Administrator guard",
+      "body": "This setup makes `findFirst` return undefined, so both actions exit through their missing-user branch. The test name claims it protects an Administrator, which can mislead a future maintainer about what regression it catches. Rename the case to the missing/non-secretariat target behavior, or add a fake-DB predicate assertion that proves the secretaria role filter.",
+      "rule_ids": [],
+      "also_applies": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: __tests__/staff-and-observations.test.ts:27 calls the scenario an Administrator case, but line 28 configures findFirst to return undefined → Improvement: makes the regression suite's stated protection truthful → Fix: rename it or assert the role-constrained lookup.",
+        "app/admin/_actions/staff-actions.ts:44-51 and 61-68 → production protection is the secretaria-constrained query, not an Administrator object returned by this test double."
+      ]
+    },
+    {
+      "file": "app/admin/solicitacoes/client.tsx",
+      "line": 103,
+      "end_line": 118,
+      "in_diff": true,
+      "hunk": "new:71-140",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Represent secretariat loading results with exported types instead of casts",
+      "body": "The card casts both server-action results to local state types. Those casts conceal any contract drift in the operational projection, including relation nullability or a future document-field change. Export the small view-model types from the action/module (or derive state from Awaited<ReturnType<...>>) and type state to them so TypeScript checks the boundary.",
+      "rule_ids": [],
+      "also_applies": ["app/admin/_components/issued-documents.tsx:9-11"],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: app/admin/solicitacoes/client.tsx:103-109 declares local anonymous state shapes and force-casts both Promise results → Improvement: type-checks the server-to-client operational projection rather than trusting it → Fix: export/reuse concrete observation and issued-document view-model types.",
+        "app/admin/_actions/observation-actions.ts:8-15 and app/admin/_actions/admin-actions.ts:794-808 → both action return shapes are available at the boundary and can be named once."
+      ]
+    },
+    {
+      "file": "app/admin/solicitacoes/client.tsx",
+      "line": 105,
+      "end_line": 123,
+      "in_diff": true,
+      "hunk": "new:71-140",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Give secretariat async operations an explicit error state",
+      "body": "Loading, note submission, and document download discard rejected promises or `{ error }` results. A failed request therefore leaves the card unchanged with no explanation and makes retry behavior implicit. Centralize these calls behind a loading/error state and render the returned message, preserving the existing successful path.",
+      "rule_ids": [],
+      "also_applies": ["app/admin/_components/issued-documents.tsx:11-12"],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: app/admin/solicitacoes/client.tsx:107-110 attaches only a then handler, while lines 112-123 ignore unsuccessful action results → Improvement: makes operational failures visible and retryable instead of silent → Fix: catch request failures and store/render an error state for loading, saving, and downloading.",
+        "app/admin/_actions/observation-actions.ts:22-36 and app/admin/_actions/admin-actions.ts:810-821 → these actions deliberately return error variants that the component currently does not surface."
+      ]
+    },
+    {
+      "file": "app/admin/solicitacoes/client.tsx",
+      "line": 100,
+      "end_line": 136,
+      "in_diff": true,
+      "hunk": "new:71-140",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": false,
+      "title": "Expand the new role-specific JSX before it grows further",
+      "body": "The added role-specific components keep most state transitions and nested markup on single physical lines. This makes access-control changes, DOM structure, and future error-state additions much harder to review than the surrounding project style. Reformat the components into named handlers and multiline JSX; no behavior change is required.",
+      "rule_ids": [],
+      "also_applies": ["app/admin/benfeitores/client.tsx:93-101", "app/admin/_components/issued-documents.tsx:8-13", "app/admin/_actions/staff-actions.ts:17-76"],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: app/admin/solicitacoes/client.tsx:100-136 contains the card's state, effects, handlers, and nested controls in a compact block unlike the established multiline component style below line 141 → Improvement: lowers review and modification cost for role-specific UI → Fix: expand the component and extract its repeated view fragments into readable JSX.",
+        "app/admin/benfeitores/client.tsx:93-101 and app/admin/_components/issued-documents.tsx:8-13 → the same compact style was introduced in the other new role/document views."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "app/admin/_components/issued-documents.tsx",
+      "line": 6,
+      "hunk": "new:1-14",
+      "candidate": "Rename the local Document type because it shadows the DOM global",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The component does not use the DOM Document global, so the shadowing has no concrete local cost beyond preference."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":"__tests__/authorization.test.ts","hunk":"new:1-124","checks":["polish"],"outcome":"reported"},
+      {"file":"__tests__/form-actions.test.ts","hunk":"old:9-14","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-page.test.tsx","hunk":"new:15-15","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-page.test.tsx","hunk":"new:19-19","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/helpers/fake-db.ts","hunk":"new:123-123","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/scholarship-form.test.tsx","hunk":"old:15-21","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/solicitacoes-client.test.tsx","hunk":"new:11-15","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/solicitacoes-client.test.tsx","hunk":"new:23-27","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/solicitacoes-client.test.tsx","hunk":"new:47-54","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/solicitacoes-client.test.tsx","hunk":"new:97-98","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/staff-and-observations.test.ts","hunk":"new:1-47","checks":["polish"],"outcome":"reported"},
+      {"file":"__tests__/step-1-applicant.test.tsx","hunk":"old:7-12","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/submit-application.test.ts","hunk":"new:58-58","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/submit-application.test.ts","hunk":"new:68-69","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:4-8","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"old:5-5","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:28-28","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:42-43","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:51-51","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:54-73","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:118-118","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:121-142","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:478-478","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:533-537","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:726-726","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:786-790","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:794-823","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/observation-actions.ts","hunk":"new:1-37","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/staff-actions.ts","hunk":"new:1-76","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:7-7","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:35-40","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:94-94","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:190-193","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:199-199","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:220-220","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/application-card.tsx","hunk":"new:7-7","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/application-card.tsx","hunk":"new:310-310","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/issued-documents.tsx","hunk":"new:1-14","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/benfeitores/client.tsx","hunk":"new:77-102","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/benfeitores/page.tsx","hunk":"new:4-5","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/benfeitores/page.tsx","hunk":"new:8-8","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/benfeitores/page.tsx","hunk":"new:20-24","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/layout.tsx","hunk":"new:3-3","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/layout.tsx","hunk":"new:5-5","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/layout.tsx","hunk":"new:10-10","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/layout.tsx","hunk":"new:15-15","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/solicitacoes/client.tsx","hunk":"new:3-5","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/solicitacoes/client.tsx","hunk":"new:71-140","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/solicitacoes/page.tsx","hunk":"new:2-7","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/solicitacoes/page.tsx","hunk":"new:10-10","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/solicitacoes/page.tsx","hunk":"new:19-23","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

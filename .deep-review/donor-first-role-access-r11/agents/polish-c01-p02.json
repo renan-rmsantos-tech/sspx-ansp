@@ -1,0 +1,83 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/task_02.md",
+      "line": 2,
+      "end_line": 47,
+      "in_diff": true,
+      "hunk": "new:1-139",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Update completed task tracking",
+      "body": "Tasks 02 through 05 still declare `status: pending` and retain unchecked subtasks even though their matching implementation and focused tests are included in this change. Updating each verified task record makes the Compozy handoff accurately identify completed scope rather than suggesting the next executor must repeat it.",
+      "also_applies": [
+        ".compozy/tasks/donor-first-role-access/task_03.md:2-43",
+        ".compozy/tasks/donor-first-role-access/task_04.md:2-43",
+        ".compozy/tasks/donor-first-role-access/task_05.md:2-39"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/task_02.md:2 and :41-47 retain pending status and unchecked subtasks while the matching staff, observation, role-projection, and test files are present in this change → Improvement: the workflow handoff identifies completed scope accurately → Fix: mark verified tasks and subtasks complete after the final acceptance evidence is recorded.",
+        "git status --short → shows the scoped implementation and focused tests for staff profiles, issued documents, canonical public routes, and required uploads beside the task files."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 99,
+      "hunk": "new:99-106",
+      "candidate": "Long mock setup declarations and assertions need formatting edits.",
+      "reason": "formatting",
+      "rule_ids": [],
+      "note": "The inspected test setup is functionally clear; line wrapping is formatter-owned and has no separate maintainability fix."
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/adrs/adr-005.md",
+      "line": 52,
+      "hunk": "new:1-68",
+      "candidate": "The ADR's storage-growth consequence needs a retention policy.",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "Immutable issued-version retention is an explicit product decision, and no concrete operational requirement establishes a missing policy."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-003.md","hunk":"new:1-69","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-004.md","hunk":"new:1-65","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-005.md","hunk":"new:1-68","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-006.md","hunk":"new:1-63","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-007.md","hunk":"new:1-62","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-008.md","hunk":"new:1-63","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_01.md","hunk":"new:1-124","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_02.md","hunk":"new:1-139","checks":["polish"],"outcome":"reported"},
+      {"file":".compozy/tasks/donor-first-role-access/task_03.md","hunk":"new:1-131","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_04.md","hunk":"new:1-138","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_05.md","hunk":"new:1-143","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:13-14","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:16-17","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:22-23","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:25-26","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:39-43","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:45-45","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:74-76","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:95-95","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:97-97","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:99-106","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:191-240","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:24-24","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:39-40","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:138-138","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:151-167","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:48-48","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:68-68","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:83-96","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

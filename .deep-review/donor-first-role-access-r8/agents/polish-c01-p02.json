@@ -1,0 +1,103 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/task_02.md",
+      "line": 2,
+      "end_line": 2,
+      "in_diff": true,
+      "hunk": "new:1-139",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Synchronize the task records with the delivered work",
+      "body": "Tasks 02–05 still declare `status: pending` and leave every subtask unchecked, although their corresponding implementation and test changes are present in this same review. This makes the delivery tracker unable to distinguish unfinished acceptance work from completed work awaiting the final gate.",
+      "rule_ids": [],
+      "also_applies": [
+        ".compozy/tasks/donor-first-role-access/task_03.md:2",
+        ".compozy/tasks/donor-first-role-access/task_04.md:2",
+        ".compozy/tasks/donor-first-role-access/task_05.md:2"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/task_02.md:2 and lines 38-44 retain `pending` and seven unchecked subtasks → Improvement: the workflow record accurately communicates completed scope and remaining verification → Fix: after the final acceptance check, mark each fulfilled subtask and task 02 status as completed, then apply the same update to tasks 03–05.",
+        ".compozy/tasks/donor-first-role-access/task_03.md:2, task_04.md:2, task_05.md:2 → all three related implementation tasks retain the same pending status.",
+        "app/admin/_actions/staff-actions.ts, lib/documents/issued-documents.ts, app/solicitar-bolsa/page.tsx, and app/form/_actions/form-actions.ts → the corresponding task implementation surfaces exist in the reviewed worktree."
+      ]
+    },
+    {
+      "file": "__tests__/application-schema.test.ts",
+      "line": 154,
+      "end_line": 160,
+      "in_diff": true,
+      "hunk": "new:151-167",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Cover nested parent-document requirements independently",
+      "body": "The new parameterized test covers only top-level document groups. It does not prove that `pai.documentos` and `mae.documentos` reject an empty array independently, so a future relaxation of either required parent upload can pass this focused required-upload suite unnoticed.",
+      "rule_ids": [],
+      "also_applies": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: __tests__/application-schema.test.ts:154-160 enumerates declaracao_vaga, certidao_casamento, comprovante_endereco, extrato_ir, and extratos_bancarios only → Improvement: every required parent upload gains an explicit regression boundary → Fix: add empty-array cases for pai.documentos and mae.documentos using their nested paths.",
+        "lib/validations/application-schema.ts:74-88 → both nested parent document arrays use requiredFileArray and belong to the mandatory upload contract."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "__tests__/auth-actions.test.ts",
+      "line": 83,
+      "hunk": "new:83-96",
+      "candidate": "Inactive-account fixture does not set a role",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The login branch rejects the inactive account before role authorization, so the minimal fixture specifically verifies the intended generic-credential response and no-session behavior."
+    },
+    {
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 201,
+      "hunk": "new:190-210",
+      "candidate": "Compact single-line issued-document test setup",
+      "reason": "formatting",
+      "rule_ids": [],
+      "note": "Line wrapping is formatter-owned and does not create a distinct maintainability improvement beyond the configured formatting surface."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-003.md","hunk":"new:1-69","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-004.md","hunk":"new:1-65","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-005.md","hunk":"new:1-68","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-006.md","hunk":"new:1-63","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-007.md","hunk":"new:1-62","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-008.md","hunk":"new:1-63","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_01.md","hunk":"new:1-124","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_02.md","hunk":"new:1-139","checks":["polish"],"outcome":"reported"},
+      {"file":".compozy/tasks/donor-first-role-access/task_03.md","hunk":"new:1-131","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_04.md","hunk":"new:1-138","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_05.md","hunk":"new:1-143","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:13-14","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:16-17","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:22-23","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:25-26","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:39-43","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:45-45","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:74-75","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:94-94","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:98-105","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:190-210","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:24-24","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:39-40","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:138-138","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:151-167","checks":["polish"],"outcome":"reported"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:48-48","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:68-68","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:83-96","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "__tests__/application-schema.test.ts",
+      "line": 39,
+      "end_line": 40,
+      "in_diff": true,
+      "hunk": "new:39-40",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Make upload-path fixtures match the production categories",
+      "body": "The new fixture uses category segments that `createUploadUrl` never issues (`aluno_0_rg`, `aluno_0_certidao`), and the changed marriage path has the same problem (`certidao_casamento`). Keep schema fixtures representative of the transport contract so they can catch category-name drift between the form, ticket allowlist, and persisted document mapping.",
+      "also_applies": [
+        "__tests__/application-schema.test.ts:24"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: __tests__/application-schema.test.ts:24,39-40 use `certidao_casamento`, `aluno_0_rg`, and `aluno_0_certidao` path segments → Improvement: the schema fixture will exercise the same category convention as real uploads → Fix: use `certidao`, `rg_aluno_0`, and `certidao_nascimento_0` in the corresponding fixture paths.",
+        "app/form/_components/step-2-students.tsx:186-205 → the form requests `rg_aluno_${i}` and `certidao_nascimento_${i}`.",
+        "app/form/_actions/form-actions.ts:32-37 → the upload allowlist accepts `certidao` and only the `rg_aluno_<index>` / `certidao_nascimento_<index>` student patterns."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/task_02.md",
+      "line": 2,
+      "hunk": "new:1-139",
+      "candidate": "Task status remains pending while some implementation files exist",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "These task files are planning and tracking artifacts; this lane cannot infer their intended completion state from the owned documentation hunks alone."
+    },
+    {
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 39,
+      "hunk": "new:39-43",
+      "candidate": "Authorization mocks do not assert individual capability arguments",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The setup change is necessary to isolate actions after central authorization extraction, but proving an actionable missing assertion requires reviewing the action-specific tests outside this lane's owned hunks."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-003.md","hunk":"new:1-69","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-004.md","hunk":"new:1-65","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-005.md","hunk":"new:1-68","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-006.md","hunk":"new:1-63","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-007.md","hunk":"new:1-62","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-008.md","hunk":"new:1-63","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_01.md","hunk":"new:1-124","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_02.md","hunk":"new:1-139","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_03.md","hunk":"new:1-131","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_04.md","hunk":"new:1-138","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_05.md","hunk":"new:1-143","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:13-14","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:16-17","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:22-23","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:25-26","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:39-43","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:45-45","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:92-92","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:96-103","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:24-24","checks":["polish"],"outcome":"reported"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:39-40","checks":["polish"],"outcome":"reported"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:138-138","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:151-151","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:48-48","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:68-68","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:83-96","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1,
+      "hunk": "new:1-1200",
+      "candidate": "Manually simplify or reformat the Drizzle schema snapshot",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "The assigned JSON is a generated Drizzle migration snapshot; jq parses it successfully and its new role, observation, and issued-document metadata mirrors migration 0006. Regenerating it, rather than hand-editing it for style, preserves migration-tool ownership."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {
+        "file": "drizzle/meta/0006_snapshot.json",
+        "hunk": "new:1-1200",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

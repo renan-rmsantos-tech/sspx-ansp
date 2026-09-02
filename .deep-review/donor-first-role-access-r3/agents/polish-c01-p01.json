@@ -1,0 +1,59 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 187,
+      "hunk": "new:1-707",
+      "candidate": "Documentation-only Go capability struct introduces an unrelated language example",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The immediately preceding text explicitly states that the Go struct exists solely for workflow-template compliance and does not introduce a runtime component; no local documentation change is warranted."
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+      "line": 8,
+      "hunk": "new:1-11",
+      "candidate": "Tasks 02 through 05 remain marked pending while implementation files are present",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The task records include incomplete acceptance checklists and the release is still undergoing verification, so their pending state is not stale tracking evidence."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+        "hunk": "new:1-330",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+        "hunk": "new:1-11",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+        "hunk": "new:1-707",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md",
+        "hunk": "new:1-67",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md",
+        "hunk": "new:1-76",
+        "checks": ["polish"],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 26,
+      "hunk": "new:1-40",
+      "candidate": "The role rollout could invalidate legacy staff identities or references during migration.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The migration adds role while nullable, gives ativo a true default, backfills every legacy null role to admin, then adds the check and only afterward sets role NOT NULL. It neither recreates admin_users nor changes applications.decided_by, so existing IDs, password hashes, and decisions remain valid."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 1,
+      "hunk": "new:1-40",
+      "candidate": "New observation and issued-document rows could be orphaned or permit invalid version identity after rollout.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Both new tables require their application and staff foreign keys; application deletion cascades while referenced staff deletion is restricted. issued_documents has positive-value and kind checks plus the unique application/kind/version index and latest-version index. The generated 0006 snapshot models those same constraints and indexes."
+    },
+    {
+      "file": "drizzle/meta/_journal.json",
+      "line": 46,
+      "hunk": "new:46-52",
+      "candidate": "The migration may not be ordered after the deployed schema state.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The journal registers 0006 at sequential index 6 after 0005. Its DDL is additive except for the compatibility-preserving admin_users columns and constraints, with no drop, rename, or table recreation."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

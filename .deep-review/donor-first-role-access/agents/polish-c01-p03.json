@@ -1,0 +1,140 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "app/admin/benfeitores/page.tsx",
+      "line": 21,
+      "in_diff": true,
+      "hunk": "new:20-24",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Keep the role-specific list projections type-safe",
+      "body": "The page crosses the server-action/client boundary by asserting both role-specific payload shapes (including an `unknown` double assertion for the administrator). Those assertions bypass the compiler exactly where the restricted projections are meant to be audited, so adding or removing a selected field can silently desynchronise the action and client contract. Expose explicitly typed role-specific query helpers or a discriminated result from the action and narrow it before rendering.",
+      "also_applies": [
+        "app/admin/solicitacoes/page.tsx:20",
+        "app/admin/solicitacoes/page.tsx:22",
+        "app/admin/benfeitores/page.tsx:23"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/admin/benfeitores/page.tsx:21-23 casts the untyped nullable `donors` result to both restricted and full client DTOs, including `as unknown as DonorPledge[]` → Improvement: retains compiler checking of the sensitive role-specific projections at their consumer boundary → Fix: return a discriminated, role-specific typed result (or use separate typed query helpers) and render after narrowing it.",
+        "app/admin/solicitacoes/page.tsx:20-22 → the application page repeats the same unchecked casts for the other restricted projection.",
+        "app/admin/_actions/admin-actions.ts:54-73 and :121-142 → the selected columns are the source-of-truth data contract that the casts currently bypass."
+      ]
+    },
+    {
+      "file": "app/admin/usuarios/client.tsx",
+      "line": 13,
+      "in_diff": true,
+      "hunk": "new:1-17",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Expand the dense Secretariat UI and action expressions",
+      "body": "Several new interactive and authorization paths are compressed into single physical lines. That makes the branches, error resets, JSX nesting, and database predicates substantially harder to inspect or safely amend; format them into conventional statements and multiline JSX while preserving behaviour.",
+      "also_applies": [
+        "app/admin/_actions/staff-actions.ts:27",
+        "app/admin/_actions/staff-actions.ts:55",
+        "app/admin/_actions/staff-actions.ts:71",
+        "app/admin/_actions/observation-actions.ts:17",
+        "app/admin/benfeitores/client.tsx:93-100",
+        "app/admin/solicitacoes/client.tsx:82-101",
+        "app/admin/usuarios/page.tsx:7"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/admin/usuarios/client.tsx:13-16 contains three async state-transition handlers and the complete rendered UI as dense one-line expressions → Improvement: makes branches and markup reviewable without changing the component boundary → Fix: expand the handlers and JSX into conventional multiline statements/elements.",
+        "app/admin/_actions/staff-actions.ts:27-75 and app/admin/benfeitores/client.tsx:93-100 → the same dense-expression pattern appears in other newly added staff flows, so applying the bounded formatting refactor consistently improves future maintenance."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 32,
+      "hunk": "new:32-33",
+      "candidate": "The allowed upload categories are expressed in a dense Set and predicate",
+      "reason": "formatting",
+      "rule_ids": [],
+      "note": "This is a formatter-scale presentation concern; the closed allow-list and student-category expression are otherwise explicit and local."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 794,
+      "hunk": "new:794-823",
+      "candidate": "Current-document lookup repeats an authorization check through getCurrentIssuedDocuments",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The repeated capability check is a small read-only cost, but inspection found no maintainability or correctness harm sufficient for a bounded change in this lane."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":"__tests__/authorization.test.ts","hunk":"new:1-124","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-actions.test.ts","hunk":"old:9-14","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-actions.test.ts","hunk":"new:65-65","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-actions.test.ts","hunk":"new:70-70","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-actions.test.ts","hunk":"new:75-75","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-actions.test.ts","hunk":"new:86-86","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-actions.test.ts","hunk":"new:92-92","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-actions.test.ts","hunk":"new:97-98","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-actions.test.ts","hunk":"new:110-110","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-page.test.tsx","hunk":"new:15-15","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-page.test.tsx","hunk":"new:19-19","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/scholarship-form.test.tsx","hunk":"old:15-21","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/staff-and-observations.test.ts","hunk":"new:1-47","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/step-1-applicant.test.tsx","hunk":"old:7-12","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/submit-application.test.ts","hunk":"new:58-58","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/submit-application.test.ts","hunk":"new:68-69","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:4-8","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"old:5-5","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:28-28","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:42-43","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:51-51","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:54-73","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:118-118","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:121-142","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:478-478","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:533-537","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:726-726","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:786-790","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:794-823","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/observation-actions.ts","hunk":"new:1-34","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/_actions/staff-actions.ts","hunk":"new:1-76","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:7-7","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:35-40","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:94-94","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:190-193","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:199-199","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:220-220","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/benfeitores/client.tsx","hunk":"new:77-102","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/benfeitores/page.tsx","hunk":"new:4-5","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/benfeitores/page.tsx","hunk":"new:8-8","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/benfeitores/page.tsx","hunk":"new:20-24","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/layout.tsx","hunk":"new:3-3","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/layout.tsx","hunk":"new:5-5","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/layout.tsx","hunk":"new:10-10","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/layout.tsx","hunk":"new:15-15","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/solicitacoes/client.tsx","hunk":"new:69-107","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/solicitacoes/page.tsx","hunk":"new:2-7","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/solicitacoes/page.tsx","hunk":"new:10-10","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/solicitacoes/page.tsx","hunk":"new:19-23","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/usuarios/client.tsx","hunk":"new:1-17","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/usuarios/page.tsx","hunk":"new:1-9","checks":["polish"],"outcome":"reported"},
+      {"file":"app/benfeitor/page.tsx","hunk":"new:1-1","checks":["polish"],"outcome":"clear"},
+      {"file":"app/benfeitor/page.tsx","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"app/form/_actions/form-actions.ts","hunk":"old:22-22","checks":["polish"],"outcome":"clear"},
+      {"file":"app/form/_actions/form-actions.ts","hunk":"new:32-33","checks":["polish"],"outcome":"clear"},
+      {"file":"app/form/_actions/form-actions.ts","hunk":"new:72-72","checks":["polish"],"outcome":"clear"},
+      {"file":"app/form/_actions/form-actions.ts","hunk":"new:76-76","checks":["polish"],"outcome":"clear"},
+      {"file":"app/form/_actions/form-actions.ts","hunk":"new:276-276","checks":["polish"],"outcome":"clear"},
+      {"file":"app/form/_actions/form-actions.ts","hunk":"new:284-285","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "target": "worktree:origin/main",
+  "rounds": [
+    {
+      "n": 1,
+      "base": "5c90842fe2309bdc1659268decf3a7ca8358751d",
+      "head": "5c90842fe2309bdc1659268decf3a7ca8358751d",
+      "verdict": "SHIP",
+      "reviewed_at": "2026-09-01T04:52:27.080515+00:00"
+    }
+  ],
+  "ledger": {
+    "0bf59f9093c1531b": {
+      "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+      "title": "Atualizar o quadro de acompanhamento das tarefas concluídas",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "474aea773112af26": {
+      "file": ".compozy/tasks/donor-first-role-access/task_02.md",
+      "title": "Sincronizar o status dos arquivos de tarefa com a entrega",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "9bb37d107e897630": {
+      "file": "__tests__/secretariat-donors-client.test.tsx",
+      "title": "Extract the secretariat donor fixture.",
+      "severity": "trivial",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "e7caeeca36eb46c3": {
+      "file": "app/admin/solicitacoes/client.tsx",
+      "title": "Extrair o painel expandido da Secretaria em componentes legíveis",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "c52f30920c9f6d2c": {
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "title": "Format the donor page JSX into named blocks.",
+      "severity": "trivial",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "1fbe28b95f89b8cb": {
+      "file": "lib/documents/issued-documents.ts",
+      "title": "Make current-document selection explicit.",
+      "severity": "trivial",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    }
+  }
+}

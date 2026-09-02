@@ -1,0 +1,98 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 207,
+      "end_line": 216,
+      "in_diff": true,
+      "hunk": "new:1-707",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Remove the unrelated Go contract example",
+      "body": "The TypeScript-only implementation contract adds a documentation-only Go `CapabilityContext` solely for workflow-template compliance. It creates a second, disconnected representation of staff identity that readers can mistake for a maintained interface. Remove the Go block; the preceding TypeScript `StaffIdentity` already specifies this system's contract.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:207 introduces a Go struct while the specified authorization module and interfaces at :17 and :149-179 are TypeScript → Improvement: removes a non-executable duplicate identity contract that can drift from the maintained interface → Fix: delete lines 207-216.",
+        "rg -n 'export async function' app/admin/_actions lib/auth/authorization.ts → the implemented authorization and server-action surface is TypeScript; no Go runtime component exists."
+      ]
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 405,
+      "end_line": 411,
+      "in_diff": true,
+      "hunk": "new:1-707",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Align the final-document action names with the exported API",
+      "body": "The final-document action table names `issueDecision`, `issueContract`, and `listIssuedDocumentHistory`, but the current server-action module exports `exportDecision`, `exportContract`, and `getIssuedDocumentHistory`. A technical specification is used to locate and test boundaries; these stale identifiers make implementation and coverage work unnecessarily error-prone. Rename the table entries to the actual exports (or explicitly state intended aliases and add them).",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:407-411 documents identifiers that differ from the action module's exports → Improvement: lets implementers and test authors map the specification directly to the protected endpoints → Fix: replace the three stale table identifiers with `exportDecision`, `exportContract`, and `getIssuedDocumentHistory`, respectively.",
+        "app/admin/_actions/admin-actions.ts:485,735,834 → exports are `exportDecision`, `exportContract`, and `getIssuedDocumentHistory`; no `issueDecision`, `issueContract`, or `listIssuedDocumentHistory` action is exported."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 181,
+      "hunk": "new:1-707",
+      "candidate": "Timestamp fields are shown as strings rather than Date values in an illustrative interface.",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The document does not prescribe serialization internals, and server-action payloads can legitimately serialize timestamps as strings; no bounded improvement is established."
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+      "line": 124,
+      "hunk": "new:1-330",
+      "candidate": "The PRD's final-result wording appears to conflict with the TechSpec's pending status display.",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The PRD requires the final outcome when it exists but does not prohibit a pending operational status; no direct incompatibility is established."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+        "hunk": "new:1-330",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+        "hunk": "new:1-11",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+        "hunk": "new:1-707",
+        "checks": ["polish"],
+        "outcome": "reported"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md",
+        "hunk": "new:1-67",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md",
+        "hunk": "new:1-76",
+        "checks": ["polish"],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

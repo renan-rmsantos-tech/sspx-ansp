@@ -1,0 +1,80 @@
+{
+  "defects": [
+    {
+      "file": "lib/validations/application-schema.ts",
+      "line": 20,
+      "end_line": 29,
+      "in_diff": false,
+      "hunk": null,
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Server accepts one uploaded file as every required document",
+      "body": "Premise: `uploadedPath` only tests the broad `pending/` prefix and absence of `..`, while every newly-required category is an independent array of that same schema. → Path: a direct `submitApplication` caller can upload one legitimate pending file (for example, a vacancy declaration) and repeat its path in `pai.documentos`, `mae.documentos`, `certidao_casamento`, address, income, bank, and both student arrays. `collectDocumentRows` then records that one file under each asserted category. → Verdict: direct Server Action submission bypasses the required distinct category contract, so an incomplete/fraudulent application is accepted despite the UI's separate fields.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/task_05.md — requirements 5–8 and 15",
+      "suggestion": "Validate each submitted path against the expected pending category (and student index for student files), reject duplicate cross-category use, and retain that mapping when persisting document rows.",
+      "evidence": [
+        "Premise: lib/validations/application-schema.ts:18-29 accepts only a broad pending path, not a field-specific category → Path: a direct submitApplication caller repeats one valid uploaded path in every required document array, which collectDocumentRows accepts at app/form/_actions/form-actions.ts:252-290 → Verdict: the Server Action accepts an application without distinct required document categories.",
+        "lib/validations/application-schema.ts:18-29 → all required file arrays share a validator that does not inspect the category directory.",
+        "app/form/_actions/form-actions.ts:252-290 → collectDocumentRows trusts the caller-selected payload field and assigns category metadata without checking the path's uploaded category.",
+        ".compozy/tasks/donor-first-role-access/task_05.md requirements 5–8 and 15 → the Server Action must independently enforce each required category and only accept safe pending paths."
+      ]
+    },
+    {
+      "file": "app/page.tsx",
+      "line": 574,
+      "end_line": 575,
+      "in_diff": true,
+      "hunk": "@@ -636,3 +574,2 @@",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": true,
+      "title": "Quick access still prioritizes the scholarship path",
+      "body": "Premise: the changed quick-access list renders `Formulário de bolsa` before `Seja um benfeitor`. → Path: a visitor using the landing footer's explicitly named quick-access surface encounters the scholarship journey first. → Verdict: this contradicts the required donor-first ordering for every quick-access surface and leaves a user-visible release criterion unmet.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/_prd.md — Core Features 1; .compozy/tasks/donor-first-role-access/task_04.md — requirement 5",
+      "suggestion": "Swap the two list items so the benefactor canonical link is first and the scholarship link remains second.",
+      "evidence": [
+        "Premise: app/page.tsx:571-576 renders the scholarship quick-access link before the benefactor link → Path: visitors using the landing footer encounter the scholarship journey first → Verdict: the required donor-first quick-access order is violated.",
+        "app/page.tsx:571-576 → the footer's `Acesso rápido` list places `/solicitar-bolsa` before `/seja-um-benfeitor`.",
+        ".compozy/tasks/donor-first-role-access/_prd.md Core Features 1 → public quick-access links must list benefactor enrollment before scholarship applications.",
+        ".compozy/tasks/donor-first-role-access/task_04.md requirement 5 → benefactor must precede scholarship in quick access."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 32,
+      "hunk": "@@ -32,0 +32,6 @@",
+      "candidate": "Upload category allowlist permits traversal or unknown categories",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The fixed set plus anchored indexed-student regex at lines 32-37 reject separators, traversal text, and non-numeric indexes before ticket creation."
+    },
+    {
+      "file": "app/form/page.tsx",
+      "line": 4,
+      "hunk": null,
+      "candidate": "Legacy scholarship route loses canonical routing behavior",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The legacy route contains only permanentRedirect to `/solicitar-bolsa`, while the canonical page declares `force-dynamic`."
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 22,
+      "hunk": null,
+      "candidate": "Concurrent issued-document versions can duplicate",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Issuance executes a transaction-scoped PostgreSQL advisory lock on application and kind before reading the latest version, and the migration has the corresponding uniqueness constraint."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

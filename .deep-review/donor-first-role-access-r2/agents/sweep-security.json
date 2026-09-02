@@ -1,0 +1,61 @@
+{
+  "defects": [
+    {
+      "file": "app/admin/_actions/observation-actions.ts",
+      "line": 19,
+      "end_line": 19,
+      "in_diff": true,
+      "hunk": "new:1-34",
+      "category": "potential-issue",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Administrador também pode criar observações",
+      "body": "Premise: `addApplicationObservation` usa a capacidade genérica, cujo verificador autoriza todo administrador → Path: um administrador chama diretamente a Server Action com qualquer applicationId e texto válido → Verdict: a API concede a criação de observações a um papel para o qual a matriz de capacidades especifica somente leitura.",
+      "rule_ids": [],
+      "also_applies": [
+        "lib/auth/authorization.ts:69-80"
+      ],
+      "guideline": null,
+      "suggestion": "Faça a autorização de `observations:create` exigir explicitamente `secretaria` (mantendo `observations:read` para ambos os papéis).",
+      "evidence": [
+        "Premise: app/admin/_actions/observation-actions.ts:18-29 obtém a identidade por requireCapability(\"observations:create\") e insere a nota com esse autor → Path: lib/auth/authorization.ts:69-80 só nega capacidades fora da lista quando o papel não é admin → Verdict: qualquer administrador autenticado passa pela criação.",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:220-229 → a matriz aprovada marca Add observations como No para Administrator e Yes para Secretariat.",
+        ".compozy/tasks/donor-first-role-access/task_02.md:98-100 → exige que Secretaria crie/leia observações e Administradores apenas leiam."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 808,
+      "hunk": "new:795-823",
+      "candidate": "ID de documento final permite download de versão histórica por administrador",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "A restrição à versão atual é aplicada explicitamente à Secretaria; a matriz concede ao Administrador leitura do histórico e o fluxo aceita somente ID persistido, não caminho do storage."
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 67,
+      "hunk": "new:67-83",
+      "candidate": "Cliente público pede ticket de upload sem autenticação",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "O formulário é público; o caminho é gerado no servidor sob pending/ com UUID, a categoria é permitida e o ticket HMAC tem escopo upload e prazo limitado. Não há caminho concreto para alterar ou ler outro namespace."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 54,
+      "hunk": "new:48-83",
+      "candidate": "Projeção operacional de solicitações entrega dados sensíveis à Secretaria",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "A consulta explicita somente ID, estado, escola, nomes dos responsáveis, telefone, e-mail, data de decisão e IDs/nomes de alunos; relações financeiras, documentos e declaração familiar não são selecionadas."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

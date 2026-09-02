@@ -1,0 +1,123 @@
+{
+  "defects": [
+    {
+      "file": "app/admin/solicitacoes/client.tsx",
+      "line": 103,
+      "end_line": 140,
+      "in_diff": true,
+      "hunk": "new:71-140",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Acompanhamento da Secretaria não testa carregamento nem download",
+      "body": "Premise: app/admin/solicitacoes/client.tsx:91-124 carrega observações e documentos finais ao abrir o cartão e usa getIssuedDocumentUrl para baixar o documento. → Path: __tests__/solicitacoes-client.test.tsx:614-644 só abre o cartão e grava uma nota; o título \"Documentos finais\" é renderizado independentemente da Promise, e o teste não fornece documento, não observa getApplicationObservations/getCurrentIssuedDocuments nem aciona getIssuedDocumentUrl. → Verdict: remover o useEffect, a busca de documentos ou o download mantém a suíte verde e quebra o acompanhamento operacional da Secretaria.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/admin/solicitacoes/client.tsx:91-124 chama getApplicationObservations, getCurrentIssuedDocuments e getIssuedDocumentUrl. → Path: __tests__/solicitacoes-client.test.tsx:614-644 só verifica a nota, sem expectativa para essas chamadas ou download. → Verdict: a regressão permanece sem teste capaz de falhar.",
+        "Premise: rg -n \"SecretariatApplicationsClient|getIssuedDocumentUrl\" __tests__ não localiza outro exercício da interação. → Path: o único teste do cartão não injeta documento emitido nem clica em baixar. → Verdict: a busca e o download podem ser removidos com a suíte verde."
+      ]
+    },
+    {
+      "file": "app/admin/benfeitores/client.tsx",
+      "line": 93,
+      "end_line": 100,
+      "in_diff": true,
+      "hunk": "new:77-101",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Lista operacional de benfeitores da Secretaria não é testada",
+      "body": "Premise: app/admin/benfeitores/client.tsx:93-100 introduz o único cliente de benfeitores para o papel Secretaria, incluindo a filtragem que delimita a operação sem CPF. → Path: nenhum arquivo em __tests__ importa ou renderiza SecretariatDonorsClient. → Verdict: quebrar a busca, a lista vazia ou a renderização dos dados operacionais mantém os  testes verdes e deixa o novo fluxo de trabalho indisponível ou incorreto.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/admin/benfeitores/client.tsx:93-100 contém busca e lista específicas para Secretaria. → Path: rg -n \"SecretariatDonorsClient\" __tests__ não encontra qualquer importação ou renderização. → Verdict: a lista operacional não tem proteção de regressão.",
+        "Premise: __tests__/solicitacoes-client.test.tsx:604-644 adiciona cobertura apenas para solicitações. → Path: nenhum cenário injeta ou filtra SecretariatDonorPledge. → Verdict: quebrar essa interface mantém os testes verdes."
+      ]
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 551,
+      "end_line": 555,
+      "in_diff": true,
+      "hunk": "new:549-555",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": true,
+      "title": "Falha ao registrar emissão final não é protegida pelos testes de exportação",
+      "body": "Premise: app/admin/_actions/admin-actions.ts:551-555 e :806-810 devem transformar uma falha de persistIssuedDocument em erro sem devolver PDF. → Path: os cenários de sucesso em __tests__/admin-actions.test.ts:578-610 e :716-741 agora observam a inserção, mas não forçam a falha da escrita nem verificam que exportDecision/exportContract não retornam pdfBase64. → Verdict: remover o catch, devolver o PDF após erro de persistência ou deixar de propagar essa falha mantém a suíte verde, contrariando a garantia de que toda emissão final é auditável.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/admin/_actions/admin-actions.ts:551-555 e :806-810 só devem retornar PDF após persistIssuedDocument. → Path: __tests__/admin-actions.test.ts:578-632 e :716-753 não configuram falha de escrita para as actions. → Verdict: o contrato de retorno diante de persistência falha não é protegido.",
+        "Premise: __tests__/issued-documents.test.ts:25-28 testa somente a compensação do serviço. → Path: exportDecision/exportContract têm seus próprios catches e respostas de erro. → Verdict: esse teste isolado não detecta PDF devolvido ou exceção vazando pelas actions."
+      ]
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 23,
+      "end_line": 29,
+      "in_diff": true,
+      "hunk": "new:1-40",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": true,
+      "title": "Ordem do lock de versão ainda não é observável na suíte",
+      "body": "Premise: lib/documents/issued-documents.ts:23-29 depende de FOR UPDATE ocorrer antes da leitura da versão mais recente para serializar reemissões concorrentes. → Path: __tests__/issued-documents.test.ts:15-22 só exige que transactionExecute tenha sido chamado uma vez; __tests__/helpers/fake-db.ts:123-125 não registra a ordem entre execute e query. → Verdict: mover o lock para depois de findFirst, ou consultar antes de bloquear, continua aprovando a suíte e permite versões duplicadas sob concorrência.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:23-34 exige lock antes de findFirst para serializar versões. → Path: __tests__/issued-documents.test.ts:15-22 verifica somente a contagem de transactionExecute. → Verdict: a ordem que garante concorrência não é observada.",
+        "Premise: __tests__/helpers/fake-db.ts:118-125 usa mocks independentes para execute e query. → Path: não há trilha transacional comparando execute com findFirst. → Verdict: mover o lock para depois da leitura continua verde."
+      ]
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 26,
+      "end_line": 31,
+      "in_diff": true,
+      "hunk": "new:1-40",
+      "category": "potential-issue",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Migração aditiva para banco já populado não tem teste de implantação",
+      "body": "Premise: drizzle/0006_flimsy_spacker_dave.sql:26-31 faz backfill de admin_users antes de impor role não nulo e uma nova FK já coexistindo com decisões legadas. → Path: npm test usa apenas o fake DB e nenhum teste aplica a migração sobre o snapshot anterior contendo administrador e application.decided_by existentes. → Verdict: uma alteração futura na ordem de DDL/backfill pode passar nos testes de actions e falhar no deploy do banco populado.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: drizzle/0006_flimsy_spacker_dave.sql:1-40 altera dados e constraints de tabelas existentes. → Path: __tests__/helpers/fake-db.ts:1-143 substitui Postgres e não executa migrations. → Verdict: a migração não é exercitada no deploy gate.",
+        "Premise: rg -n \"0006_flimsy_spacker_dave|db:migrate|drizzle.*migrat\" __tests__ não localiza teste de upgrade. → Path: nenhum banco criado no schema anterior recebe a migration com registros legados. → Verdict: a compatibilidade de rollout pode regredir sem falhar na suíte."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 552,
+      "hunk": "new:549-555",
+      "candidate": "A chamada de persistência poderia ter sido removida dos exports sem alarme.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "__tests__/admin-actions.test.ts:589-590 e :727-728 agora exigem put e inserção em issuedDocuments nos dois cenários de sucesso; a remoção direta da persistência já falha."
+    },
+    {
+      "file": "app/admin/_actions/staff-actions.ts",
+      "line": 20,
+      "hunk": "new:1-76",
+      "candidate": "As operações de ciclo de vida da conta Secretaria não teriam proteção de regressão.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "__tests__/staff-and-observations.test.ts:14-31 cobre criação, projeção sem hash e proteção contra alterar administradores."
+    },
+    {
+      "file": "lib/auth/authorization.ts",
+      "line": 1,
+      "hunk": "new:1-83",
+      "candidate": "As fronteiras de capability dependeriam apenas de mocks permissivos.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "__tests__/authorization.test.ts:22-123 usa o fake DB para verificar revogação, bypass de produção e capacidades de Secretaria/Admin diretamente no módulo de autorização."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 194,
+      "end_line": 205,
+      "in_diff": true,
+      "hunk": "new:190-210",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Model the Secretaria fixture without an Administrator cast",
+      "body": "The role-boundary tests pass a Secretaria fixture through `as typeof MOCK_USER`, which asserts at compile time that `role` is the literal `admin`. Giving `authAs` a shared staff-identity type lets the fixture retain its actual role and keeps these authorization tests honest as their helper evolves.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: __tests__/admin-actions.test.ts:194 and :205 cast a `{ role: \"secretaria\" }` fixture to the Administrator fixture type → Improvement: the mock input preserves the role under test and cannot silently rely on an unsound cast → Fix: type `authAs` against a role-union staff fixture (or `StaffIdentity`) and pass `secretaria` directly.",
+        "__tests__/admin-actions.test.ts:74-84 → `authAs` currently derives its parameter type from `MOCK_USER`, whose `role` literal is `admin`."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "__tests__/application-schema.test.ts",
+      "line": 151,
+      "hunk": "new:151-167",
+      "candidate": "Reformat the parameterized document-group test",
+      "reason": "formatting",
+      "rule_ids": [],
+      "note": "The candidate is limited to line wrapping and array formatting; it has no separate clarity or behavior improvement beyond the configured formatter's ownership."
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/task_05.md",
+      "line": 1,
+      "hunk": "new:1-143",
+      "candidate": "Add duplicate prose describing the required upload categories",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The task already separates acceptance criteria, success criteria, and implementation checklist so implementers can verify the same requirement at the appropriate workflow stage."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-003.md","hunk":"new:1-69","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-004.md","hunk":"new:1-65","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-005.md","hunk":"new:1-68","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-006.md","hunk":"new:1-63","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-007.md","hunk":"new:1-62","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-008.md","hunk":"new:1-63","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_01.md","hunk":"new:1-124","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_02.md","hunk":"new:1-139","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_03.md","hunk":"new:1-131","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_04.md","hunk":"new:1-138","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_05.md","hunk":"new:1-143","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:13-14","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:16-17","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:22-23","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:25-26","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:39-43","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:45-45","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:74-75","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:94-94","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:98-105","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:190-210","checks":["polish"],"outcome":"reported"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:24-24","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:39-40","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:138-138","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:151-167","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:48-48","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:68-68","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:83-96","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

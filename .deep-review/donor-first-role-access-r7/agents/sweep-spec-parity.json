@@ -1,0 +1,55 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 23,
+      "hunk": null,
+      "candidate": "Version allocation might not be serialized across concurrent issuances",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The transaction locks the application row with SELECT ... FOR UPDATE before reading the latest kind version; the schema and migration additionally enforce the required (application_id, kind, version) uniqueness constraint."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 61,
+      "hunk": null,
+      "candidate": "Secretariat application payload might contain prohibited financial or evidence fields",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The secretaria branch uses an explicit column allowlist and limits student relations to id/nome; it matches the TechSpec SecretariatApplicationSummary contract and does not post-process a full row."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 815,
+      "hunk": null,
+      "candidate": "Issued-document downloads might accept a client storage path or expose an ineligible version",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The final-document action accepts only the persisted id, resolves storage_path server-side, and the secretaria branch verifies the id against the current status-eligible document set before ticket creation."
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 34,
+      "hunk": null,
+      "candidate": "Required scholarship uploads might still be bypassable through direct Server Action input",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The unconditional Zod file arrays run before school-year lookup, then validateDocumentCategories enforces each fixed or indexed pending-path category and rejects duplicate or mismatched paths."
+    },
+    {
+      "file": "app/page.tsx",
+      "line": 344,
+      "hunk": null,
+      "candidate": "Landing donor-first ordering or public route transition might contradict the contract",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Navigation, hero, content bands, and quick access place /seja-um-benfeitor before /solicitar-bolsa; legacy route files contain only permanent redirects and canonical scholarship preserves force-dynamic."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

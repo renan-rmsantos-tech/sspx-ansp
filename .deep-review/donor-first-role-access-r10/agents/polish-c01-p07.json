@@ -1,0 +1,112 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 20,
+      "end_line": 20,
+      "in_diff": true,
+      "hunk": "new:1-67",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Evite a conversão de tipo ampla na transação",
+      "body": "A conversão de `tx` para `typeof db` remove a verificação estática justamente no bloco que aloca versões imutáveis. Consultar a versão por meio do construtor relacional da transação preserva o tipo real de `tx` e faz uma alteração futura incompatível falhar na compilação, sem mudar a estratégia de lock.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": "const latest = await tx\n  .select({ version: issuedDocuments.version })\n  .from(issuedDocuments)\n  .where(\n    and(\n      eq(issuedDocuments.application_id, input.applicationId),\n      eq(issuedDocuments.kind, input.kind)\n    )\n  )\n  .orderBy(desc(issuedDocuments.version))\n  .limit(1);",
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:20 converte `tx` para `unknown as typeof db` → Improvement: preserva a checagem do tipo de transação no caminho de emissão → Fix: consultar a versão com `tx.select(...).from(...)` e remover `queryable`.",
+        "lib/documents/issued-documents.ts:19-39 → a única leitura e a inserção já ocorrem dentro de `db.transaction`, portanto o construtor de consulta da própria transação cobre esse uso."
+      ]
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 52,
+      "end_line": 59,
+      "in_diff": true,
+      "hunk": "new:1-67",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Selecione a versão atual no banco",
+      "body": "A função destinada à tela operacional busca todo o histórico de emissões e elimina versões antigas em memória. Como o produto preserva cada reemissão, esse volume cresce indefinidamente por solicitação, embora a chamada precise no máximo de uma decisão e um contrato. Uma consulta que escolha a maior versão por tipo mantém o contrato atual com transferência e alocação proporcionais aos dois documentos visíveis.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:52-59 carrega `findMany` de todas as versões e só depois filtra por `kind` → Improvement: limita I/O e memória a dois documentos atuais → Fix: projetar o maior `version` de cada `kind` na consulta SQL/Drizzle.",
+        "lib/db/schema.ts:391-400 → o índice único e o índice ordenado por `application_id`, `kind`, `version desc` já modelam a seleção da versão mais recente.",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:678 → o requisito de preservar versões imutáveis torna o crescimento do histórico esperado, não excepcional."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1201,
+      "hunk": "new:1201-1596",
+      "candidate": "Reformatação ou redução do snapshot da migração",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "O snapshot é metadado gerado pelo Drizzle; a revisão útil está na migração e no schema que o produzem."
+    },
+    {
+      "file": "drizzle/meta/_journal.json",
+      "line": 46,
+      "hunk": "new:46-52",
+      "candidate": "Alterar o registro de journal da migração",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "A nova entrada sequencial referencia a migração 0006 e não contém lógica manual adicional."
+    },
+    {
+      "file": "public/seal-arca.svg",
+      "line": 1,
+      "hunk": "new:1-17",
+      "candidate": "Simplificar ou reformatar o selo SVG incorporado",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "`cmp -s public/seal-arca.svg docs/design/opendesign/assets/seal-arca-master.svg` confirmou que o ativo executável é uma cópia exata do master aprovado."
+    },
+    {
+      "file": "lib/validations/application-schema.ts",
+      "line": 27,
+      "hunk": "new:36-37",
+      "candidate": "Extrair cada uso de requiredFileArray para um schema nominal separado",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "O schema compartilhado comunica a mesma regra de anexo obrigatório em todos os campos; schemas nominais não fornecem benefício local demonstrável."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      { "file": "drizzle/meta/0006_snapshot.json", "hunk": "new:1201-1596", "checks": ["polish"], "outcome": "clear" },
+      { "file": "drizzle/meta/_journal.json", "hunk": "new:46-52", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/auth/authorization.ts", "hunk": "new:1-83", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/db/schema.ts", "hunk": "new:1-1", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/db/schema.ts", "hunk": "new:4-4", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/db/schema.ts", "hunk": "new:26-27", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/db/schema.ts", "hunk": "new:31-33", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/db/schema.ts", "hunk": "new:341-404", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/db/schema.ts", "hunk": "new:414-415", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/db/schema.ts", "hunk": "new:426-455", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/documents/issued-documents.ts", "hunk": "new:1-67", "checks": ["polish"], "outcome": "reported" },
+      { "file": "lib/form/scholarship-uploads.ts", "hunk": "old:1-9", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "old:3-3", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "old:28-29", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "old:34-38", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "new:36-37", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "new:77-77", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "new:84-84", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "new:91-91", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "new:94-94", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "new:99-99", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "new:119-119", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "new:130-130", "checks": ["polish"], "outcome": "clear" },
+      { "file": "public/seal-arca.svg", "hunk": "new:1-17", "checks": ["polish"], "outcome": "clear" },
+      { "file": "scripts/bootstrap.ts", "hunk": "new:44-49", "checks": ["polish"], "outcome": "clear" }
+    ],
+    "rules": []
+  }
+}

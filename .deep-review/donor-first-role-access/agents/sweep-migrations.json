@@ -1,0 +1,56 @@
+{
+  "defects": [
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 34,
+      "end_line": null,
+      "in_diff": true,
+      "hunk": "new:1-40",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": true,
+      "title": "Do not cascade-delete immutable issued-document records",
+      "body": "Premise: the migration makes issued_documents.application_id ON DELETE CASCADE while the PDF is stored outside PostgreSQL → Path: deleting an application cascades only the metadata row; no storage operation is invoked → Verdict: the exact issued PDF remains in STORAGE_DIR without an auditable row or authorized ID-based access path, violating immutable traceability and retaining sensitive data indefinitely. Use RESTRICT/NO ACTION for issued_documents (and change the schema relation), or implement a coordinated deletion workflow that removes the file and metadata together.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: drizzle/0006_flimsy_spacker_dave.sql:34 declares ON DELETE cascade for issued_documents.application_id → Path: deleting an application deletes metadata rows in PostgreSQL while no storage cleanup is invoked → Verdict: issued PDFs remain as inaccessible, unauditable sensitive files.",
+        "Premise: lib/documents/issued-documents.ts:11-38 only compensates storage for a failed metadata insert → Path: an application-level cascade bypasses this issuance error handler → Verdict: the storage file cannot be removed through the existing compensation path.",
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:291-298 requires immutable issued versions and server-side ID resolution → Path: a cascade erases the only persisted version/ID record → Verdict: the release cannot preserve the required issuance traceability."
+      ]
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 16,
+      "end_line": null,
+      "in_diff": true,
+      "hunk": "new:1-40",
+      "category": "potential-issue",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Constrain issued-document MIME type to PDF",
+      "body": "Premise: mime_type has only a default and NOT NULL constraint → Path: any future writer or repair script can insert a non-PDF MIME value even though the row is presented as a final issued document → Verdict: the database cannot enforce the documented PDF-only invariant or detect corrupt metadata. Add a CHECK that mime_type = application/pdf in both the migration and Drizzle schema.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: drizzle/0006_flimsy_spacker_dave.sql:16-22 has no MIME CHECK, unlike kind, version, and size → Path: a future writer can insert a non-PDF mime_type value → Verdict: PostgreSQL accepts metadata that violates the issued-PDF contract.",
+        "Premise: lib/db/schema.ts:378-390 declares only a default and NOT NULL for mime_type → Path: Drizzle emits no constraint that narrows later inserts to application/pdf → Verdict: the TypeScript schema preserves the same invalid database state.",
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:278-289 specifies mime_type as required application/pdf → Path: a non-PDF row is treated as an issued document → Verdict: the documented artifact invariant is not enforceable."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 26,
+      "hunk": "new:1-40",
+      "candidate": "Legacy role backfill ordering could invalidate existing accounts",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The nullable role addition is followed by a full legacy backfill before the role check and NOT NULL enforcement; ativo is added with DEFAULT true NOT NULL, so existing account IDs, hashes, and decision references are untouched."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

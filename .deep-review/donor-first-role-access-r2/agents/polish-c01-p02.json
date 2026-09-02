@@ -1,0 +1,90 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/task_01.md",
+      "line": 106,
+      "end_line": 111,
+      "in_diff": true,
+      "hunk": "new:1-124",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Keep migration integration-test checkboxes evidence-backed",
+      "body": "The task is marked completed and its migration integration checks are all checked, but the test suite contains no migration/integration test for the listed legacy-data, constraint, or additive-migration scenarios. This makes the task tracker misleading and obscures the remaining verification work. Add those integration tests, or leave the corresponding checkboxes unchecked until the manual evidence is recorded in the task.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/task_01.md:106-111 marks six migration and database integration scenarios complete → Improvement: task completion reflects reproducible verification rather than an unsupported claim → Fix: add the named integration tests or restore the unchecked status until their evidence exists.",
+        "rg -n \"migration|legacy staff|Issued-document constraints|Applying the migration\" __tests__ → no test file covers the checked migration scenarios."
+      ]
+    },
+    {
+      "file": "__tests__/application-schema.test.ts",
+      "line": 138,
+      "end_line": 151,
+      "in_diff": true,
+      "hunk": "new:138-138",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Isolate the mandatory-document assertion",
+      "body": "This test removes the marriage certificate while also changing several optional fields and arrays. A failure proves only that at least one combined mutation is rejected, so it is less diagnostic and no longer preserves the prior optional-data behavior. Keep the optional-data case separate and make this test remove only the certificate (with separate cases for the student document pair).",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: __tests__/application-schema.test.ts:140-149 combines a required-document deletion with seven unrelated optional-data mutations → Improvement: a failing test identifies the broken validation contract directly and retains regression coverage for optional fields → Fix: split the fixture mutations into focused cases.",
+        "lib/validations/application-schema.ts:66-100 → certidao_casamento is required while profissao, cep, email, other children, vehicles, benefactor indications, expenses, and optional income fields have distinct optional/default semantics."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 13,
+      "hunk": "new:13-14",
+      "candidate": "Reformat the expanded mock declaration",
+      "reason": "formatting",
+      "rule_ids": [],
+      "note": "Line wrapping is formatter-owned and has no maintainability impact beyond configured formatting."
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/adrs/adr-003.md",
+      "line": 17,
+      "hunk": "new:1-69",
+      "candidate": "Add more implementation detail to the authorization ADR",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The ADR states the decision and delegates implementation detail to the task and TechSpec as intended."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-003.md","hunk":"new:1-69","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-004.md","hunk":"new:1-65","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-005.md","hunk":"new:1-68","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-006.md","hunk":"new:1-63","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-007.md","hunk":"new:1-62","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-008.md","hunk":"new:1-63","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_01.md","hunk":"new:1-124","checks":["polish"],"outcome":"reported"},
+      {"file":".compozy/tasks/donor-first-role-access/task_02.md","hunk":"new:1-139","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_03.md","hunk":"new:1-131","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_04.md","hunk":"new:1-138","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_05.md","hunk":"new:1-143","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:13-14","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:16-17","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:22-23","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:25-26","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:39-43","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:45-45","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:92-92","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:96-103","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:24-24","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:39-40","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:138-138","checks":["polish"],"outcome":"reported"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:151-151","checks":["polish"],"outcome":"reported"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:48-48","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:68-68","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:83-96","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

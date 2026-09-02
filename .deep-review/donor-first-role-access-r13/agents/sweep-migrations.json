@@ -1,0 +1,83 @@
+{
+  "defects": [
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 16,
+      "end_line": 22,
+      "in_diff": true,
+      "hunk": "new:1-40",
+      "category": "potential-issue",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Banco aceita metadados não-PDF para documento emitido",
+      "body": "Premise: `issued_documents.mime_type` é uma coluna `text` sem restrição e a migração só limita `kind`, versão e tamanho nas linhas 20–22. → Path: uma inserção administrativa, script de manutenção ou futura alteração que grave `mime_type = 'text/html'` é aceita pelo PostgreSQL; a listagem e o download de documentos emitidos passam a tratar esse registro como um documento final válido. → Verdict: a invariante especificada de que cada documento emitido é `application/pdf` não é preservada pelo banco.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: drizzle/0006_flimsy_spacker_dave.sql:16-22 define mime_type como text NOT NULL DEFAULT 'application/pdf', mas não há CHECK para application/pdf → Path: INSERT explícito pode fornecer outro texto → Verdict: o banco aceita metadado inválido.",
+        "Premise: lib/db/schema.ts:374-390 só declara checks para kind, version e size_bytes → Path: a definição Drizzle correspondente também não produz uma restrição para mime_type → Verdict: a ausência de integridade do MIME é reproduzível no modelo e na DDL.",
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:277-291 requer mime_type application/pdf e rejeição de metadados inválidos pelo banco → Path: o CHECK ausente deixa de comparar o valor fornecido com esse contrato → Verdict: a DDL não satisfaz a invariante especificada."
+      ]
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 26,
+      "end_line": 31,
+      "in_diff": true,
+      "hunk": "new:1-40",
+      "category": "potential-issue",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Migração em banco populado não tem cobertura no gate",
+      "body": "Premise: `0006` modifica linhas existentes de `admin_users` ao adicionar role nula, preenchê-la e só depois impor constraints, porém a suíte não executa a migração a partir do esquema anterior. → Path: uma futura alteração na ordem do DDL, no backfill ou nas constraints pode deixar testes de actions com fake DB verdes e falhar ao atualizar a base implantada com usuários legados e referências `applications.decided_by`. → Verdict: a compatibilidade de rollout aditiva exigida pode regredir sem detecção antes do deploy.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: drizzle/0006_flimsy_spacker_dave.sql:26-31 adiciona role nula, a preenche como admin, a restringe, torna-a NOT NULL e lhe dá default → Path: cada etapa depende da ordem correta contra linhas já existentes → Verdict: a sequência precisa ser exercitada contra uma base legada real para detectar regressões de rollout.",
+        "Premise: .compozy/tasks/donor-first-role-access/task_01.md:105-111 exige aplicar a migração com conta e decisão legadas e provar comportamento aditivo e constraints → Path: essa é precisamente a transição de banco populado criada pelas linhas 26-31 → Verdict: a cobertura de integração exigida é necessária para proteger esse DDL.",
+        "Premise: rg -n -i 'migration|migrate|0006|legacy|backfill|populated' __tests__ package.json scripts drizzle não encontra teste que execute a migração nem monte o estado pré-0006 requerido → Path: a suíte testa actions sobre fake DB sem rodar o DDL de rollout → Verdict: mudanças incompatíveis na migração podem passar pelo gate automatizado."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 26,
+      "hunk": "new:1-40",
+      "candidate": "Constraints de role podem rejeitar contas existentes durante o rollout",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "O SQL adiciona role nula, preenche todos os nulos como admin, depois cria o CHECK e somente então torna a coluna obrigatória, que é a sequência de compatibilidade especificada."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 27,
+      "hunk": "new:1-40",
+      "candidate": "Contas existentes podem receber ativo nulo ou inativo no rollout",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "ALTER TABLE adiciona ativo com DEFAULT true NOT NULL; o valor exigido preserva todas as identidades e referências existentes."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 32,
+      "hunk": "new:1-40",
+      "candidate": "Novas foreign keys podem invalidar linhas legadas",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "As duas tabelas são novas e vazias, referenciam chaves existentes e implementam os comportamentos de cascade/restrict definidos pelo contrato."
+    },
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1,
+      "hunk": "new:1-1596",
+      "candidate": "Metadados Drizzle podem divergir da migração SQL",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "O snapshot e o journal registram as mesmas colunas, tabelas, FKs, índices e tag sequencial de 0006; não há divergência concreta além do CHECK de MIME já reportado."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

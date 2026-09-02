@@ -1,0 +1,72 @@
+{
+  "defects": [
+    {
+      "file": "app/page.tsx",
+      "line": 374,
+      "end_line": 376,
+      "in_diff": false,
+      "hunk": null,
+      "category": "potential-issue",
+      "severity": "critical",
+      "quick_win": true,
+      "title": "Hero secondary CTA does not expose the scholarship journey",
+      "body": "Premise: app/page.tsx:369-377 renders the donor CTA followed by \"Conheça a Arca\" to #missao, with no scholarship CTA in the hero. → Path: a visitor following the hero’s secondary action reaches the mission section rather than /solicitar-bolsa. → Verdict: the landing contradicts the donor-first contract’s required hero secondary scholarship discoverability; the scholarship flow is absent from that primary decision point.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/_techspec.md — Landing and Public Content (hero secondary path); task_04.md — requirements 6–7",
+      "suggestion": "Make the hero’s secondary CTA a visible scholarship action linking directly to /solicitar-bolsa.",
+      "evidence": [
+        "Premise: app/page.tsx:369-377 renders the donor CTA followed by \"Conheça a Arca\" to #missao, with no scholarship CTA in the hero. → Path: a visitor following the hero secondary action reaches the mission section rather than /solicitar-bolsa. → Verdict: the required hero-level secondary scholarship discoverability is absent.",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:443-447 → requires the donor hero primary CTA and a hero secondary path that retains scholarship discoverability.",
+        ".compozy/tasks/donor-first-role-access/task_04.md:30-31,120-123 → requires scholarship to remain the visible secondary action, target /solicitar-bolsa, and keep primary/secondary CTAs ordered and legible.",
+        "app/page.tsx:369-377 → only hero CTAs are /seja-um-benfeitor and #missao; no /solicitar-bolsa target occurs in the hero."
+      ]
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 231,
+      "end_line": 251,
+      "in_diff": false,
+      "hunk": null,
+      "category": "potential-issue",
+      "severity": "critical",
+      "quick_win": true,
+      "title": "Legacy path ticket action bypasses final-document ID boundary",
+      "body": "Premise: getDocumentUrl accepts a caller-provided storage path, verifies only that the object exists, and signs it; it does not reject the issued-document namespace. → Path: an Administrator can pass applications/{applicationId}/issued/{kind}/{uuid}.pdf to getDocumentUrl and receive a download ticket without an issued-document ID or metadata visibility check. → Verdict: final-document access is not exclusively authorized by the persisted ID as the contract requires, leaving an arbitrary-path alternate path around the issued-document boundary.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/_techspec.md — Storage Layout; Final Document Download; Testing Approach / Issued Documents",
+      "suggestion": "Reject issued-document namespace paths in getDocumentUrl and route final-document access exclusively through getIssuedDocumentUrl(id).",
+      "evidence": [
+        "Premise: app/admin/_actions/admin-actions.ts:231-251 accepts a caller-provided path and signs any existing storage object without excluding issued-document paths. → Path: an Administrator submits applications/{applicationId}/issued/{kind}/{uuid}.pdf to getDocumentUrl instead of an issued-document ID. → Verdict: final-document tickets can be issued without the persisted-ID authorization handle.",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:89-102 → final-document download receives an issued-document ID and resolves persisted metadata before ticket issuance.",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:308-315 → the issued-document ID is the authorization handle and storage_path remains server-only.",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:561-570 → download authorization must use the document ID and reject applicant evidence.",
+        "app/admin/_actions/admin-actions.ts:231-251 → getDocumentUrl signs any existing caller-supplied storage candidate after admin authentication, including applications/.../issued/... paths."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 61,
+      "hunk": "new:64-83",
+      "candidate": "Operational summary does not embed observations or issued-document metadata",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The restricted list query returns exactly the Task 02 allowlist, while the operational UI loads observations and current issued-document metadata through separately capability-protected actions only after expansion; no sensitive-field leak or unavailable follow-up behavior is established from the split topology alone."
+    },
+    {
+      "file": "app/admin/_actions/observation-actions.ts",
+      "line": 7,
+      "hunk": "new:1-37",
+      "candidate": "Observation add response omits joined author identity",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The saved row is immediately reread through the authorized chronological history action, which returns author identity and timestamp; the UI does not require the insert response to carry the join."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

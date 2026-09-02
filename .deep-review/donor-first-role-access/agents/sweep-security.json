@@ -1,0 +1,67 @@
+{
+  "defects": [
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 210,
+      "end_line": 213,
+      "in_diff": true,
+      "hunk": "new:276:1",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Submission accepts nonexistent paths as required evidence",
+      "body": "Premise: the newly required fields accept any non-empty `pending/` string without proving that a file was uploaded, and `fillDocumentSizes` converts a missing object to size `0` before the rows are inserted. → Path: an unauthenticated caller can invoke `submitApplication` directly with syntactically valid, nonexistent `pending/{uuid}/...` values for every mandatory document; validation passes, the transaction writes document metadata, and the later move failure is swallowed. → Verdict: a scholarship application is accepted as successful with no uploaded supporting evidence, defeating the mandatory-upload boundary and leaving staff with inaccessible document rows. Validate each submitted path against the expected category and require an existing, nonzero storage object before inserting the application/document rows; abort the transaction when any required upload is absent.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: lib/validations/application-schema.ts:20-29 accepts any non-empty `pending/` path without a storage or category check. → Path: a direct submitApplication caller supplies fabricated paths for each required field. → Verdict: schema validation treats nonexistent evidence as complete.",
+        "Premise: app/form/_actions/form-actions.ts:209-213 inserts the generated document rows without a size or existence rejection. → Path: rows created from the fabricated paths enter the application transaction. → Verdict: metadata for absent evidence is committed.",
+        "Premise: app/form/_actions/form-actions.ts:291-296 maps a missing storage object to size `0`. → Path: fillDocumentSizes processes every fabricated path before insertion. → Verdict: absence is converted into accepted metadata instead of a validation failure.",
+        "Premise: app/form/_actions/form-actions.ts:319-328 catches failed file moves after commit. → Path: moving an absent pending object fails only after the application transaction succeeds. → Verdict: the action returns success while its required files remain unavailable.",
+        "Premise: .compozy/tasks/donor-first-role-access/_prd.md:81-85 requires successful uploads before submission. → Path: the direct server-action path bypasses client upload state. → Verdict: the implementation violates the mandatory-upload acceptance boundary."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "lib/auth/authorization.ts",
+      "line": 44,
+      "hunk": "new:1:83",
+      "candidate": "Forged session role grants an unauthorized capability",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "requireStaff re-resolves id, role, and active state from admin_users on every protected call; the session contains only identity and is explicitly not treated as a role source."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 221,
+      "hunk": "new:4:5",
+      "candidate": "Secretariat mints applicant-evidence download tickets by path",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The path-based evidence action now calls requireAuth, which delegates to requireAdmin; the Secretariat capability set does not include this path."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 808,
+      "hunk": "new:794:30",
+      "candidate": "Secretariat downloads historical or ineligible issued-document versions by ID",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "For a Secretariat identity, getIssuedDocumentUrl resolves the current allowed documents for the application and rejects an ID outside that set before creating a ticket."
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 72,
+      "hunk": "new:72:1",
+      "candidate": "Upload category or filename escapes the storage namespace",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The action allowlists categories and sanitizes filenames; the storage driver independently rejects absolute, null-byte, and root-escaping paths."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

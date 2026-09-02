@@ -1,0 +1,55 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 25,
+      "hunk": "new:1-40",
+      "candidate": "NOT NULL role constraint could reject pre-existing admin accounts",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The migration first adds role as nullable, backfills every null role to admin at line 27, and only then adds the role check and NOT NULL constraint at lines 28-29. This is the ordered compatibility window required by task_01.md:24-26 and :51."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 26,
+      "hunk": "new:1-40",
+      "candidate": "Existing users could be deactivated during the additive account migration",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Adding ativo with DEFAULT true NOT NULL makes the existing row state and the new-record default agree with task_01.md:25-26. The migration changes neither IDs, emails, password hashes, nor applications.decided_by references."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 1,
+      "hunk": "new:1-40",
+      "candidate": "A failed multi-statement migration could leave a partial schema",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The configured postgres-js Drizzle migrator executes each pending migration inside one transaction before recording it in drizzle.__drizzle_migrations (node_modules/drizzle-orm/pg-core/dialect.js:56-71), so any failing statement rolls back the migration rather than publishing a partial 0006 state."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 34,
+      "hunk": "new:1-40",
+      "candidate": "New foreign keys and indexes could remove or invalidate existing application data",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "application_observations and issued_documents are newly created empty tables before their foreign keys and indexes are added. The migration does not recreate, delete from, or alter applications or existing application references; the only altered existing table is admin_users, handled by the preceding ordered backfill."
+    },
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1,
+      "hunk": "new:1-1596",
+      "candidate": "Generated snapshot might not represent the SQL migration",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "The generated snapshot records the same role check, new tables, foreign keys, uniqueness constraint, and indexes named by 0006 and lib/db/schema.ts. It is migration metadata rather than an independently owned executable implementation."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

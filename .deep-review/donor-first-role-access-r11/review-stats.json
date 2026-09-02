@@ -1,0 +1,34 @@
+{
+  "candidates": 65,
+  "reported": 14,
+  "suppressed": 51,
+  "suppression_reasons": {
+    "duplicate-within-job": 1,
+    "formatting": 5,
+    "generated-vendored": 2,
+    "intentional": 29,
+    "phantom-knowledge": 2,
+    "pre-existing": 1,
+    "speculative": 11
+  },
+  "raw_defects": 5,
+  "raw_advisories": 9,
+  "canonical_defects": 5,
+  "canonical_advisories": 9,
+  "coverage": {
+    "selected_hunk_lines": 5437,
+    "lanes": {
+      "defect": {
+        "rows": 211,
+        "covered_lines": 5437,
+        "complete": true
+      },
+      "polish": {
+        "rows": 212,
+        "covered_lines": 5437,
+        "complete": true
+      }
+    },
+    "rules": {}
+  }
+}

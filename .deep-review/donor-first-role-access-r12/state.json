@@ -1,0 +1,124 @@
+{
+  "target": "worktree:origin/main",
+  "rounds": [
+    {
+      "n": 1,
+      "base": "5c90842fe2309bdc1659268decf3a7ca8358751d",
+      "head": "5c90842fe2309bdc1659268decf3a7ca8358751d",
+      "verdict": "FIX_BEFORE_SHIP",
+      "reviewed_at": "2026-09-01T04:35:30.158712+00:00"
+    }
+  ],
+  "ledger": {
+    "53842744fe25db86": {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "title": "Exports finais podem deixar de ser persistidos sem falhar na suíte",
+      "severity": "major",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "30e43c345bdba252": {
+      "file": "app/admin/solicitacoes/client.tsx",
+      "title": "Fluxos exclusivos da Secretaria não são exercitados pela UI",
+      "severity": "major",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "cb494e8e5a245701": {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "title": "Populated-database migration behavior lacks deploy-gate coverage",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "75c06a0aa1639f8c": {
+      "file": "lib/documents/issued-documents.ts",
+      "title": "A garantia de serialização da versão não tem teste observável",
+      "severity": "major",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "1afe46414eb99043": {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "title": "Remove o pseudo-contrato Go sem consumidor",
+      "severity": "trivial",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "94264c701db68d1b": {
+      "file": "__tests__/admin-actions.test.ts",
+      "title": "Make the authorization fixture honor the staff role",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "81609d616099bc69": {
+      "file": "__tests__/application-schema.test.ts",
+      "title": "Assert which required document field produced each rejection",
+      "severity": "trivial",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "448e6d06dec33646": {
+      "file": "app/admin/benfeitores/client.tsx",
+      "title": "Desdobre os novos componentes de operação por papel",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "63db90b0264e7848": {
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "title": "Formate a árvore JSX da página de benfeitor",
+      "severity": "trivial",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "bae7aeab2d253fcb": {
+      "file": "app/solicitar-bolsa/layout.tsx",
+      "title": "Evite manter duas cópias idênticas do layout do formulário",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "92de4a0864a6f635": {
+      "file": "lib/documents/issued-documents.ts",
+      "title": "Evite converter a transação para o tipo global de banco",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    }
+  }
+}

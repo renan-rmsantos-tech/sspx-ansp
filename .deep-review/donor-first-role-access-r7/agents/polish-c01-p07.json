@@ -1,0 +1,54 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1201,
+      "hunk": "new:1201-1596",
+      "candidate": "Reformatar ou simplificar o snapshot de metadados do Drizzle.",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "O snapshot é artefato gerado que precisa permanecer alinhado à migração e ao schema; uma alteração manual apenas por estilo não é uma melhoria sustentável."
+    },
+    {
+      "file": "lib/form/scholarship-uploads.ts",
+      "line": 1,
+      "hunk": "old:1-9",
+      "candidate": "Manter uma flag para reativar o modo de uploads desabilitados.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "O contrato técnico determina a remoção permanente do modo de teste e da flag de uploads; os campos obrigatórios agora são validados no schema e no envio."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      { "file": "drizzle/meta/0006_snapshot.json", "hunk": "new:1201-1596", "checks": ["polish"], "outcome": "clear" },
+      { "file": "drizzle/meta/_journal.json", "hunk": "new:46-52", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/auth/authorization.ts", "hunk": "new:1-83", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/db/schema.ts", "hunk": "new:1-1", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/db/schema.ts", "hunk": "new:4-4", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/db/schema.ts", "hunk": "new:26-27", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/db/schema.ts", "hunk": "new:31-33", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/db/schema.ts", "hunk": "new:341-404", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/db/schema.ts", "hunk": "new:414-415", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/db/schema.ts", "hunk": "new:426-455", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/documents/issued-documents.ts", "hunk": "new:1-67", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/form/scholarship-uploads.ts", "hunk": "old:1-9", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "old:3-3", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "old:28-29", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "old:34-38", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "new:36-37", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "new:77-77", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "new:84-84", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "new:91-91", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "new:94-94", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "new:99-99", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "new:119-119", "checks": ["polish"], "outcome": "clear" },
+      { "file": "lib/validations/application-schema.ts", "hunk": "new:130-130", "checks": ["polish"], "outcome": "clear" },
+      { "file": "public/seal-arca.svg", "hunk": "new:1-17", "checks": ["polish"], "outcome": "clear" },
+      { "file": "scripts/bootstrap.ts", "hunk": "new:44-49", "checks": ["polish"], "outcome": "clear" }
+    ],
+    "rules": []
+  }
+}

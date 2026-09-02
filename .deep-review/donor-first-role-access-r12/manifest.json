@@ -1,0 +1,1749 @@
+{
+  "target": "worktree:origin/main",
+  "mode": "full",
+  "round": 1,
+  "base": "5c90842fe2309bdc1659268decf3a7ca8358751d",
+  "effective_base": "5c90842fe2309bdc1659268decf3a7ca8358751d",
+  "head": "5c90842fe2309bdc1659268decf3a7ca8358751d",
+  "diff_command": "git diff 5c90842fe230 -- <file>",
+  "worktree_snapshot": "ff205c597b71c390d6f246836ee42edc7b47d44e0674fc533be3236b1212b20e",
+  "filter_source": "built-ins",
+  "counts": {
+    "selected": 75,
+    "ignored": 0,
+    "skipped": 0,
+    "carried": 0
+  },
+  "files": [
+    {
+      "path": ".compozy/tasks/donor-first-role-access/_prd.md",
+      "status": "A",
+      "adds": 330,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 330,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": ".compozy/tasks/donor-first-role-access/_tasks.md",
+      "status": "A",
+      "adds": 11,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 11,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "status": "A",
+      "adds": 707,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 707,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md",
+      "status": "A",
+      "adds": 67,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 67,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md",
+      "status": "A",
+      "adds": 76,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 76,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": ".compozy/tasks/donor-first-role-access/adrs/adr-003.md",
+      "status": "A",
+      "adds": 69,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 69,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": ".compozy/tasks/donor-first-role-access/adrs/adr-004.md",
+      "status": "A",
+      "adds": 65,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 65,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": ".compozy/tasks/donor-first-role-access/adrs/adr-005.md",
+      "status": "A",
+      "adds": 68,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 68,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": ".compozy/tasks/donor-first-role-access/adrs/adr-006.md",
+      "status": "A",
+      "adds": 63,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 63,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": ".compozy/tasks/donor-first-role-access/adrs/adr-007.md",
+      "status": "A",
+      "adds": 62,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 62,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": ".compozy/tasks/donor-first-role-access/adrs/adr-008.md",
+      "status": "A",
+      "adds": 63,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 63,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": ".compozy/tasks/donor-first-role-access/task_01.md",
+      "status": "A",
+      "adds": 124,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 124,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": ".compozy/tasks/donor-first-role-access/task_02.md",
+      "status": "A",
+      "adds": 139,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 139,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": ".compozy/tasks/donor-first-role-access/task_03.md",
+      "status": "A",
+      "adds": 131,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 131,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": ".compozy/tasks/donor-first-role-access/task_04.md",
+      "status": "A",
+      "adds": 138,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 138,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": ".compozy/tasks/donor-first-role-access/task_05.md",
+      "status": "A",
+      "adds": 143,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 143,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "__tests__/admin-actions.test.ts",
+      "status": "M",
+      "adds": 88,
+      "dels": 3,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 13,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 16,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 22,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 25,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 39,
+          "lines": 5,
+          "side": "new"
+        },
+        {
+          "start": 45,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 74,
+          "lines": 4,
+          "side": "new"
+        },
+        {
+          "start": 96,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 98,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 100,
+          "lines": 8,
+          "side": "new"
+        },
+        {
+          "start": 192,
+          "lines": 60,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "__tests__/application-schema.test.ts",
+      "status": "M",
+      "adds": 21,
+      "dels": 4,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 24,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 39,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 138,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 151,
+          "lines": 17,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "__tests__/auth-actions.test.ts",
+      "status": "M",
+      "adds": 16,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 48,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 68,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 83,
+          "lines": 14,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "__tests__/authorization.test.ts",
+      "status": "A",
+      "adds": 124,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 124,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "__tests__/export-decision.test.tsx",
+      "status": "M",
+      "adds": 4,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 23,
+          "lines": 4,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "__tests__/form-actions.test.ts",
+      "status": "M",
+      "adds": 12,
+      "dels": 6,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 9,
+          "lines": 6,
+          "side": "old"
+        },
+        {
+          "start": 107,
+          "lines": 12,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "__tests__/form-page.test.tsx",
+      "status": "M",
+      "adds": 2,
+      "dels": 2,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 15,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 19,
+          "lines": 1,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "__tests__/helpers/fake-db.ts",
+      "status": "M",
+      "adds": 1,
+      "dels": 1,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 123,
+          "lines": 1,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "__tests__/issued-documents.test.ts",
+      "status": "A",
+      "adds": 36,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 36,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "__tests__/scholarship-form.test.tsx",
+      "status": "M",
+      "adds": 0,
+      "dels": 7,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 15,
+          "lines": 7,
+          "side": "old"
+        }
+      ]
+    },
+    {
+      "path": "__tests__/solicitacoes-client.test.tsx",
+      "status": "M",
+      "adds": 24,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 11,
+          "lines": 5,
+          "side": "new"
+        },
+        {
+          "start": 23,
+          "lines": 5,
+          "side": "new"
+        },
+        {
+          "start": 47,
+          "lines": 12,
+          "side": "new"
+        },
+        {
+          "start": 101,
+          "lines": 2,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "__tests__/staff-and-observations.test.ts",
+      "status": "A",
+      "adds": 47,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 47,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "__tests__/step-1-applicant.test.tsx",
+      "status": "M",
+      "adds": 0,
+      "dels": 6,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 7,
+          "lines": 6,
+          "side": "old"
+        }
+      ]
+    },
+    {
+      "path": "__tests__/submit-application.test.ts",
+      "status": "M",
+      "adds": 17,
+      "dels": 4,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 58,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 61,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 68,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 160,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 170,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 232,
+          "lines": 11,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/admin/_actions/admin-actions.ts",
+      "status": "M",
+      "adds": 113,
+      "dels": 12,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 4,
+          "lines": 5,
+          "side": "new"
+        },
+        {
+          "start": 5,
+          "lines": 1,
+          "side": "old"
+        },
+        {
+          "start": 13,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 29,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 43,
+          "lines": 3,
+          "side": "new"
+        },
+        {
+          "start": 47,
+          "lines": 7,
+          "side": "new"
+        },
+        {
+          "start": 61,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 64,
+          "lines": 20,
+          "side": "new"
+        },
+        {
+          "start": 128,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 131,
+          "lines": 22,
+          "side": "new"
+        },
+        {
+          "start": 237,
+          "lines": 6,
+          "side": "new"
+        },
+        {
+          "start": 494,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 549,
+          "lines": 7,
+          "side": "new"
+        },
+        {
+          "start": 744,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 804,
+          "lines": 7,
+          "side": "new"
+        },
+        {
+          "start": 814,
+          "lines": 30,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/admin/_actions/observation-actions.ts",
+      "status": "A",
+      "adds": 37,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 37,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/admin/_actions/staff-actions.ts",
+      "status": "A",
+      "adds": 76,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 76,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/admin/_components/application-card.tsx",
+      "status": "M",
+      "adds": 3,
+      "dels": 1,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 7,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 311,
+          "lines": 1,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/admin/_components/application-observations.tsx",
+      "status": "A",
+      "adds": 10,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 10,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/admin/_components/issued-documents.tsx",
+      "status": "A",
+      "adds": 14,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 14,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/admin/_components/sidebar.tsx",
+      "status": "M",
+      "adds": 14,
+      "dels": 4,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 7,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 35,
+          "lines": 6,
+          "side": "new"
+        },
+        {
+          "start": 94,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 190,
+          "lines": 4,
+          "side": "new"
+        },
+        {
+          "start": 199,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 220,
+          "lines": 1,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/admin/ano-letivo/page.tsx",
+      "status": "M",
+      "adds": 2,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 3,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 6,
+          "lines": 1,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/admin/benfeitores/client.tsx",
+      "status": "M",
+      "adds": 26,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 77,
+          "lines": 26,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/admin/benfeitores/page.tsx",
+      "status": "M",
+      "adds": 8,
+      "dels": 1,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 4,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 8,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 20,
+          "lines": 5,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/admin/cabecalho/page.tsx",
+      "status": "M",
+      "adds": 2,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 3,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 6,
+          "lines": 1,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/admin/contrato/page.tsx",
+      "status": "M",
+      "adds": 2,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 3,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 6,
+          "lines": 1,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/admin/layout.tsx",
+      "status": "M",
+      "adds": 4,
+      "dels": 2,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 3,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 5,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 10,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 15,
+          "lines": 1,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/admin/solicitacoes/client.tsx",
+      "status": "M",
+      "adds": 73,
+      "dels": 1,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 3,
+          "lines": 3,
+          "side": "new"
+        },
+        {
+          "start": 71,
+          "lines": 70,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/admin/solicitacoes/page.tsx",
+      "status": "M",
+      "adds": 12,
+      "dels": 2,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 2,
+          "lines": 6,
+          "side": "new"
+        },
+        {
+          "start": 10,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 19,
+          "lines": 5,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/admin/textos/page.tsx",
+      "status": "M",
+      "adds": 2,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 3,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 6,
+          "lines": 1,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/admin/usuarios/client.tsx",
+      "status": "A",
+      "adds": 17,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 17,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/admin/usuarios/page.tsx",
+      "status": "A",
+      "adds": 9,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 9,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/benfeitor/page.tsx",
+      "status": "M",
+      "adds": 2,
+      "dels": 137,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 4,
+          "lines": 1,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/form/_actions/form-actions.ts",
+      "status": "M",
+      "adds": 45,
+      "dels": 16,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 22,
+          "lines": 1,
+          "side": "old"
+        },
+        {
+          "start": 32,
+          "lines": 29,
+          "side": "new"
+        },
+        {
+          "start": 99,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 103,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 130,
+          "lines": 4,
+          "side": "new"
+        },
+        {
+          "start": 307,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 315,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 326,
+          "lines": 5,
+          "side": "new"
+        },
+        {
+          "start": 349,
+          "lines": 2,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/form/_components/file-upload.tsx",
+      "status": "M",
+      "adds": 0,
+      "dels": 17,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 26,
+          "lines": 3,
+          "side": "old"
+        },
+        {
+          "start": 46,
+          "lines": 2,
+          "side": "old"
+        },
+        {
+          "start": 160,
+          "lines": 12,
+          "side": "old"
+        }
+      ]
+    },
+    {
+      "path": "app/form/_components/scholarship-form.tsx",
+      "status": "M",
+      "adds": 7,
+      "dels": 10,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 18,
+          "lines": 1,
+          "side": "old"
+        },
+        {
+          "start": 52,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 102,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 127,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 137,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 283,
+          "lines": 2,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/form/_components/step-1-applicant.tsx",
+      "status": "M",
+      "adds": 10,
+      "dels": 24,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 8,
+          "lines": 4,
+          "side": "old"
+        },
+        {
+          "start": 83,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 94,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 139,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 146,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 183,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 190,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 200,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 207,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 256,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 263,
+          "lines": 1,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/form/_components/step-2-students.tsx",
+      "status": "M",
+      "adds": 9,
+      "dels": 13,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 9,
+          "lines": 4,
+          "side": "old"
+        },
+        {
+          "start": 43,
+          "lines": 3,
+          "side": "new"
+        },
+        {
+          "start": 82,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 188,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 195,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 202,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 209,
+          "lines": 1,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/form/_components/step-3-income.tsx",
+      "status": "M",
+      "adds": 2,
+      "dels": 8,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 10,
+          "lines": 4,
+          "side": "old"
+        },
+        {
+          "start": 93,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 104,
+          "lines": 1,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/form/_components/step-4-expenses.tsx",
+      "status": "M",
+      "adds": 2,
+      "dels": 8,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 9,
+          "lines": 4,
+          "side": "old"
+        },
+        {
+          "start": 78,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 93,
+          "lines": 1,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/form/layout.tsx",
+      "status": "M",
+      "adds": 2,
+      "dels": 107,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 3,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 30,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 190,
+          "lines": 15,
+          "side": "old"
+        }
+      ]
+    },
+    {
+      "path": "app/form/page.tsx",
+      "status": "M",
+      "adds": 3,
+      "dels": 15,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 3,
+          "lines": 2,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/login/_actions/auth-actions.ts",
+      "status": "M",
+      "adds": 5,
+      "dels": 1,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 61,
+          "lines": 5,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/page.tsx",
+      "status": "M",
+      "adds": 41,
+      "dels": 104,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 4,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 333,
+          "lines": 52,
+          "side": "old"
+        },
+        {
+          "start": 338,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 346,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 350,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 370,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 374,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 380,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 458,
+          "lines": 24,
+          "side": "new"
+        },
+        {
+          "start": 496,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 551,
+          "lines": 24,
+          "side": "old"
+        },
+        {
+          "start": 533,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 546,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 567,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 574,
+          "lines": 2,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/seja-um-benfeitor/page.tsx",
+      "status": "A",
+      "adds": 13,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 13,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/solicitar-bolsa/layout.tsx",
+      "status": "A",
+      "adds": 104,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 104,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "app/solicitar-bolsa/page.tsx",
+      "status": "A",
+      "adds": 16,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 16,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "components/ui/seal-logo.tsx",
+      "status": "M",
+      "adds": 8,
+      "dels": 80,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 4,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 7,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 10,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 12,
+          "lines": 5,
+          "side": "old"
+        },
+        {
+          "start": 15,
+          "lines": 3,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "docs/changes/2026-07-27.md",
+      "status": "M",
+      "adds": 10,
+      "dels": 5,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 6,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 9,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 11,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 11,
+          "lines": 1,
+          "side": "old"
+        },
+        {
+          "start": 15,
+          "lines": 4,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "drizzle/0006_flimsy_spacker_dave.sql",
+      "status": "A",
+      "adds": 40,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 40,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "drizzle/meta/0006_snapshot.json",
+      "status": "A",
+      "adds": 1596,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 1596,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "drizzle/meta/_journal.json",
+      "status": "M",
+      "adds": 7,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 46,
+          "lines": 7,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "lib/auth/authorization.ts",
+      "status": "A",
+      "adds": 83,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 83,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "lib/db/schema.ts",
+      "status": "M",
+      "adds": 103,
+      "dels": 2,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 4,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 26,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 31,
+          "lines": 3,
+          "side": "new"
+        },
+        {
+          "start": 341,
+          "lines": 64,
+          "side": "new"
+        },
+        {
+          "start": 414,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 426,
+          "lines": 30,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "lib/documents/issued-documents.ts",
+      "status": "A",
+      "adds": 67,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 67,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "lib/form/scholarship-uploads.ts",
+      "status": "D",
+      "adds": 0,
+      "dels": 9,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 9,
+          "side": "old"
+        }
+      ]
+    },
+    {
+      "path": "lib/validations/application-schema.ts",
+      "status": "M",
+      "adds": 9,
+      "dels": 16,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 3,
+          "lines": 1,
+          "side": "old"
+        },
+        {
+          "start": 28,
+          "lines": 2,
+          "side": "old"
+        },
+        {
+          "start": 34,
+          "lines": 5,
+          "side": "old"
+        },
+        {
+          "start": 36,
+          "lines": 2,
+          "side": "new"
+        },
+        {
+          "start": 77,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 84,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 91,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 94,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 99,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 119,
+          "lines": 1,
+          "side": "new"
+        },
+        {
+          "start": 130,
+          "lines": 1,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "public/seal-arca.svg",
+      "status": "A",
+      "adds": 17,
+      "dels": 0,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 1,
+          "lines": 17,
+          "side": "new"
+        }
+      ]
+    },
+    {
+      "path": "scripts/bootstrap.ts",
+      "status": "M",
+      "adds": 6,
+      "dels": 1,
+      "disposition": "selected",
+      "hunks": [
+        {
+          "start": 44,
+          "lines": 6,
+          "side": "new"
+        }
+      ]
+    }
+  ]
+}

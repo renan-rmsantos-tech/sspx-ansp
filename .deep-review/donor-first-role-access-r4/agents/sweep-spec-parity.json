@@ -1,0 +1,82 @@
+{
+  "defects": [
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 22,
+      "end_line": 22,
+      "in_diff": true,
+      "hunk": "new:1-66",
+      "category": "potential-issue",
+      "severity": "critical",
+      "quick_win": false,
+      "title": "Versões não são alocadas com a linha da solicitação bloqueada",
+      "body": "Premise: `persistIssuedDocument` toma somente um advisory lock derivado de `applicationId:kind`, sem selecionar ou bloquear a linha de `applications` → Path: uma emissão de decisão e uma de contrato da mesma solicitação podem executar a alocação em transações independentes sem o bloqueio de linha prescrito → Verdict: a implementação contradiz a topologia de serialização exigida para emissão por solicitação; não há o bloqueio da linha de aplicação que o contrato usa para coordenar a emissão final.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/_techspec.md — Final Documents / Issuance rules: Version allocation occurs while the application row is locked",
+      "suggestion": "Dentro da transação, bloqueie explicitamente a linha da aplicação (por exemplo, `SELECT ... FOR UPDATE`) antes de ler a versão e inserir os metadados; mantenha a restrição única como defesa complementar.",
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:19-37 → a transação executa `pg_advisory_xact_lock(hashtext(applicationId:kind))`, consulta apenas `issued_documents` e não referencia `applications` → Path: emissões de kinds diferentes para o mesmo applicationId não disputam a mesma chave de advisory lock → Verdict: a versão é atribuída sem o bloqueio da linha de applications exigido pelo contrato.",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:421-427 → determina explicitamente que a alocação ocorre enquanto a linha da aplicação está bloqueada."
+      ]
+    },
+    {
+      "file": "app/admin/ano-letivo/page.tsx",
+      "line": 5,
+      "end_line": 5,
+      "in_diff": false,
+      "hunk": null,
+      "category": "potential-issue",
+      "severity": "critical",
+      "quick_win": true,
+      "title": "Páginas de configuração não autorizam o papel no componente servidor",
+      "body": "Premise: as páginas protegidas de configuração chamam ações administrativas, mas não chamam `requireAdmin`/`requireCapability` por conta própria; a proteção local fica somente na action e o layout comum aceita Secretaria → Path: uma Secretaria navega diretamente para uma dessas rotas e alcança o Server Component antes de a action lançar → Verdict: essas superfícies não satisfazem a exigência de que todo Server Component protegido faça sua própria autorização e não oferecem a negação de acesso explícita exigida para acessos diretos.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/_techspec.md — Staff Identity and Authorization: Every protected Server Component and Server Action performs its own authorization check",
+      "suggestion": "Adicione `await requireAdmin()` no início de cada página administrativa de configuração, antes de carregar os dados, e trate a negação com a experiência de acesso restrito apropriada.",
+      "also_applies": [
+        "app/admin/cabecalho/page.tsx:5",
+        "app/admin/textos/page.tsx:5",
+        "app/admin/contrato/page.tsx:5"
+      ],
+      "evidence": [
+        "Premise: app/admin/ano-letivo/page.tsx:1-6 chama somente getSchoolYears; app/admin/cabecalho/page.tsx:1-6, app/admin/textos/page.tsx:1-6 e app/admin/contrato/page.tsx:1-6 seguem o mesmo padrão → Path: app/admin/layout.tsx:9-16 exige apenas requireStaff para todas as rotas /admin → Verdict: Secretaria entra nesses componentes sem uma guarda própria de papel.",
+        "app/admin/_actions/admin-actions.ts:332-339,605-612,434-441,671-678 → as ações são administrativas, mas a guarda dentro delas não substitui a verificação exigida no Server Component.",
+        ".compozy/tasks/donor-first-role-access/_prd.md:153-160 → Secretaria não pode acessar áreas de configuração administrativas, inclusive por acesso direto."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 32,
+      "hunk": "new:32-60",
+      "candidate": "Categorias de documentos exigidos divergem entre upload, validação e persistência.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "A certidão de casamento usa `certidao` tanto no FileUpload quanto na allowlist e na validação; a categoria persistida `certidao_casamento` é posterior ao envio e não integra o caminho do ticket. Os grupos de aluno usam os mesmos nomes indexados em todas as fronteiras."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 809,
+      "hunk": "new:808-837",
+      "candidate": "Secretaria pode baixar uma versão histórica, contrato rejeitado ou documento pendente pelo ID.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Para Secretaria, getIssuedDocumentUrl compara o ID com getCurrentIssuedDocuments; essa leitura exclui pendentes, restringe rejeitadas à decisão e devolve somente a maior versão de cada kind."
+    },
+    {
+      "file": "app/form/page.tsx",
+      "line": 4,
+      "hunk": "new:1-4",
+      "candidate": "A rota legada não retorna um redirecionamento permanente para o caminho canônico.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "A rota contém somente permanentRedirect('/solicitar-bolsa'); a correspondente /benfeitor aplica o mesmo mecanismo para /seja-um-benfeitor."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

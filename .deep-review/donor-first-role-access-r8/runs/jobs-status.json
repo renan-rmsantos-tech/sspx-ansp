@@ -1,0 +1,70 @@
+{
+  "mode": "validate",
+  "jobs": [
+    {
+      "label": "cohort-c01",
+      "status": "valid",
+      "reason": null
+    },
+    {
+      "label": "polish-c01-p01",
+      "status": "valid",
+      "reason": null
+    },
+    {
+      "label": "polish-c01-p02",
+      "status": "valid",
+      "reason": null
+    },
+    {
+      "label": "polish-c01-p03",
+      "status": "valid",
+      "reason": null
+    },
+    {
+      "label": "polish-c01-p04",
+      "status": "valid",
+      "reason": null
+    },
+    {
+      "label": "polish-c01-p05",
+      "status": "valid",
+      "reason": null
+    },
+    {
+      "label": "polish-c01-p06",
+      "status": "valid",
+      "reason": null
+    },
+    {
+      "label": "polish-c01-p07",
+      "status": "valid",
+      "reason": null
+    },
+    {
+      "label": "sweep-security",
+      "status": "valid",
+      "reason": null
+    },
+    {
+      "label": "sweep-migrations",
+      "status": "valid",
+      "reason": null
+    },
+    {
+      "label": "sweep-tests",
+      "status": "valid",
+      "reason": null
+    },
+    {
+      "label": "sweep-consistency",
+      "status": "valid",
+      "reason": null
+    },
+    {
+      "label": "sweep-spec-parity",
+      "status": "valid",
+      "reason": null
+    }
+  ]
+}

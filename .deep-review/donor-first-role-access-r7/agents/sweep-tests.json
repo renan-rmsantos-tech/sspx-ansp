@@ -1,0 +1,57 @@
+{
+  "defects": [
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 23,
+      "end_line": 23,
+      "in_diff": true,
+      "hunk": "new:1-67",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Test the concurrent version-allocation invariant",
+      "body": "Premise: the only version-allocation test invokes one issuance serially and only asserts the resulting version; it neither starts competing transactions nor observes the FOR UPDATE call. → Path: removing or weakening the application-row lock at issued-documents.ts:23 lets two concurrent same-kind issuances both read the same latest version and attempt the same next version. → Verdict: the suite still passes while the required concurrency guarantee can regress into a failed issuance/orphaned stored PDF. Add a deterministic two-caller test that holds the first allocation until the second attempts it, then verifies distinct persisted versions (and the expected compensation behavior).",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: __tests__/issued-documents.test.ts:15-22 invokes persistIssuedDocument only once and does not observe tx.execute. → Path: removing the FOR UPDATE at lib/documents/issued-documents.ts:23 allows two concurrent callers to allocate the same next version. → Verdict: this required concurrency regression passes the current suite.",
+        "__tests__/issued-documents.test.ts:15-22 → the test contains one call only and does not assert tx.execute or coordinate two issuances.",
+        ".compozy/tasks/donor-first-role-access/task_03.md:100-102 → the accepted test contract explicitly requires two simulated concurrent issuances that cannot persist the same version."
+      ]
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 815,
+      "end_line": 842,
+      "in_diff": true,
+      "hunk": "new:814-843",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Cover issued-document actions at the role and eligibility boundary",
+      "body": "Premise: the new current-document, ticket, and history actions have no direct tests; export tests only assert rendered PDF content and the UI tests mock these actions. → Path: a regression that returns every issued row to Secretaria, permits an old ID in getIssuedDocumentUrl, or removes the rejected/pending eligibility filtering still leaves the current suite green. → Verdict: Secretariat can receive a superseded or ineligible final document without a failing-capable test. Add action-level cases for administrator versus Secretaria, pending/rejected/approved status, old versus current IDs, missing files, download-only ticket scope, and admin-only history; assert the export actions create the immutable record as part of the same boundary coverage.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: no test directly invokes the actions added at app/admin/_actions/admin-actions.ts:815-842 with a Secretaria identity. → Path: returning all versions or accepting an old issued ID bypasses the role-specific branches. → Verdict: a Secretaria document-disclosure regression passes the current suite.",
+        "__tests__/admin-actions.test.ts:490-565 and 618-685 → export tests verify rendering/result text but contain no assertions for issued-document rows, current-document actions, or Secretaria behavior.",
+        "__tests__/solicitacoes-client.test.tsx:38-51 → the administrative action surface is mocked in the UI suite, so it cannot exercise authorization or ticket eligibility.",
+        ".compozy/tasks/donor-first-role-access/task_03.md:107-117 → the accepted test contract requires these direct role, eligibility, ticket, and UI-boundary cases."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "__tests__/file-upload-flow.test.tsx",
+      "line": 226,
+      "hunk": null,
+      "candidate": "Concurrent upload completion can resurrect a removed file without test coverage",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The existing controlled-prop test removes an existing file while a delayed upload settles and asserts that the final list contains only the newly completed item."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

@@ -1,0 +1,277 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 20,
+      "end_line": 20,
+      "in_diff": true,
+      "hunk": "new:1-64",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Evitar a dupla asserção de tipo para a transação",
+      "body": "A asserção `tx as unknown as typeof db` declara que a transação tem exatamente a API do cliente global, ocultando do TypeScript incompatibilidades entre os dois tipos. Tipar o callback com o tipo de transação inferido pelo cliente (ou expor um helper transacional) preserva a checagem quando Drizzle ou o esquema evoluírem.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:20 converte `tx` para `unknown` e depois para `typeof db` → Improvement: o compilador volta a verificar a API usada dentro da transação → Fix: introduzir e usar o tipo de transação inferido pelo cliente neste callback.",
+        "lib/documents/issued-documents.ts:19-35 → a leitura e a inserção são executadas pelo valor cuja tipagem foi apagada."
+      ]
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 55,
+      "end_line": 55,
+      "in_diff": true,
+      "hunk": "new:1-64",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Tornar explícito o filtro que seleciona a versão atual",
+      "body": "A expressão com operador vírgula mistura uma mutação do conjunto com o predicado do `filter`, dificultando a leitura do critério de seleção. Um callback em bloco deixa explícito que somente a primeira ocorrência de cada tipo é mantida.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": "return all.filter((item) => {\n  if (seen.has(item.kind)) return false;\n  seen.add(item.kind);\n  return true;\n});",
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:55 usa `(seen.add(item.kind), true)` como efeito colateral dentro do predicado → Improvement: o critério de deduplicação fica legível sem mudar a ordenação → Fix: usar um callback em bloco com retornos explícitos.",
+        "lib/documents/issued-documents.ts:49-55 → a consulta já ordena as versões de forma decrescente antes da deduplicação."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1201,
+      "hunk": "new:1201-1596",
+      "candidate": "Simplificar ou reformatar o snapshot de Drizzle.",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "O trecho é metadado gerado de migração; alterações manuais não oferecem benefício sustentável."
+    },
+    {
+      "file": "lib/form/scholarship-uploads.ts",
+      "line": 1,
+      "hunk": "old:1-9",
+      "candidate": "Manter o flag temporário de uploads.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "A remoção é coerente com os validadores obrigatórios e com a retomada do envio de documentos."
+    },
+    {
+      "file": "public/seal-arca.svg",
+      "line": 1,
+      "hunk": "new:1-17",
+      "candidate": "Reformatar o SVG minificado/incorporado.",
+      "reason": "formatting",
+      "rule_ids": [],
+      "note": "Não há melhoria funcional ou de manutenção local que justifique alterar o ativo de marca."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {
+        "file": "drizzle/meta/0006_snapshot.json",
+        "hunk": "new:1201-1596",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "drizzle/meta/_journal.json",
+        "hunk": "new:46-52",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/auth/authorization.ts",
+        "hunk": "new:1-83",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/db/schema.ts",
+        "hunk": "new:1-1",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/db/schema.ts",
+        "hunk": "new:4-4",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/db/schema.ts",
+        "hunk": "new:26-27",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/db/schema.ts",
+        "hunk": "new:31-33",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/db/schema.ts",
+        "hunk": "new:341-404",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/db/schema.ts",
+        "hunk": "new:414-415",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/db/schema.ts",
+        "hunk": "new:426-455",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/documents/issued-documents.ts",
+        "hunk": "new:1-64",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "reported"
+      },
+      {
+        "file": "lib/form/scholarship-uploads.ts",
+        "hunk": "old:1-9",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "old:3-3",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "old:28-29",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "old:34-38",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:36-37",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:77-77",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:84-84",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:91-91",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:94-94",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:99-99",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:119-119",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "lib/validations/application-schema.ts",
+        "hunk": "new:130-130",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "public/seal-arca.svg",
+        "hunk": "new:1-17",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": "scripts/bootstrap.ts",
+        "hunk": "new:44-49",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

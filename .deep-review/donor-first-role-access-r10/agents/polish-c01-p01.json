@@ -1,0 +1,64 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 207,
+      "end_line": 216,
+      "in_diff": true,
+      "hunk": "new:1-707",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Remove the unused Go contract mirror",
+      "body": "The TypeScript technical specification introduces a documentation-only Go `CapabilityContext` with no consumer or source of truth. Keeping this parallel, partial representation makes the authorization contract look multi-language and creates a second shape that can drift from `StaffIdentity` without providing an implementation or verification benefit.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:207-216 declares a documentation-only Go struct → Improvement: removing the unconsumed parallel contract leaves the TypeScript interfaces as the single clear authorization reference → Fix: delete the explanatory paragraph and Go code block.",
+        "rg -n 'CapabilityContext|documentation-only Go struct|workflow-template compliance' .compozy/tasks/donor-first-role-access → the struct and its stated rationale have no other consumer in the task artifacts."
+      ]
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+      "line": 8,
+      "end_line": 11,
+      "in_diff": true,
+      "hunk": "new:1-11",
+      "category": "nitpick",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Synchronize the task index with its completed implementation",
+      "body": "The task index still labels Tasks 02–05 as pending even though their described deliverables are present in the worktree. This makes the workflow's top-level status misleading and forces a reader to inspect implementation files to know which work remains.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_tasks.md:8-11 marks Tasks 02–05 as pending → Improvement: accurate status makes the task index usable for release tracking → Fix: update each status after its acceptance evidence is recorded.",
+        "app/admin/_actions/staff-actions.ts:27-62, app/admin/_actions/admin-actions.ts:491-815, app/benfeitor/page.tsx:4, and app/form/page.tsx:4 → the account, issued-document, and canonical-route deliverables assigned to these tasks are implemented."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+      "line": 240,
+      "hunk": "new:1-330",
+      "candidate": "Phased rollout plan has a broad release sequence",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The phased plan is an explicit product-planning artifact and is consistent with the detailed dependencies in the TechSpec."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file": ".compozy/tasks/donor-first-role-access/_prd.md", "hunk": "new:1-330", "checks": ["polish"], "outcome": "clear"},
+      {"file": ".compozy/tasks/donor-first-role-access/_tasks.md", "hunk": "new:1-11", "checks": ["polish"], "outcome": "reported"},
+      {"file": ".compozy/tasks/donor-first-role-access/_techspec.md", "hunk": "new:1-707", "checks": ["polish"], "outcome": "reported"},
+      {"file": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md", "hunk": "new:1-67", "checks": ["polish"], "outcome": "clear"},
+      {"file": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md", "hunk": "new:1-76", "checks": ["polish"], "outcome": "clear"}
+    ],
+    "rules": []
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "defects": [
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 32,
+      "end_line": 33,
+      "in_diff": true,
+      "hunk": "@@ -30,6 +29,8 @@",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Testes mascaram a rejeição das categorias usadas pelo formulário",
+      "body": "Premise: `createUploadUrl` passou a aceitar somente `doc_pai`, `doc_mae`, `certidao_casamento`, `extratos_bancarios` e `aluno_<n>_(rg|certidao)`, mas os componentes ainda enviam `rg_pai`, `rg_mae`, `certidao`, `extrato_bancario`, `rg_aluno_<n>` e `certidao_nascimento_<n>`, enquanto o teste de fluxo substitui a ação por um mock que sempre retorna sucesso. → Path: ao anexar qualquer um desses documentos obrigatórios na etapa 1, 2 ou 4, `FileUpload` chama a ação real, recebe `Categoria de documento inválida.` e não cria um caminho pendente; a validação obrigatória então impede avançar/enviar. → Verdict: o formulário de bolsa recém-habilitado fica inutilizável para os documentos afetados, e a suíte atual passa porque nunca exerce o contrato real categoria-componente. Adicione um teste de integração ou de componente sem mock da ação que percorra todas as categorias renderizadas e asserts que cada uma recebe um ticket; cubra também a rejeição das categorias inválidas.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: the allowlist rejects the category strings rendered by the mandatory upload controls and the full-flow test replaces the action with unconditional success. → Path: a user uploads one of those controls, FileUpload calls createUploadUrl and receives Categoria de documento inválida. → Verdict: required uploads cannot complete while the existing test suite passes.",
+        "app/form/_actions/form-actions.ts:32-33 → a allowlist só aceita os nomes novos e o padrão aluno_<índice>_(rg|certidao).",
+        "app/form/_components/step-1-applicant.tsx:143,187,204 → a UI chama rg_pai, rg_mae e certidao.",
+        "app/form/_components/step-2-students.tsx:188,202 → a UI chama rg_aluno_<índice> e certidao_nascimento_<índice>.",
+        "app/form/_components/step-4-expenses.tsx:87 → a UI chama extrato_bancario.",
+        "__tests__/scholarship-form.test.tsx:16-21 → o fluxo completo mocka createUploadUrl como sucesso incondicional; npm test passaria com a incompatibilidade presente."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 11,
+      "hunk": "@@ -0,0 +1,64 @@",
+      "candidate": "Ausência de teste direto para versionamento e compensação de documento emitido",
+      "reason": "duplicate-within-job",
+      "rule_ids": [],
+      "note": "A hipótese se confunde com a correção funcional do armazenamento/versionamento, que pertence ao coorte de defeitos; esta varredura mantém somente a lacuna de teste que explica uma regressão demonstrável da integração formulário-ação."
+    },
+    {
+      "file": "app/solicitar-bolsa/page.tsx",
+      "line": 5,
+      "hunk": "@@ -0,0 +1,10 @@",
+      "candidate": "Falta de testes de redirecionamentos canônicos e hierarquia pública",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "Os caminhos implementados usam permanentRedirect diretamente e não foi estabelecido um caminho concreto de falha nessa varredura além da ausência de cobertura exigida pela especificação."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/task_02.md",
+      "line": 2,
+      "end_line": 2,
+      "in_diff": true,
+      "hunk": "new:1-139",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Sincronizar o rastreamento das tarefas concluídas",
+      "body": "As tarefas 02–05 ainda se declaram pendentes e mantêm todos os subtarefas desmarcados, embora as mudanças e testes correspondentes já estejam presentes no conjunto revisado. Isso torna o estado do fluxo e a próxima retomada imprecisos.",
+      "also_applies": [
+        ".compozy/tasks/donor-first-role-access/task_03.md:2",
+        ".compozy/tasks/donor-first-role-access/task_04.md:2",
+        ".compozy/tasks/donor-first-role-access/task_05.md:2"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/task_02.md:2 declara status pending e as linhas 41-47 deixam todos os subtarefas abertos → Improvement: o rastreamento passa a comunicar com precisão o trabalho já entregue e evita reexecução ou retomada equivocada → Fix: após a verificação final, marcar os subtarefas atendidos e definir status: completed nas tarefas 02–05.",
+        "rg -n '^status:|^- \\[\\[ x\\]\\]' .compozy/tasks/donor-first-role-access/task_0{2,3,4,5}.md → confirmou o mesmo status pendente e listas não atualizadas nas quatro especificações.",
+        "__tests__/admin-actions.test.ts:193-252 e __tests__/application-schema.test.ts:151-167 → as novas coberturas exercitam partes entregues das tarefas 02, 03 e 05, contrariando o estado pendente do rastreamento."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 589,
+      "hunk": "new:589-590",
+      "candidate": "Exigir asserções de todos os metadados da emissão na ação de exportação",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "O hunk confirma tanto a gravação no storage quanto a inserção de issuedDocuments; sem um caminho concreto que aceite metadados incorretos, ampliar a granularidade das expectativas seria preferência de cobertura."
+    },
+    {
+      "file": "__tests__/application-schema.test.ts",
+      "line": 154,
+      "hunk": "new:151-167",
+      "candidate": "Reformatar a lista de documentos obrigatórios em múltiplas linhas",
+      "reason": "formatting",
+      "rule_ids": [],
+      "note": "A alteração proposta é exclusivamente de disposição de código e pertence ao formatter configurado, não a uma melhoria de manutenção independente."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-003.md","hunk":"new:1-69","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-004.md","hunk":"new:1-65","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-005.md","hunk":"new:1-68","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-006.md","hunk":"new:1-63","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-007.md","hunk":"new:1-62","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-008.md","hunk":"new:1-63","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_01.md","hunk":"new:1-124","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_02.md","hunk":"new:1-139","checks":["polish"],"outcome":"reported"},
+      {"file":".compozy/tasks/donor-first-role-access/task_03.md","hunk":"new:1-131","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_04.md","hunk":"new:1-138","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_05.md","hunk":"new:1-143","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:13-14","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:16-17","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:22-23","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:25-26","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:39-43","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:45-45","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:61-61","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:75-78","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:97-97","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:99-99","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:101-108","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:193-252","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:589-590","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:727-728","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:24-24","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:39-40","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:138-138","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:151-167","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:48-48","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:68-68","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:83-96","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

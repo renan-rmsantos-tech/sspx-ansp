@@ -1,0 +1,46 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 26,
+      "hunk": "new:1-40",
+      "candidate": "Legacy users could be locked out by enforcing a role before it is populated.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The migration first adds nullable role, gives every existing row admin at line 28, then adds the constrained required shape at lines 29-31; its ordering matches the explicit migration contract in task_01.md:51."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 27,
+      "hunk": "new:1-40",
+      "candidate": "Existing accounts could receive a NULL or inactive ativo value during rollout.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "PostgreSQL ADD COLUMN with DEFAULT true NOT NULL supplies true for existing rows and rejects NULLs; this satisfies the required active default without mutating identity, password hash, or decision references."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 32,
+      "hunk": "new:1-40",
+      "candidate": "New foreign keys could delete staff-owned history or issued records unexpectedly.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The migration restricts deletion of the author/issuer account (lines 33 and 35), while application-owned records cascade only with their owning application, exactly as the inspected TechSpec data-model contract states at lines 264-265."
+    },
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1,
+      "hunk": "new:1-1596",
+      "candidate": "Drizzle metadata might not describe the SQL migration and cause a later migration to diverge.",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The generated snapshot has public.admin_users, public.application_observations, and public.issued_documents with the same role, constraints, foreign keys, and indexes as 0006; the journal records idx 6 with the matching tag."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1,
+      "hunk": "new:1-1200",
+      "candidate": "A snapshot repete a definição de esquema e não oferece um ponto de manutenção manual.",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "O artefato em drizzle/meta é o snapshot serializado do Drizzle; a fonte editável da mudança é lib/db/schema.ts e a migration SQL correspondente."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {
+        "file": "drizzle/meta/0006_snapshot.json",
+        "hunk": "new:1-1200",
+        "checks": ["polish"],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

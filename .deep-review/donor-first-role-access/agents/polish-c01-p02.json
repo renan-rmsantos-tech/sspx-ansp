@@ -1,0 +1,118 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/task_04.md",
+      "line": 73,
+      "in_diff": true,
+      "hunk": "new:1-138",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Make canonical scholarship layout ownership explicit",
+      "body": "The task identifies the legacy `/form` layout as reused by the canonical flow, but the legacy route is required to become a redirect and cannot wrap `/solicitar-bolsa`. Name the canonical layout (or a shared extracted layout) as the implementation owner, so the required seal and upload-banner migration cannot be accidentally left behind on the redirect-only route.",
+      "also_applies": [
+        ".compozy/tasks/donor-first-role-access/task_04.md:64",
+        ".compozy/tasks/donor-first-role-access/task_05.md:67"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/task_04.md:73 says `app/form/layout.tsx` is reused by the canonical flow, while :64 names `/solicitar-bolsa` as the canonical entry and :66 requires `/form` to be a permanent redirect → Improvement: makes the route-level migration implementable without relying on a layout that no longer runs for the canonical page → Fix: require `app/solicitar-bolsa/layout.tsx` or an explicitly shared layout and list the legacy layout only as a redirect-route cleanup target.",
+        ".compozy/tasks/donor-first-role-access/adrs/adr-006.md:17 → canonical routes are the only implementations and `/form` must redirect permanently."
+      ]
+    },
+    {
+      "file": "__tests__/application-schema.test.ts",
+      "line": 39,
+      "in_diff": true,
+      "hunk": "new:39-40",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Test each required student document independently",
+      "body": "The fixture now supplies separate identity and birth-certificate arrays, but the only mandatory-document failure removes the marriage certificate. Add one assertion for each student field being absent so a future schema regression that requires only one of the two documents is caught at the validation boundary.",
+      "also_applies": [],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: __tests__/application-schema.test.ts:39-40 introduces distinct `documento_identidade` and `certidao_nascimento` fixture values, while :138-151 removes only `certidao_casamento` in the mandatory-document rejection case → Improvement: locks the new two-document invariant independently instead of proving only that a complete pair parses → Fix: add parse-failure cases deleting `alunos[0].documento_identidade` and `alunos[0].certidao_nascimento` separately.",
+        "rg -n 'certidao_nascimento|documento_identidade' __tests__ → no existing test exercises either field's absence."
+      ]
+    },
+    {
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 96,
+      "in_diff": true,
+      "hunk": "new:96-103",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Exercise capability outcomes separately from admin outcomes",
+      "body": "The new helper resolves both authorization mocks for every non-null user, so the existing guard test proves only unauthenticated rejection. Add a Secretariat fixture and focused assertions that operational reads call `requireCapability` with the allowlisted capability while administrator-only actions reject; this keeps the new role split from being protected solely by mocked helper wiring.",
+      "also_applies": [
+        "__tests__/admin-actions.test.ts:116-138"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: __tests__/admin-actions.test.ts:96-99 makes both `mockRequireAdmin` and `mockRequireCapability` resolve for every non-null fixture → Improvement: distinguishes Secretariat operational access from Administrator-only access in the action test contract → Fix: model a `secretaria` fixture whose admin helper rejects, then assert the permitted read actions' exact capability and the forbidden actions' rejection.",
+        "app/admin/_actions/admin-actions.ts:51 and :118 → the two operational list actions use `requireCapability`, so they need a different test outcome from the administrator-only surface."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/task_01.md",
+      "line": 2,
+      "hunk": "new:1-124",
+      "candidate": "Task completion status might be stale relative to implementation evidence",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The task record is the available completion authority for this documentation hunk; the polish lane has no independent workflow event that can establish a stale status."
+    },
+    {
+      "file": "__tests__/auth-actions.test.ts",
+      "line": 83,
+      "hunk": "new:83-96",
+      "candidate": "Inactive-account test lacks a role field",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The tested login branch rejects inactive accounts before role authorization, so omitting role keeps the fixture scoped to the intended guard."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-003.md","hunk":"new:1-69","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-004.md","hunk":"new:1-65","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-005.md","hunk":"new:1-68","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-006.md","hunk":"new:1-63","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-007.md","hunk":"new:1-62","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-008.md","hunk":"new:1-63","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_01.md","hunk":"new:1-124","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_02.md","hunk":"new:1-139","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_03.md","hunk":"new:1-131","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_04.md","hunk":"new:1-138","checks":["polish"],"outcome":"reported"},
+      {"file":".compozy/tasks/donor-first-role-access/task_05.md","hunk":"new:1-143","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:13-14","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:16-17","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:22-23","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:25-26","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:39-43","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:45-45","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:92-92","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:96-103","checks":["polish"],"outcome":"reported"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:24-24","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:39-40","checks":["polish"],"outcome":"reported"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:138-138","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:151-151","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:48-48","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:68-68","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:83-96","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

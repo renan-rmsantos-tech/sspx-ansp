@@ -1,0 +1,164 @@
+{
+  "target": "worktree:origin/main",
+  "rounds": [
+    {
+      "n": 1,
+      "base": "5c90842fe2309bdc1659268decf3a7ca8358751d",
+      "head": "5c90842fe2309bdc1659268decf3a7ca8358751d",
+      "verdict": "FIX_BEFORE_SHIP",
+      "reviewed_at": "2026-09-01T03:32:27.832759+00:00"
+    }
+  ],
+  "ledger": {
+    "6dde159cd9407e68": {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "title": "Cover issued-document actions at the role and eligibility boundary",
+      "severity": "major",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "d94e3659fe8091f9": {
+      "file": "app/form/_components/step-4-expenses.tsx",
+      "title": "Arquivos obrigatórios com mesmo nome se sobrescrevem após o envio",
+      "severity": "major",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "1d3c4a2990826d86": {
+      "file": "components/ui/seal-logo.tsx",
+      "title": "Selos decorativos repetem o nome institucional para leitores de tela",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "ed9d0b2c5b3228df": {
+      "file": "lib/documents/issued-documents.ts",
+      "title": "Test the concurrent version-allocation invariant",
+      "severity": "major",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "d4754eccf1ec52e3": {
+      "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+      "title": "Atualize o rastreador para refletir as tarefas entregues",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "6e75c4f4664d6cb8": {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "title": "Remova o exemplo Go que não pertence ao runtime",
+      "severity": "trivial",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "1dfebcbc9afdf744": {
+      "file": "__tests__/application-schema.test.ts",
+      "title": "Cover nested parent-document requirements independently",
+      "severity": "trivial",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "8a59e9be51d15b42": {
+      "file": "app/admin/_components/application-observations.tsx",
+      "title": "Make observation loading state explicit",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "b552dac7434d29ef": {
+      "file": "app/admin/_components/issued-documents.tsx",
+      "title": "Handle issued-document loading failures explicitly",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "c645201d9207cf5e": {
+      "file": "app/admin/benfeitores/client.tsx",
+      "title": "Break the secretariat donor view into readable JSX units",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "4bc4c171d415071a": {
+      "file": "app/admin/benfeitores/page.tsx",
+      "title": "Remove role-branching donor type assertions",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "ea70bf1c5913cd12": {
+      "file": "app/admin/solicitacoes/client.tsx",
+      "title": "Derive the secretariat state types from the actions",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "a3cc45549e2fbe5f": {
+      "file": "app/admin/usuarios/client.tsx",
+      "title": "Format the Secretaria-user client into maintainable units",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "ffba6d35d1d303ef": {
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "title": "Formate os JSXs das páginas canônicas",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "43fbb84541cf93d9": {
+      "file": "docs/changes/2026-07-27.md",
+      "title": "Revise a redação dos requisitos de perfis",
+      "severity": "trivial",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    }
+  }
+}

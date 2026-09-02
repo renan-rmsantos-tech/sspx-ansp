@@ -1,0 +1,82 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "lib/auth/authorization.ts",
+      "line": 44,
+      "hunk": "new:1-83",
+      "candidate": "A stale session could retain access after a staff account is deactivated or its role changes.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "requireStaff resolves the session only as an account identifier, then reads id, email, role, and ativo from admin_users for every protected operation. Missing or inactive accounts are rejected before capability dispatch."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 64,
+      "hunk": "new:58-84",
+      "candidate": "The Secretariat application list could deliver financial or applicant-evidence data through a broad query.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The Secretaria branch uses explicit application and student column allowlists at the database query boundary before data reaches the client."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 131,
+      "hunk": "new:127-153",
+      "candidate": "The restricted donor list could expose CPF, address, CEP, or receipt metadata.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The Secretaria donor query selects operational fields only and omits CPF, address, CEP, receipt path, and receipt name at the database boundary."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 231,
+      "hunk": "new:231-258",
+      "candidate": "A Secretariat caller could obtain an applicant-evidence ticket by submitting a known storage path.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "getDocumentUrl uses requireAuth, whose only implementation delegates to requireAdmin; Secretariat final-document access is limited to the separate persisted-ID action. The legacy path action also rejects the issued-document namespace."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 828,
+      "hunk": "new:815-843",
+      "candidate": "A Secretariat user could download an old final-document version or a contract for a rejected application by guessing an ID.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The action resolves the ID server-side and, for Secretaria, compares it to the role-aware current-document query. That query excludes all pending documents and contracts for rejected applications, and returns only the latest version per kind."
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 94,
+      "hunk": "new:31-110",
+      "candidate": "An anonymous caller could mint an upload ticket with traversal, arbitrary category, or dot-segment path.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Categories are a fixed allowlist plus tightly indexed student patterns; filenames are sanitized and reject dot segments; each signed path is server-generated below a fresh pending/{uuid} namespace. Storage independently enforces root containment."
+    },
+    {
+      "file": "app/admin/_actions/observation-actions.ts",
+      "line": 11,
+      "hunk": "new:1-37",
+      "candidate": "Observation body may execute markup supplied by Secretariat.",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The reviewed renderer places the body in a React text node and has no dangerouslySetInnerHTML use, so supplied markup is escaped rather than executed."
+    },
+    {
+      "file": "app/api/documents/route.ts",
+      "line": 13,
+      "hunk": null,
+      "candidate": "A download ticket is not bound to an active session when redeemed.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The TechSpec retains a ticket-only delivery endpoint and places authorization before ticket issuance; tickets are HMAC-signed, scoped, and expire after 300 seconds."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

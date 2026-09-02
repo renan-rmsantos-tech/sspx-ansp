@@ -1,0 +1,126 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 20,
+      "end_line": 20,
+      "in_diff": true,
+      "hunk": "new:1-64",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Type the transaction callback instead of casting it to the root database",
+      "body": "The double assertion makes the transaction look like the root `db`, so changes to the transaction/query interface lose compile-time checking at the one place that must stay transaction-bound. Infer or explicitly type the Drizzle transaction and use it directly for the query and insert.",
+      "also_applies": [],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:20 casts `tx` through `unknown` to `typeof db` → Improvement: preserves static verification that both reads and writes use the callback transaction → Fix: type/infer the Drizzle transaction callback and remove the double assertion.",
+        "lib/documents/issued-documents.ts:19-35 → the latest-version read and insert deliberately share one transaction callback, making its actual type part of the helper's maintenance contract."
+      ]
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 50,
+      "end_line": 60,
+      "in_diff": true,
+      "hunk": "new:1-64",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Share the repeated issued-document summary projection",
+      "body": "The two list helpers duplicate the same seven-column projection. Keeping a named shared projection prevents one list from quietly exposing or omitting a field after the other is changed.",
+      "also_applies": [
+        "lib/documents/issued-documents.ts:60"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:50 and :60 contain identical `columns` objects → Improvement: one projection definition keeps current and history list results aligned → Fix: extract the summary projection to a module constant used by both queries.",
+        "lib/documents/issued-documents.ts:48-63 → both public helpers query the same table for different ordering purposes and return the same selected fields."
+      ]
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 62,
+      "end_line": 62,
+      "in_diff": true,
+      "hunk": "new:1-64",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Make issued-document history ordering deterministic",
+      "body": "History currently orders only by `issued_at`; records sharing a timestamp have no defined relative order. Add a stable secondary key (for example `desc(version)` or `desc(id)`) so audit history does not reorder between reads.",
+      "also_applies": [],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:62 orders the history query solely by `issued_at` → Improvement: stable ordering makes an audit-oriented list reproducible when timestamps tie → Fix: append a deterministic secondary descending order key.",
+        "lib/db/schema.ts:440-441 → `issued_at` is a timestamp without a uniqueness constraint, while `application_id`, `kind`, and `version` have the version uniqueness invariant."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1201,
+      "hunk": "new:1201-1596",
+      "candidate": "Hand-editing the generated Drizzle snapshot for readability",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "The snapshot is generated migration metadata; its full hunk was inspected for coherence with the schema and migration rather than treated as hand-maintained source."
+    },
+    {
+      "file": "public/seal-arca.svg",
+      "line": 9,
+      "hunk": "new:1-17",
+      "candidate": "Reformatting the embedded base64 image payload",
+      "reason": "formatting",
+      "rule_ids": [],
+      "note": "The payload is asset data; wrapping or reformatting it offers no code-maintenance benefit and is formatter/asset-pipeline territory."
+    },
+    {
+      "file": "lib/form/scholarship-uploads.ts",
+      "line": 1,
+      "hunk": "old:1-9",
+      "candidate": "Retaining the removed temporary upload feature flag for compatibility",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The change's stated intent is to permanently enable scholarship uploads, and surviving callers no longer import the flag."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":"drizzle/meta/0006_snapshot.json","hunk":"new:1201-1596","checks":["polish"],"outcome":"clear"},
+      {"file":"drizzle/meta/_journal.json","hunk":"new:46-52","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/auth/authorization.ts","hunk":"new:1-83","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:1-1","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:26-27","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:31-33","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:341-404","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:414-415","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:426-455","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/documents/issued-documents.ts","hunk":"new:1-64","checks":["polish"],"outcome":"reported"},
+      {"file":"lib/form/scholarship-uploads.ts","hunk":"old:1-9","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"old:3-3","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"old:28-29","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"old:34-38","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:36-37","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:77-77","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:84-84","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:91-91","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:94-94","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:99-99","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:119-119","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:130-130","checks":["polish"],"outcome":"clear"},
+      {"file":"public/seal-arca.svg","hunk":"new:1-17","checks":["polish"],"outcome":"clear"},
+      {"file":"scripts/bootstrap.ts","hunk":"new:44-49","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

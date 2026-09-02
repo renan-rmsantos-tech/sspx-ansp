@@ -1,0 +1,82 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "lib/auth/authorization.ts",
+      "line": 40,
+      "hunk": null,
+      "candidate": "Staff authorization could trust stale role or activity values from the session",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "TechSpec §Staff Identity and Authorization requires database revalidation. requireStaff uses the session only as an identity hint and selects role and ativo from admin_users for every protected operation; the bypass is explicitly limited outside production."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 61,
+      "hunk": null,
+      "candidate": "The Secretariat application view could return a prohibited financial or evidence field",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "PRD §Secretariat Operational Application View and TechSpec §Applications are met by the Secretaria branch's database-side allowlist for identity, contact, school, decision date, and student id/name only; complete detail remains Administrator-only."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 128,
+      "hunk": null,
+      "candidate": "The Secretariat benefactor view could include scholarship-suggested people or restricted donor fields",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "PRD §Secretariat Benefactor View and TechSpec §Benefactors require donor_pledges only. The operational query has an explicit allowlist and excludes CPF, address, CEP, receipt fields, export, and deletion; scholarship benefactors are not queried."
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 21,
+      "hunk": null,
+      "candidate": "Concurrent final-document reissues could allocate duplicate versions",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Task 03 requirement 4 and TechSpec §Final Documents are met: persistence locks the application row before finding the latest per-kind version, and the migration enforces unique application_id/kind/version."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 815,
+      "hunk": null,
+      "candidate": "Secretariat could obtain an unissued, historic, rejected-contract, or path-addressed final document",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Task 03 requirements 6–8 and TechSpec §Final Documents are met: reads accept persisted IDs, resolve storage_path server-side, verify current outcome-eligible versions for Secretaria, and reserve history for Administrators."
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 94,
+      "hunk": null,
+      "candidate": "A direct scholarship submission or upload ticket could bypass required document categories",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Task 05 requirements 5–12 and TechSpec §Scholarship Upload Removal are met: the schema requires every field, validateDocumentCategories checks each fixed and indexed category below a pending UUID path, and createUploadUrl applies a fixed or strict-index allowlist with sanitized filenames."
+    },
+    {
+      "file": "app/page.tsx",
+      "line": 346,
+      "hunk": null,
+      "candidate": "Public hierarchy, canonical links, or legacy continuity could contradict the donor-first contract",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "PRD §Donor-First Public Hierarchy and Task 04 requirements 1–10 are met by navigation, hero, benefactor-before-scholarship bands, and quick access using canonical URLs; legacy pages use direct permanent redirects and the canonical scholarship route declares force-dynamic."
+    },
+    {
+      "file": "components/ui/seal-logo.tsx",
+      "line": 8,
+      "hunk": null,
+      "candidate": "The shared web seal could differ from the approved master or lack required semantic modes",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Task 04 requirements 12–15 are met: public/seal-arca.svg is the approved master asset, and SealLogo supports caller size/class plus distinct decorative and informative alternatives while favicon and PDF seal files remain unchanged."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

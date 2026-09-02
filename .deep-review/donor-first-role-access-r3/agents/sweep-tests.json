@@ -1,0 +1,95 @@
+{
+  "defects": [
+    {
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 152,
+      "end_line": 186,
+      "in_diff": true,
+      "hunk": "new:96",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "No test protects the Secretariat projections from sensitive-field regressions",
+      "body": "Premise: __tests__/admin-actions.test.ts:152-186 exercises getApplications only with the default Administrator mock, while app/admin/_actions/admin-actions.ts:54-69 and :121-140 add the two Secretariat-only allowlist projections → Path: a future change can remove columns/with from either Secretaria branch, or route that role through the full query, while every current test still passes → Verdict: income, documents, CPF/address/receipt data, or other restricted fields can reach a Secretariat client without a failing-capable test. Add role-specific tests that resolve requireCapability as Secretaria and assert the exact application/student and donor query column allowlists (including excluded keys).",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/admin/_actions/admin-actions.ts:51-80 contains a Secretaria-only application projection → Path: requireCapability resolves as Secretaria → Verdict: the restricted branch is the privacy boundary.",
+        "Premise: app/admin/_actions/admin-actions.ts:117-147 contains a separate Secretaria donor projection → Path: donor list runs for Secretaria → Verdict: the restricted branch is the donor privacy boundary.",
+        "Premise: __tests__/admin-actions.test.ts:92-109,152-186 always resolve authorization as admin → Path: the listed getApplications tests execute → Verdict: neither Secretaria projection is exercised.",
+        "Premise: .compozy/tasks/donor-first-role-access/task_02.md:107-119 requires exact allowlists and excluded fields → Path: a sensitive field is added to either projection → Verdict: the current suite has no assertion to fail."
+      ]
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 9,
+      "end_line": 66,
+      "in_diff": true,
+      "hunk": "new:1",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Immutable issued-document behavior has no failing-capable tests",
+      "body": "Premise: lib/documents/issued-documents.ts:9-66 introduces storage writes, compensating deletion, per-kind versioning, current-document selection, and history reads, but no test imports this module or the new getCurrentIssuedDocuments/getIssuedDocumentUrl/getIssuedDocumentHistory actions → Path: deleting the advisory lock, version increment, compensation remove, eligibility filtering, or Secretariat old-version check would leave the existing export-PDF assertions green → Verdict: the new immutable-document contract can regress silently, including duplicate versions, orphaned PDFs, and unauthorized final-document access. Add focused persistence/action tests for concurrent issuance, put/DB/cleanup failures, status eligibility, current-versus-history visibility, and download-ticket authorization/scope.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:16-43 implements write, version, and cleanup behavior → Path: a persistence failure or reissue occurs → Verdict: this new behavior needs direct failing-capable coverage.",
+        "Premise: app/admin/_actions/admin-actions.ts:794-824 exports issued-document lookup, ticket, and history actions → Path: __tests__/admin-actions.test.ts imports actions at lines 64-81 → Verdict: none of those new actions are tested.",
+        "Premise: __tests__/admin-actions.test.ts:490-565 only asserts rendered PDF tokens and filename → Path: exportDecision succeeds with broken persistence → Verdict: artifact metadata and compensation regressions pass.",
+        "Premise: .compozy/tasks/donor-first-role-access/task_03.md:95-118 requires versioning, compensation, authorization, current-document, and ticket coverage → Path: Task 03 is accepted → Verdict: the required tests are absent."
+      ]
+    },
+    {
+      "file": "__tests__/form-actions.test.ts",
+      "line": 63,
+      "end_line": 114,
+      "in_diff": true,
+      "hunk": "old:9",
+      "category": "potential-issue",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Upload tests cover only one category and not the required allowlist boundary",
+      "body": "Premise: the changed createUploadUrl gate at app/form/_actions/form-actions.ts:32-37 accepts eight fixed categories plus two indexed student forms, but __tests__/form-actions.test.ts:63-114 calls it only with rg_pai and has no invalid-category assertion → Path: a typo or future edit that omits certidao, recibo_pagamento, rg_aluno_N, or certidao_nascimento_N (or accepts traversal/separator/non-numeric categories) passes the suite; the client then cannot upload a required document or can receive an unintended ticket → Verdict: the client/server upload contract has no failing-capable protection for most required categories. Table-test every accepted fixed/indexed category and reject unknown, traversal, separator, and malformed-index categories.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/form/_actions/form-actions.ts:32-37 is the changed server allowlist gate → Path: createUploadUrl receives a category → Verdict: category acceptance controls ticket issuance.",
+        "Premise: app/form/_components/step-2-students.tsx:188,202 uses both indexed student category families → Path: a student uploads either document → Verdict: both allowlist forms must remain accepted.",
+        "Premise: __tests__/form-actions.test.ts:63-114 calls createUploadUrl successfully only with rg_pai → Path: another fixed or indexed category regresses → Verdict: the current tests remain green.",
+        "Premise: .compozy/tasks/donor-first-role-access/task_05.md:113-119 requires accepted and rejected category coverage → Path: the upload task is accepted → Verdict: the test matrix is incomplete."
+      ]
+    },
+    {
+      "file": "__tests__/submit-application.test.ts",
+      "line": 138,
+      "end_line": 148,
+      "in_diff": true,
+      "hunk": "new:68",
+      "category": "potential-issue",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Birth-certificate persistence is not asserted separately from student identity",
+      "body": "Premise: app/form/_actions/form-actions.ts:288-289 now persists two distinct student-document categories, whereas __tests__/submit-application.test.ts:138-148 asserts only the rg_aluno row → Path: removing or mislabelling the certidao_nascimento addDocs call still satisfies the valid-input test and the sole student-document assertion → Verdict: a required student birth certificate can be dropped or linked incorrectly without a test failure. Assert both rows' categories, final paths, and student_id for one student.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/form/_actions/form-actions.ts:285-290 makes identity and birth certificate separate persistence calls → Path: a complete student submission is stored → Verdict: each row requires an independent assertion.",
+        "Premise: __tests__/submit-application.test.ts:138-148 locates only categoria === rg_aluno → Path: certidao_nascimento is removed or mislabelled → Verdict: the test still passes.",
+        "Premise: .compozy/tasks/donor-first-role-access/task_05.md:124-125 requires distinct metadata and student linkage → Path: Task 05 is accepted → Verdict: the birth-certificate invariant is unprotected."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "__tests__/staff-and-observations.test.ts",
+      "line": 42,
+      "hunk": "new:1",
+      "candidate": "Tests do not assert read ordering for application observations.",
+      "reason": "duplicate-within-job",
+      "rule_ids": [],
+      "note": "This is part of the broader missing role/action matrix and immutable-document test coverage already reported; a separate finding would not identify a distinct root regression class."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

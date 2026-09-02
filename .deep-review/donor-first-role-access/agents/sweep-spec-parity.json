@@ -1,0 +1,137 @@
+{
+  "defects": [
+    {
+      "file": "app/page.tsx",
+      "line": 397,
+      "end_line": 405,
+      "in_diff": true,
+      "hunk": "@@ -397,10 +397,10 @@",
+      "category": "potential-issue",
+      "severity": "critical",
+      "quick_win": false,
+      "title": "Landing page still makes scholarship the primary journey",
+      "body": "Premise: the primary navigation lists \"Solicitar bolsa\" before \"Seja um benfeitor\", and the highlighted navigation CTA still targets `/solicitar-bolsa` at app/page.tsx:397-405; the hero primary CTA and the scholarship band also precede the benefactor band at app/page.tsx:423 and app/page.tsx:518-573, while quick access puts the scholarship link first at app/page.tsx:636-637 → Path: every visitor arriving on `/` follows the visible primary CTA/order → Verdict: the implemented public hierarchy contradicts the donor-first navigation, hero, content-band, and quick-access contract.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/_techspec.md — Landing and Public Content",
+      "suggestion": "Reorder the navigation, CTAs, DOM bands, and quick-access links so the benefactor route is consistently primary and scholarship remains a visible secondary route.",
+      "evidence": [
+        "Premise: the primary navigation lists \"Solicitar bolsa\" before \"Seja um benfeitor\", and the highlighted navigation CTA still targets `/solicitar-bolsa` at app/page.tsx:397-405; the hero primary CTA and the scholarship band also precede the benefactor band at app/page.tsx:423 and app/page.tsx:518-573, while quick access puts the scholarship link first at app/page.tsx:636-637 → Path: every visitor arriving on `/` follows the visible primary CTA/order → Verdict: the implemented public hierarchy contradicts the donor-first navigation, hero, content-band, and quick-access contract."
+      ]
+    },
+    {
+      "file": "app/admin/solicitacoes/client.tsx",
+      "line": 81,
+      "end_line": 105,
+      "in_diff": true,
+      "hunk": "@@ -69,6 +69,37 @@",
+      "category": "potential-issue",
+      "severity": "critical",
+      "quick_win": false,
+      "title": "Secretariat workflow omits observations and issued documents",
+      "body": "Premise: the Secretariat application client renders only identity, status, contact, students, and decision date at app/admin/solicitacoes/client.tsx:81-105; it imports neither observation actions nor issued-document actions. The only issued-document component is mounted inside the Administrator-only `ApplicationCard` path at app/admin/_components/application-card.tsx:305-310 → Path: a Secretariat user opens `/admin/solicitacoes` and receives `SecretariatApplicationsClient` from app/admin/solicitacoes/page.tsx:19-22 → Verdict: Secretariat staff cannot view/add chronological observations or consult/download Administrator-issued final documents, so the required operational follow-up journey is unavailable.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/_prd.md — Secretariat Operational Application View; Final Document Access",
+      "suggestion": "Add a restricted application-detail workflow for Secretariat that displays observation history, creates concise observations, and lists/downloads only current eligible issued documents.",
+      "evidence": [
+        "Premise: the Secretariat application client renders only identity, status, contact, students, and decision date at app/admin/solicitacoes/client.tsx:81-105; it imports neither observation actions nor issued-document actions. The only issued-document component is mounted inside the Administrator-only `ApplicationCard` path at app/admin/_components/application-card.tsx:305-310 → Path: a Secretariat user opens `/admin/solicitacoes` and receives `SecretariatApplicationsClient` from app/admin/solicitacoes/page.tsx:19-22 → Verdict: Secretariat staff cannot view/add chronological observations or consult/download Administrator-issued final documents, so the required operational follow-up journey is unavailable."
+      ]
+    },
+    {
+      "file": "lib/auth/authorization.ts",
+      "line": 29,
+      "end_line": 35,
+      "in_diff": true,
+      "hunk": "@@ -1,0 +1,83 @@",
+      "category": "potential-issue",
+      "severity": "critical",
+      "quick_win": true,
+      "title": "Administrators are incorrectly granted observation creation",
+      "body": "Premise: `requireCapability` grants every capability to `admin` because it rejects only non-admin users not in `SECRETARIAT_CAPABILITIES` at lib/auth/authorization.ts:74-79; `addApplicationObservation` therefore accepts an Administrator through `requireCapability(\"observations:create\")` at app/admin/_actions/observation-actions.ts:18-29 → Path: an Administrator invokes the Server Action directly → Verdict: the server permits an action that the capability matrix expressly reserves for Secretariat, violating the role contract even though no administrator UI exposes it.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/_techspec.md — Capability Matrix / Observations",
+      "suggestion": "Make observation creation explicitly require `staff.role === \"secretaria\"` (or model a Secretariat-only guard) while keeping observation reads available to both roles.",
+      "evidence": [
+        "Premise: `requireCapability` grants every capability to `admin` because it rejects only non-admin users not in `SECRETARIAT_CAPABILITIES` at lib/auth/authorization.ts:74-79; `addApplicationObservation` therefore accepts an Administrator through `requireCapability(\"observations:create\")` at app/admin/_actions/observation-actions.ts:18-29 → Path: an Administrator invokes the Server Action directly → Verdict: the server permits an action that the capability matrix expressly reserves for Secretariat, violating the role contract even though no administrator UI exposes it."
+      ]
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 19,
+      "end_line": 35,
+      "in_diff": true,
+      "hunk": "@@ -1,0 +1,64 @@",
+      "category": "potential-issue",
+      "severity": "critical",
+      "quick_win": false,
+      "title": "Issued-document version allocation is not serialized",
+      "body": "Premise: persistence reads the latest version and inserts the next version inside a normal transaction at lib/documents/issued-documents.ts:19-35, but it never locks the application row or otherwise serializes issuances → Path: two Administrator reissues for the same application/kind run concurrently, both read version N, then both attempt to insert N+1 → Verdict: one request fails the uniqueness constraint after a PDF was written, rather than both producing monotonic versions; this violates the required serialized issuance contract.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/_techspec.md — Final Document Issuance / Final Documents",
+      "suggestion": "Lock the application row (or use an equivalent per-application serialization mechanism) before reading/inserting the version, and cover simultaneous reissuance with a test.",
+      "evidence": [
+        "Premise: persistence reads the latest version and inserts the next version inside a normal transaction at lib/documents/issued-documents.ts:19-35, but it never locks the application row or otherwise serializes issuances → Path: two Administrator reissues for the same application/kind run concurrently, both read version N, then both attempt to insert N+1 → Verdict: one request fails the uniqueness constraint after a PDF was written, rather than both producing monotonic versions; this violates the required serialized issuance contract."
+      ]
+    },
+    {
+      "file": "app/solicitar-bolsa/page.tsx",
+      "line": 7,
+      "end_line": 9,
+      "in_diff": true,
+      "hunk": "@@ -1,0 +1,10 @@",
+      "category": "potential-issue",
+      "severity": "critical",
+      "quick_win": false,
+      "title": "Canonical scholarship route lost the shared public seal",
+      "body": "Premise: the canonical page renders only `ScholarshipForm` or `FormUnavailableMessage` at app/solicitar-bolsa/page.tsx:7-9. The former public header and its inline seal remain in `app/form/layout.tsx:28-116`, but that layout belongs only to the legacy `/form` segment, whose page now permanently redirects at app/form/page.tsx:1-4 → Path: visitors use the canonical `/solicitar-bolsa` route → Verdict: the canonical public scholarship surface does not render `SealLogo`/the approved web seal and the old inline seal remains executable source, contrary to the shared-seal consolidation contract.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/_techspec.md — Shared Web Logo / Logo Consolidation",
+      "suggestion": "Move the shared scholarship layout/header to the canonical route and replace the inline SVG with `SealLogo`; leave the legacy segment as a redirect-only page.",
+      "evidence": [
+        "Premise: the canonical page renders only `ScholarshipForm` or `FormUnavailableMessage` at app/solicitar-bolsa/page.tsx:7-9. The former public header and its inline seal remain in `app/form/layout.tsx:28-116`, but that layout belongs only to the legacy `/form` segment, whose page now permanently redirects at app/form/page.tsx:1-4 → Path: visitors use the canonical `/solicitar-bolsa` route → Verdict: the canonical public scholarship surface does not render `SealLogo`/the approved web seal and the old inline seal remains executable source, contrary to the shared-seal consolidation contract."
+      ]
+    },
+    {
+      "file": "app/page.tsx",
+      "line": 390,
+      "end_line": 439,
+      "in_diff": true,
+      "hunk": "@@ -1,0 +1,654 @@",
+      "category": "potential-issue",
+      "severity": "critical",
+      "quick_win": false,
+      "title": "Landing page still uses duplicated inline seal artwork",
+      "body": "Premise: the landing uses inline `<svg><use href=\"#seal-art\" /></svg>` instances for its header and hero at app/page.tsx:390-439, and another in the footer at app/page.tsx:604-608, rather than `SealLogo` → Path: landing visitors render these independent inline assets despite `public/seal-arca.svg` existing → Verdict: the landing does not consume the approved single web-page seal asset, so the required logo consolidation is incomplete and can drift from the approved master.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/_techspec.md — Logo Consolidation",
+      "suggestion": "Replace all executable landing seal SVG instances with appropriately decorative or informative `SealLogo` calls and remove the inline artwork definition.",
+      "evidence": [
+        "Premise: the landing uses inline `<svg><use href=\"#seal-art\" /></svg>` instances for its header and hero at app/page.tsx:390-439, and another in the footer at app/page.tsx:604-608, rather than `SealLogo` → Path: landing visitors render these independent inline assets despite `public/seal-arca.svg` existing → Verdict: the landing does not consume the approved single web-page seal asset, so the required logo consolidation is incomplete and can drift from the approved master."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "public/seal-arca.svg",
+      "line": null,
+      "hunk": "@@ -1,0 +1 @@",
+      "candidate": "Approved executable seal asset differs from Open Design master",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "sha256sum of public/seal-arca.svg and docs/design/opendesign/assets/seal-arca-master.svg is identical."
+    },
+    {
+      "file": "app/benfeitor/page.tsx",
+      "line": 1,
+      "hunk": "@@ -1,0 +1,5 @@",
+      "candidate": "Legacy benefactor route is not a direct permanent redirect",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The route calls Next permanentRedirect directly to /seja-um-benfeitor; it satisfies the redirect topology."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

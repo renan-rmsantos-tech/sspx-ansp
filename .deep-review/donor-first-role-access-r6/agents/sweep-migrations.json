@@ -1,0 +1,37 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 26,
+      "hunk": "new:1-40",
+      "candidate": "Role constraint could lock out legacy staff during migration",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The migration adds nullable role, adds active with a true default, backfills every null role to admin, then adds the check and only afterward sets NOT NULL. This exactly matches the required compatibility sequence in _techspec.md:249-255."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 1,
+      "hunk": "new:1-40",
+      "candidate": "New observation and issued-document schema is missing referential or integrity protections",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The migration supplies required FKs, the specified application cascade and author restriction, kind/positive-value checks, uniqueness for application/kind/version, and the requested read indexes; schema.ts and 0006_snapshot.json model the same structures."
+    },
+    {
+      "file": "drizzle/meta/_journal.json",
+      "line": 46,
+      "hunk": "new:46-52",
+      "candidate": "Migration is not registered sequentially from the existing database state",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Journal registration is idx 6 after 0005, and 0005 contains only the earlier donor_pledges additive alteration; 0006 neither recreates nor drops applications or admin_users."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

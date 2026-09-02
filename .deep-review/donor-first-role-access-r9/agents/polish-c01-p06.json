@@ -1,0 +1,26 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1,
+      "hunk": "new:1-1200",
+      "candidate": "Hand-maintain generated Drizzle snapshot formatting or structure",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "The assigned hunk is the generated Drizzle schema snapshot; jq confirms valid JSON and its admin_users, application_observations, and issued_documents metadata mirrors the migration-owned schema."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {
+        "file": "drizzle/meta/0006_snapshot.json",
+        "hunk": "new:1-1200",
+        "checks": ["polish"],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

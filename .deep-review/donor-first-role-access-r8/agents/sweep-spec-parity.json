@@ -1,0 +1,64 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 23,
+      "hunk": null,
+      "candidate": "Concurrent final-document reissues could duplicate a version",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The metadata transaction locks the application row before reading the latest version, and the migration enforces unique (application_id, kind, version). This meets TechSpec §Final Documents issuance rules."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 61,
+      "hunk": null,
+      "candidate": "Secretariat application query could expose restricted family data",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The secretaria branch uses a server-side allowlist for only the specified application, parent-contact, decision-date, and student identity fields; it does not fetch the complete application row."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 815,
+      "hunk": null,
+      "candidate": "Secretariat could download an unissued, historical, or ineligible final document",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Downloads accept a persisted issued-document ID, resolve storage_path server-side, and the secretaria path compares that ID with the current status-eligible document set. History remains guarded by requireAdmin."
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 34,
+      "hunk": null,
+      "candidate": "Direct scholarship submission could bypass required document categories",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The unconditional Zod requirements execute before school-year lookup and validateDocumentCategories separately verifies every fixed and indexed student category below a pending UUID path."
+    },
+    {
+      "file": "app/page.tsx",
+      "line": 346,
+      "hunk": null,
+      "candidate": "Donor-first public ordering or legacy route transition could violate the public contract",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Navigation, hero, content bands, and quick access put the canonical benefactor route before scholarship; legacy route pages are direct permanent redirects and the canonical scholarship page retains force-dynamic."
+    },
+    {
+      "file": "components/ui/seal-logo.tsx",
+      "line": 8,
+      "hunk": null,
+      "candidate": "The executable seal might differ from the approved Open Design master or lack semantic modes",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "public/seal-arca.svg byte-matches docs/design/opendesign/assets/seal-arca-master.svg; SealLogo forwards caller size/class and uses empty alt plus aria-hidden only for decorative use."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

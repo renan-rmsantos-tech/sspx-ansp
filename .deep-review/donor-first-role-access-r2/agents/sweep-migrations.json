@@ -1,0 +1,47 @@
+{
+  "defects": [
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 21,
+      "end_line": 35,
+      "in_diff": true,
+      "hunk": "new:1-64",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Version allocation races with the unique migration constraint",
+      "body": "Premise: `persistIssuedDocument` reads the latest version and later inserts `latest + 1` without locking the application row or otherwise serializing issuances. → Path: two administrators reissue the same document kind for the same application concurrently; both transactions read the same latest version, then the `issued_documents_application_kind_version_unique` constraint added by the migration accepts one insert and rejects the other. → Verdict: a legitimate concurrent issuance fails after its PDF has already been written, contrary to the required locked version allocation. Lock the application row (or allocate the version atomically) in the metadata transaction before reading/inserting.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:21-35 reads the current maximum version and inserts its successor without a row lock or atomic allocation. → Path: two concurrent reissues for one application and kind both read the same version before either inserts. → Verdict: the unique constraint rejects one otherwise valid issuance after its PDF has been written.",
+        "drizzle/0006_flimsy_spacker_dave.sql:38 → uniqueness enforces one version but cannot serialize the preceding read.",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:413-420 → issuance requires version allocation while the application row is locked and compensation only after metadata failure."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 26,
+      "hunk": "new:1-40",
+      "candidate": "Role migration could reject or orphan populated legacy admin accounts",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The migration first adds nullable role, backfills every null role to admin, then adds the check and NOT NULL constraint; ativo is added with a true default. Existing user IDs, hashes, and decision references are untouched."
+    },
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1,
+      "hunk": "new:1-1596",
+      "candidate": "Generated Drizzle snapshot is inconsistent with the migration chain",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "The generated snapshot parses as JSON and its prevId matches 0005_snapshot.json; the journal adds the sequential index 6 entry for 0006."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

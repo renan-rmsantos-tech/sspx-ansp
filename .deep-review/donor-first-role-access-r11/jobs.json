@@ -1,0 +1,1834 @@
+{
+  "jobs": [
+    {
+      "label": "cohort-c01",
+      "kind": "cohort",
+      "lane": "defect",
+      "coverage_check": "defect",
+      "required_hunks": [
+        {
+          "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+          "hunk": "new:1-330"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+          "hunk": "new:1-11"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+          "hunk": "new:1-707"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md",
+          "hunk": "new:1-67"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md",
+          "hunk": "new:1-76"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/adrs/adr-003.md",
+          "hunk": "new:1-69"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/adrs/adr-004.md",
+          "hunk": "new:1-65"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/adrs/adr-005.md",
+          "hunk": "new:1-68"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/adrs/adr-006.md",
+          "hunk": "new:1-63"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/adrs/adr-007.md",
+          "hunk": "new:1-62"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/adrs/adr-008.md",
+          "hunk": "new:1-63"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/task_01.md",
+          "hunk": "new:1-124"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/task_02.md",
+          "hunk": "new:1-139"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/task_03.md",
+          "hunk": "new:1-131"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/task_04.md",
+          "hunk": "new:1-138"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/task_05.md",
+          "hunk": "new:1-143"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:13-14"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:16-17"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:22-23"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:25-26"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:39-43"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:45-45"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:74-76"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:95-95"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:97-97"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:99-106"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:191-240"
+        },
+        {
+          "file": "__tests__/application-schema.test.ts",
+          "hunk": "new:24-24"
+        },
+        {
+          "file": "__tests__/application-schema.test.ts",
+          "hunk": "new:39-40"
+        },
+        {
+          "file": "__tests__/application-schema.test.ts",
+          "hunk": "new:138-138"
+        },
+        {
+          "file": "__tests__/application-schema.test.ts",
+          "hunk": "new:151-167"
+        },
+        {
+          "file": "__tests__/auth-actions.test.ts",
+          "hunk": "new:48-48"
+        },
+        {
+          "file": "__tests__/auth-actions.test.ts",
+          "hunk": "new:68-68"
+        },
+        {
+          "file": "__tests__/auth-actions.test.ts",
+          "hunk": "new:83-96"
+        },
+        {
+          "file": "__tests__/authorization.test.ts",
+          "hunk": "new:1-124"
+        },
+        {
+          "file": "__tests__/form-actions.test.ts",
+          "hunk": "old:9-14"
+        },
+        {
+          "file": "__tests__/form-actions.test.ts",
+          "hunk": "new:107-118"
+        },
+        {
+          "file": "__tests__/form-page.test.tsx",
+          "hunk": "new:15-15"
+        },
+        {
+          "file": "__tests__/form-page.test.tsx",
+          "hunk": "new:19-19"
+        },
+        {
+          "file": "__tests__/helpers/fake-db.ts",
+          "hunk": "new:123-123"
+        },
+        {
+          "file": "__tests__/issued-documents.test.ts",
+          "hunk": "new:1-36"
+        },
+        {
+          "file": "__tests__/export-decision.test.tsx",
+          "hunk": "new:23-26"
+        },
+        {
+          "file": "__tests__/scholarship-form.test.tsx",
+          "hunk": "old:15-21"
+        },
+        {
+          "file": "__tests__/solicitacoes-client.test.tsx",
+          "hunk": "new:11-15"
+        },
+        {
+          "file": "__tests__/solicitacoes-client.test.tsx",
+          "hunk": "new:23-27"
+        },
+        {
+          "file": "__tests__/solicitacoes-client.test.tsx",
+          "hunk": "new:47-58"
+        },
+        {
+          "file": "__tests__/solicitacoes-client.test.tsx",
+          "hunk": "new:101-102"
+        },
+        {
+          "file": "__tests__/staff-and-observations.test.ts",
+          "hunk": "new:1-47"
+        },
+        {
+          "file": "__tests__/step-1-applicant.test.tsx",
+          "hunk": "old:7-12"
+        },
+        {
+          "file": "__tests__/submit-application.test.ts",
+          "hunk": "new:58-58"
+        },
+        {
+          "file": "__tests__/submit-application.test.ts",
+          "hunk": "new:61-61"
+        },
+        {
+          "file": "__tests__/submit-application.test.ts",
+          "hunk": "new:68-69"
+        },
+        {
+          "file": "__tests__/submit-application.test.ts",
+          "hunk": "new:160-160"
+        },
+        {
+          "file": "__tests__/submit-application.test.ts",
+          "hunk": "new:170-170"
+        },
+        {
+          "file": "__tests__/submit-application.test.ts",
+          "hunk": "new:232-242"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:4-8"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "old:5-5"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:13-13"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:29-29"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:43-45"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:47-53"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:61-61"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:64-83"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:128-128"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:131-152"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:237-242"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:494-494"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:549-555"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:744-744"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:804-810"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:814-843"
+        },
+        {
+          "file": "app/admin/_actions/observation-actions.ts",
+          "hunk": "new:1-37"
+        },
+        {
+          "file": "app/admin/_actions/staff-actions.ts",
+          "hunk": "new:1-76"
+        },
+        {
+          "file": "app/admin/_components/sidebar.tsx",
+          "hunk": "new:7-7"
+        },
+        {
+          "file": "app/admin/_components/sidebar.tsx",
+          "hunk": "new:35-40"
+        },
+        {
+          "file": "app/admin/_components/sidebar.tsx",
+          "hunk": "new:94-94"
+        },
+        {
+          "file": "app/admin/_components/sidebar.tsx",
+          "hunk": "new:190-193"
+        },
+        {
+          "file": "app/admin/_components/sidebar.tsx",
+          "hunk": "new:199-199"
+        },
+        {
+          "file": "app/admin/_components/sidebar.tsx",
+          "hunk": "new:220-220"
+        },
+        {
+          "file": "app/admin/_components/application-card.tsx",
+          "hunk": "new:7-8"
+        },
+        {
+          "file": "app/admin/_components/application-card.tsx",
+          "hunk": "new:311-311"
+        },
+        {
+          "file": "app/admin/_components/issued-documents.tsx",
+          "hunk": "new:1-14"
+        },
+        {
+          "file": "app/admin/_components/application-observations.tsx",
+          "hunk": "new:1-10"
+        },
+        {
+          "file": "app/admin/benfeitores/client.tsx",
+          "hunk": "new:77-102"
+        },
+        {
+          "file": "app/admin/benfeitores/page.tsx",
+          "hunk": "new:4-5"
+        },
+        {
+          "file": "app/admin/benfeitores/page.tsx",
+          "hunk": "new:8-8"
+        },
+        {
+          "file": "app/admin/benfeitores/page.tsx",
+          "hunk": "new:20-24"
+        },
+        {
+          "file": "app/admin/layout.tsx",
+          "hunk": "new:3-3"
+        },
+        {
+          "file": "app/admin/layout.tsx",
+          "hunk": "new:5-5"
+        },
+        {
+          "file": "app/admin/layout.tsx",
+          "hunk": "new:10-10"
+        },
+        {
+          "file": "app/admin/layout.tsx",
+          "hunk": "new:15-15"
+        },
+        {
+          "file": "app/admin/solicitacoes/client.tsx",
+          "hunk": "new:3-5"
+        },
+        {
+          "file": "app/admin/solicitacoes/client.tsx",
+          "hunk": "new:71-140"
+        },
+        {
+          "file": "app/admin/solicitacoes/page.tsx",
+          "hunk": "new:2-7"
+        },
+        {
+          "file": "app/admin/solicitacoes/page.tsx",
+          "hunk": "new:10-10"
+        },
+        {
+          "file": "app/admin/solicitacoes/page.tsx",
+          "hunk": "new:19-23"
+        },
+        {
+          "file": "app/admin/usuarios/client.tsx",
+          "hunk": "new:1-17"
+        },
+        {
+          "file": "app/admin/usuarios/page.tsx",
+          "hunk": "new:1-9"
+        },
+        {
+          "file": "app/admin/ano-letivo/page.tsx",
+          "hunk": "new:3-3"
+        },
+        {
+          "file": "app/admin/ano-letivo/page.tsx",
+          "hunk": "new:6-6"
+        },
+        {
+          "file": "app/admin/cabecalho/page.tsx",
+          "hunk": "new:3-3"
+        },
+        {
+          "file": "app/admin/cabecalho/page.tsx",
+          "hunk": "new:6-6"
+        },
+        {
+          "file": "app/admin/contrato/page.tsx",
+          "hunk": "new:3-3"
+        },
+        {
+          "file": "app/admin/contrato/page.tsx",
+          "hunk": "new:6-6"
+        },
+        {
+          "file": "app/admin/textos/page.tsx",
+          "hunk": "new:3-3"
+        },
+        {
+          "file": "app/admin/textos/page.tsx",
+          "hunk": "new:6-6"
+        },
+        {
+          "file": "app/benfeitor/page.tsx",
+          "hunk": "new:1-1"
+        },
+        {
+          "file": "app/benfeitor/page.tsx",
+          "hunk": "new:4-4"
+        },
+        {
+          "file": "app/form/_actions/form-actions.ts",
+          "hunk": "old:22-22"
+        },
+        {
+          "file": "app/form/_actions/form-actions.ts",
+          "hunk": "new:32-60"
+        },
+        {
+          "file": "app/form/_actions/form-actions.ts",
+          "hunk": "new:99-99"
+        },
+        {
+          "file": "app/form/_actions/form-actions.ts",
+          "hunk": "new:103-103"
+        },
+        {
+          "file": "app/form/_actions/form-actions.ts",
+          "hunk": "new:130-133"
+        },
+        {
+          "file": "app/form/_actions/form-actions.ts",
+          "hunk": "new:307-307"
+        },
+        {
+          "file": "app/form/_actions/form-actions.ts",
+          "hunk": "new:315-316"
+        },
+        {
+          "file": "app/form/_actions/form-actions.ts",
+          "hunk": "new:326-330"
+        },
+        {
+          "file": "app/form/_actions/form-actions.ts",
+          "hunk": "new:349-350"
+        },
+        {
+          "file": "app/form/_components/file-upload.tsx",
+          "hunk": "old:26-28"
+        },
+        {
+          "file": "app/form/_components/file-upload.tsx",
+          "hunk": "old:46-47"
+        },
+        {
+          "file": "app/form/_components/file-upload.tsx",
+          "hunk": "old:160-171"
+        },
+        {
+          "file": "app/form/_components/scholarship-form.tsx",
+          "hunk": "old:18-18"
+        },
+        {
+          "file": "app/form/_components/scholarship-form.tsx",
+          "hunk": "new:52-52"
+        },
+        {
+          "file": "app/form/_components/scholarship-form.tsx",
+          "hunk": "new:102-102"
+        },
+        {
+          "file": "app/form/_components/scholarship-form.tsx",
+          "hunk": "new:127-127"
+        },
+        {
+          "file": "app/form/_components/scholarship-form.tsx",
+          "hunk": "new:137-138"
+        },
+        {
+          "file": "app/form/_components/scholarship-form.tsx",
+          "hunk": "new:283-284"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "old:8-11"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:83-83"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:94-94"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:139-139"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:146-146"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:183-183"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:190-190"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:200-200"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:207-207"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:256-256"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:263-263"
+        },
+        {
+          "file": "app/form/_components/step-2-students.tsx",
+          "hunk": "old:9-12"
+        },
+        {
+          "file": "app/form/_components/step-2-students.tsx",
+          "hunk": "new:43-45"
+        },
+        {
+          "file": "app/form/_components/step-2-students.tsx",
+          "hunk": "new:82-83"
+        },
+        {
+          "file": "app/form/_components/step-2-students.tsx",
+          "hunk": "new:188-188"
+        },
+        {
+          "file": "app/form/_components/step-2-students.tsx",
+          "hunk": "new:195-195"
+        },
+        {
+          "file": "app/form/_components/step-2-students.tsx",
+          "hunk": "new:202-202"
+        },
+        {
+          "file": "app/form/_components/step-2-students.tsx",
+          "hunk": "new:209-209"
+        },
+        {
+          "file": "app/form/_components/step-3-income.tsx",
+          "hunk": "old:10-13"
+        },
+        {
+          "file": "app/form/_components/step-3-income.tsx",
+          "hunk": "new:93-93"
+        },
+        {
+          "file": "app/form/_components/step-3-income.tsx",
+          "hunk": "new:104-104"
+        },
+        {
+          "file": "app/form/_components/step-4-expenses.tsx",
+          "hunk": "old:9-12"
+        },
+        {
+          "file": "app/form/_components/step-4-expenses.tsx",
+          "hunk": "new:78-78"
+        },
+        {
+          "file": "app/form/_components/step-4-expenses.tsx",
+          "hunk": "new:93-93"
+        },
+        {
+          "file": "app/form/layout.tsx",
+          "hunk": "new:3-3"
+        },
+        {
+          "file": "app/form/layout.tsx",
+          "hunk": "new:30-30"
+        },
+        {
+          "file": "app/form/layout.tsx",
+          "hunk": "old:190-204"
+        },
+        {
+          "file": "app/form/page.tsx",
+          "hunk": "new:1-1"
+        },
+        {
+          "file": "app/form/page.tsx",
+          "hunk": "new:3-4"
+        },
+        {
+          "file": "app/login/_actions/auth-actions.ts",
+          "hunk": "new:61-65"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:4-4"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "old:333-384"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:338-338"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:346-347"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:350-351"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:370-371"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:374-375"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:380-380"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:458-481"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:496-496"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "old:551-574"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:533-533"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:546-546"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:567-567"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:574-575"
+        },
+        {
+          "file": "app/seja-um-benfeitor/page.tsx",
+          "hunk": "new:1-13"
+        },
+        {
+          "file": "app/solicitar-bolsa/page.tsx",
+          "hunk": "new:1-16"
+        },
+        {
+          "file": "app/solicitar-bolsa/layout.tsx",
+          "hunk": "new:1-104"
+        },
+        {
+          "file": "components/ui/seal-logo.tsx",
+          "hunk": "new:4-4"
+        },
+        {
+          "file": "components/ui/seal-logo.tsx",
+          "hunk": "new:7-8"
+        },
+        {
+          "file": "components/ui/seal-logo.tsx",
+          "hunk": "new:10-11"
+        },
+        {
+          "file": "components/ui/seal-logo.tsx",
+          "hunk": "old:12-16"
+        },
+        {
+          "file": "components/ui/seal-logo.tsx",
+          "hunk": "new:15-17"
+        },
+        {
+          "file": "docs/changes/2026-07-27.md",
+          "hunk": "new:1-1"
+        },
+        {
+          "file": "docs/changes/2026-07-27.md",
+          "hunk": "new:6-7"
+        },
+        {
+          "file": "docs/changes/2026-07-27.md",
+          "hunk": "new:9-9"
+        },
+        {
+          "file": "docs/changes/2026-07-27.md",
+          "hunk": "new:11-12"
+        },
+        {
+          "file": "docs/changes/2026-07-27.md",
+          "hunk": "old:11-11"
+        },
+        {
+          "file": "docs/changes/2026-07-27.md",
+          "hunk": "new:15-18"
+        },
+        {
+          "file": "drizzle/0006_flimsy_spacker_dave.sql",
+          "hunk": "new:1-40"
+        },
+        {
+          "file": "drizzle/meta/0006_snapshot.json",
+          "hunk": "new:1-1596"
+        },
+        {
+          "file": "drizzle/meta/_journal.json",
+          "hunk": "new:46-52"
+        },
+        {
+          "file": "lib/auth/authorization.ts",
+          "hunk": "new:1-83"
+        },
+        {
+          "file": "lib/db/schema.ts",
+          "hunk": "new:1-1"
+        },
+        {
+          "file": "lib/db/schema.ts",
+          "hunk": "new:4-4"
+        },
+        {
+          "file": "lib/db/schema.ts",
+          "hunk": "new:26-27"
+        },
+        {
+          "file": "lib/db/schema.ts",
+          "hunk": "new:31-33"
+        },
+        {
+          "file": "lib/db/schema.ts",
+          "hunk": "new:341-404"
+        },
+        {
+          "file": "lib/db/schema.ts",
+          "hunk": "new:414-415"
+        },
+        {
+          "file": "lib/db/schema.ts",
+          "hunk": "new:426-455"
+        },
+        {
+          "file": "lib/documents/issued-documents.ts",
+          "hunk": "new:1-67"
+        },
+        {
+          "file": "lib/form/scholarship-uploads.ts",
+          "hunk": "old:1-9"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "old:3-3"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "old:28-29"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "old:34-38"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "new:36-37"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "new:77-77"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "new:84-84"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "new:91-91"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "new:94-94"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "new:99-99"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "new:119-119"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "new:130-130"
+        },
+        {
+          "file": "public/seal-arca.svg",
+          "hunk": "new:1-17"
+        },
+        {
+          "file": "scripts/bootstrap.ts",
+          "hunk": "new:44-49"
+        }
+      ],
+      "rule_ids": [],
+      "prompt": ".deep-review/donor-first-role-access-r11/prompts/cohort-c01.md",
+      "output": ".deep-review/donor-first-role-access-r11/agents/cohort-c01.json"
+    },
+    {
+      "label": "polish-c01-p01",
+      "kind": "polish",
+      "lane": "polish",
+      "coverage_check": "polish",
+      "required_hunks": [
+        {
+          "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+          "hunk": "new:1-330"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+          "hunk": "new:1-11"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+          "hunk": "new:1-707"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md",
+          "hunk": "new:1-67"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md",
+          "hunk": "new:1-76"
+        }
+      ],
+      "rule_ids": [],
+      "prompt": ".deep-review/donor-first-role-access-r11/prompts/polish-c01-p01.md",
+      "output": ".deep-review/donor-first-role-access-r11/agents/polish-c01-p01.json"
+    },
+    {
+      "label": "polish-c01-p02",
+      "kind": "polish",
+      "lane": "polish",
+      "coverage_check": "polish",
+      "required_hunks": [
+        {
+          "file": ".compozy/tasks/donor-first-role-access/adrs/adr-003.md",
+          "hunk": "new:1-69"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/adrs/adr-004.md",
+          "hunk": "new:1-65"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/adrs/adr-005.md",
+          "hunk": "new:1-68"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/adrs/adr-006.md",
+          "hunk": "new:1-63"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/adrs/adr-007.md",
+          "hunk": "new:1-62"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/adrs/adr-008.md",
+          "hunk": "new:1-63"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/task_01.md",
+          "hunk": "new:1-124"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/task_02.md",
+          "hunk": "new:1-139"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/task_03.md",
+          "hunk": "new:1-131"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/task_04.md",
+          "hunk": "new:1-138"
+        },
+        {
+          "file": ".compozy/tasks/donor-first-role-access/task_05.md",
+          "hunk": "new:1-143"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:13-14"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:16-17"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:22-23"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:25-26"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:39-43"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:45-45"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:74-76"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:95-95"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:97-97"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:99-106"
+        },
+        {
+          "file": "__tests__/admin-actions.test.ts",
+          "hunk": "new:191-240"
+        },
+        {
+          "file": "__tests__/application-schema.test.ts",
+          "hunk": "new:24-24"
+        },
+        {
+          "file": "__tests__/application-schema.test.ts",
+          "hunk": "new:39-40"
+        },
+        {
+          "file": "__tests__/application-schema.test.ts",
+          "hunk": "new:138-138"
+        },
+        {
+          "file": "__tests__/application-schema.test.ts",
+          "hunk": "new:151-167"
+        },
+        {
+          "file": "__tests__/auth-actions.test.ts",
+          "hunk": "new:48-48"
+        },
+        {
+          "file": "__tests__/auth-actions.test.ts",
+          "hunk": "new:68-68"
+        },
+        {
+          "file": "__tests__/auth-actions.test.ts",
+          "hunk": "new:83-96"
+        }
+      ],
+      "rule_ids": [],
+      "prompt": ".deep-review/donor-first-role-access-r11/prompts/polish-c01-p02.md",
+      "output": ".deep-review/donor-first-role-access-r11/agents/polish-c01-p02.json"
+    },
+    {
+      "label": "polish-c01-p03",
+      "kind": "polish",
+      "lane": "polish",
+      "coverage_check": "polish",
+      "required_hunks": [
+        {
+          "file": "__tests__/authorization.test.ts",
+          "hunk": "new:1-124"
+        },
+        {
+          "file": "__tests__/form-actions.test.ts",
+          "hunk": "old:9-14"
+        },
+        {
+          "file": "__tests__/form-actions.test.ts",
+          "hunk": "new:107-118"
+        },
+        {
+          "file": "__tests__/form-page.test.tsx",
+          "hunk": "new:15-15"
+        },
+        {
+          "file": "__tests__/form-page.test.tsx",
+          "hunk": "new:19-19"
+        },
+        {
+          "file": "__tests__/helpers/fake-db.ts",
+          "hunk": "new:123-123"
+        },
+        {
+          "file": "__tests__/issued-documents.test.ts",
+          "hunk": "new:1-36"
+        },
+        {
+          "file": "__tests__/export-decision.test.tsx",
+          "hunk": "new:23-26"
+        },
+        {
+          "file": "__tests__/scholarship-form.test.tsx",
+          "hunk": "old:15-21"
+        },
+        {
+          "file": "__tests__/solicitacoes-client.test.tsx",
+          "hunk": "new:11-15"
+        },
+        {
+          "file": "__tests__/solicitacoes-client.test.tsx",
+          "hunk": "new:23-27"
+        },
+        {
+          "file": "__tests__/solicitacoes-client.test.tsx",
+          "hunk": "new:47-58"
+        },
+        {
+          "file": "__tests__/solicitacoes-client.test.tsx",
+          "hunk": "new:101-102"
+        },
+        {
+          "file": "__tests__/staff-and-observations.test.ts",
+          "hunk": "new:1-47"
+        },
+        {
+          "file": "__tests__/step-1-applicant.test.tsx",
+          "hunk": "old:7-12"
+        },
+        {
+          "file": "__tests__/submit-application.test.ts",
+          "hunk": "new:58-58"
+        },
+        {
+          "file": "__tests__/submit-application.test.ts",
+          "hunk": "new:61-61"
+        },
+        {
+          "file": "__tests__/submit-application.test.ts",
+          "hunk": "new:68-69"
+        },
+        {
+          "file": "__tests__/submit-application.test.ts",
+          "hunk": "new:160-160"
+        },
+        {
+          "file": "__tests__/submit-application.test.ts",
+          "hunk": "new:170-170"
+        },
+        {
+          "file": "__tests__/submit-application.test.ts",
+          "hunk": "new:232-242"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:4-8"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "old:5-5"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:13-13"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:29-29"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:43-45"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:47-53"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:61-61"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:64-83"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:128-128"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:131-152"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:237-242"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:494-494"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:549-555"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:744-744"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:804-810"
+        },
+        {
+          "file": "app/admin/_actions/admin-actions.ts",
+          "hunk": "new:814-843"
+        },
+        {
+          "file": "app/admin/_actions/observation-actions.ts",
+          "hunk": "new:1-37"
+        },
+        {
+          "file": "app/admin/_actions/staff-actions.ts",
+          "hunk": "new:1-76"
+        },
+        {
+          "file": "app/admin/_components/sidebar.tsx",
+          "hunk": "new:7-7"
+        },
+        {
+          "file": "app/admin/_components/sidebar.tsx",
+          "hunk": "new:35-40"
+        },
+        {
+          "file": "app/admin/_components/sidebar.tsx",
+          "hunk": "new:94-94"
+        },
+        {
+          "file": "app/admin/_components/sidebar.tsx",
+          "hunk": "new:190-193"
+        },
+        {
+          "file": "app/admin/_components/sidebar.tsx",
+          "hunk": "new:199-199"
+        },
+        {
+          "file": "app/admin/_components/sidebar.tsx",
+          "hunk": "new:220-220"
+        },
+        {
+          "file": "app/admin/_components/application-card.tsx",
+          "hunk": "new:7-8"
+        },
+        {
+          "file": "app/admin/_components/application-card.tsx",
+          "hunk": "new:311-311"
+        },
+        {
+          "file": "app/admin/_components/issued-documents.tsx",
+          "hunk": "new:1-14"
+        },
+        {
+          "file": "app/admin/_components/application-observations.tsx",
+          "hunk": "new:1-10"
+        },
+        {
+          "file": "app/admin/benfeitores/client.tsx",
+          "hunk": "new:77-102"
+        },
+        {
+          "file": "app/admin/benfeitores/page.tsx",
+          "hunk": "new:4-5"
+        },
+        {
+          "file": "app/admin/benfeitores/page.tsx",
+          "hunk": "new:8-8"
+        },
+        {
+          "file": "app/admin/benfeitores/page.tsx",
+          "hunk": "new:20-24"
+        }
+      ],
+      "rule_ids": [],
+      "prompt": ".deep-review/donor-first-role-access-r11/prompts/polish-c01-p03.md",
+      "output": ".deep-review/donor-first-role-access-r11/agents/polish-c01-p03.json"
+    },
+    {
+      "label": "polish-c01-p04",
+      "kind": "polish",
+      "lane": "polish",
+      "coverage_check": "polish",
+      "required_hunks": [
+        {
+          "file": "app/admin/layout.tsx",
+          "hunk": "new:3-3"
+        },
+        {
+          "file": "app/admin/layout.tsx",
+          "hunk": "new:5-5"
+        },
+        {
+          "file": "app/admin/layout.tsx",
+          "hunk": "new:10-10"
+        },
+        {
+          "file": "app/admin/layout.tsx",
+          "hunk": "new:15-15"
+        },
+        {
+          "file": "app/admin/solicitacoes/client.tsx",
+          "hunk": "new:3-5"
+        },
+        {
+          "file": "app/admin/solicitacoes/client.tsx",
+          "hunk": "new:71-140"
+        },
+        {
+          "file": "app/admin/solicitacoes/page.tsx",
+          "hunk": "new:2-7"
+        },
+        {
+          "file": "app/admin/solicitacoes/page.tsx",
+          "hunk": "new:10-10"
+        },
+        {
+          "file": "app/admin/solicitacoes/page.tsx",
+          "hunk": "new:19-23"
+        },
+        {
+          "file": "app/admin/usuarios/client.tsx",
+          "hunk": "new:1-17"
+        },
+        {
+          "file": "app/admin/usuarios/page.tsx",
+          "hunk": "new:1-9"
+        },
+        {
+          "file": "app/admin/ano-letivo/page.tsx",
+          "hunk": "new:3-3"
+        },
+        {
+          "file": "app/admin/ano-letivo/page.tsx",
+          "hunk": "new:6-6"
+        },
+        {
+          "file": "app/admin/cabecalho/page.tsx",
+          "hunk": "new:3-3"
+        },
+        {
+          "file": "app/admin/cabecalho/page.tsx",
+          "hunk": "new:6-6"
+        },
+        {
+          "file": "app/admin/contrato/page.tsx",
+          "hunk": "new:3-3"
+        },
+        {
+          "file": "app/admin/contrato/page.tsx",
+          "hunk": "new:6-6"
+        },
+        {
+          "file": "app/admin/textos/page.tsx",
+          "hunk": "new:3-3"
+        },
+        {
+          "file": "app/admin/textos/page.tsx",
+          "hunk": "new:6-6"
+        },
+        {
+          "file": "app/benfeitor/page.tsx",
+          "hunk": "new:1-1"
+        },
+        {
+          "file": "app/benfeitor/page.tsx",
+          "hunk": "new:4-4"
+        },
+        {
+          "file": "app/form/_actions/form-actions.ts",
+          "hunk": "old:22-22"
+        },
+        {
+          "file": "app/form/_actions/form-actions.ts",
+          "hunk": "new:32-60"
+        },
+        {
+          "file": "app/form/_actions/form-actions.ts",
+          "hunk": "new:99-99"
+        },
+        {
+          "file": "app/form/_actions/form-actions.ts",
+          "hunk": "new:103-103"
+        },
+        {
+          "file": "app/form/_actions/form-actions.ts",
+          "hunk": "new:130-133"
+        },
+        {
+          "file": "app/form/_actions/form-actions.ts",
+          "hunk": "new:307-307"
+        },
+        {
+          "file": "app/form/_actions/form-actions.ts",
+          "hunk": "new:315-316"
+        },
+        {
+          "file": "app/form/_actions/form-actions.ts",
+          "hunk": "new:326-330"
+        },
+        {
+          "file": "app/form/_actions/form-actions.ts",
+          "hunk": "new:349-350"
+        },
+        {
+          "file": "app/form/_components/file-upload.tsx",
+          "hunk": "old:26-28"
+        },
+        {
+          "file": "app/form/_components/file-upload.tsx",
+          "hunk": "old:46-47"
+        },
+        {
+          "file": "app/form/_components/file-upload.tsx",
+          "hunk": "old:160-171"
+        },
+        {
+          "file": "app/form/_components/scholarship-form.tsx",
+          "hunk": "old:18-18"
+        },
+        {
+          "file": "app/form/_components/scholarship-form.tsx",
+          "hunk": "new:52-52"
+        },
+        {
+          "file": "app/form/_components/scholarship-form.tsx",
+          "hunk": "new:102-102"
+        },
+        {
+          "file": "app/form/_components/scholarship-form.tsx",
+          "hunk": "new:127-127"
+        },
+        {
+          "file": "app/form/_components/scholarship-form.tsx",
+          "hunk": "new:137-138"
+        },
+        {
+          "file": "app/form/_components/scholarship-form.tsx",
+          "hunk": "new:283-284"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "old:8-11"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:83-83"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:94-94"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:139-139"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:146-146"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:183-183"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:190-190"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:200-200"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:207-207"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:256-256"
+        },
+        {
+          "file": "app/form/_components/step-1-applicant.tsx",
+          "hunk": "new:263-263"
+        },
+        {
+          "file": "app/form/_components/step-2-students.tsx",
+          "hunk": "old:9-12"
+        },
+        {
+          "file": "app/form/_components/step-2-students.tsx",
+          "hunk": "new:43-45"
+        },
+        {
+          "file": "app/form/_components/step-2-students.tsx",
+          "hunk": "new:82-83"
+        },
+        {
+          "file": "app/form/_components/step-2-students.tsx",
+          "hunk": "new:188-188"
+        },
+        {
+          "file": "app/form/_components/step-2-students.tsx",
+          "hunk": "new:195-195"
+        },
+        {
+          "file": "app/form/_components/step-2-students.tsx",
+          "hunk": "new:202-202"
+        },
+        {
+          "file": "app/form/_components/step-2-students.tsx",
+          "hunk": "new:209-209"
+        },
+        {
+          "file": "app/form/_components/step-3-income.tsx",
+          "hunk": "old:10-13"
+        },
+        {
+          "file": "app/form/_components/step-3-income.tsx",
+          "hunk": "new:93-93"
+        },
+        {
+          "file": "app/form/_components/step-3-income.tsx",
+          "hunk": "new:104-104"
+        },
+        {
+          "file": "app/form/_components/step-4-expenses.tsx",
+          "hunk": "old:9-12"
+        },
+        {
+          "file": "app/form/_components/step-4-expenses.tsx",
+          "hunk": "new:78-78"
+        },
+        {
+          "file": "app/form/_components/step-4-expenses.tsx",
+          "hunk": "new:93-93"
+        },
+        {
+          "file": "app/form/layout.tsx",
+          "hunk": "new:3-3"
+        },
+        {
+          "file": "app/form/layout.tsx",
+          "hunk": "new:30-30"
+        },
+        {
+          "file": "app/form/layout.tsx",
+          "hunk": "old:190-204"
+        },
+        {
+          "file": "app/form/page.tsx",
+          "hunk": "new:1-1"
+        },
+        {
+          "file": "app/form/page.tsx",
+          "hunk": "new:3-4"
+        },
+        {
+          "file": "app/login/_actions/auth-actions.ts",
+          "hunk": "new:61-65"
+        }
+      ],
+      "rule_ids": [],
+      "prompt": ".deep-review/donor-first-role-access-r11/prompts/polish-c01-p04.md",
+      "output": ".deep-review/donor-first-role-access-r11/agents/polish-c01-p04.json"
+    },
+    {
+      "label": "polish-c01-p05",
+      "kind": "polish",
+      "lane": "polish",
+      "coverage_check": "polish",
+      "required_hunks": [
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:4-4"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "old:333-384"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:338-338"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:346-347"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:350-351"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:370-371"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:374-375"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:380-380"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:458-481"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:496-496"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "old:551-574"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:533-533"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:546-546"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:567-567"
+        },
+        {
+          "file": "app/page.tsx",
+          "hunk": "new:574-575"
+        },
+        {
+          "file": "app/seja-um-benfeitor/page.tsx",
+          "hunk": "new:1-13"
+        },
+        {
+          "file": "app/solicitar-bolsa/page.tsx",
+          "hunk": "new:1-16"
+        },
+        {
+          "file": "app/solicitar-bolsa/layout.tsx",
+          "hunk": "new:1-104"
+        },
+        {
+          "file": "components/ui/seal-logo.tsx",
+          "hunk": "new:4-4"
+        },
+        {
+          "file": "components/ui/seal-logo.tsx",
+          "hunk": "new:7-8"
+        },
+        {
+          "file": "components/ui/seal-logo.tsx",
+          "hunk": "new:10-11"
+        },
+        {
+          "file": "components/ui/seal-logo.tsx",
+          "hunk": "old:12-16"
+        },
+        {
+          "file": "components/ui/seal-logo.tsx",
+          "hunk": "new:15-17"
+        },
+        {
+          "file": "docs/changes/2026-07-27.md",
+          "hunk": "new:1-1"
+        },
+        {
+          "file": "docs/changes/2026-07-27.md",
+          "hunk": "new:6-7"
+        },
+        {
+          "file": "docs/changes/2026-07-27.md",
+          "hunk": "new:9-9"
+        },
+        {
+          "file": "docs/changes/2026-07-27.md",
+          "hunk": "new:11-12"
+        },
+        {
+          "file": "docs/changes/2026-07-27.md",
+          "hunk": "old:11-11"
+        },
+        {
+          "file": "docs/changes/2026-07-27.md",
+          "hunk": "new:15-18"
+        },
+        {
+          "file": "drizzle/0006_flimsy_spacker_dave.sql",
+          "hunk": "new:1-40"
+        }
+      ],
+      "rule_ids": [],
+      "prompt": ".deep-review/donor-first-role-access-r11/prompts/polish-c01-p05.md",
+      "output": ".deep-review/donor-first-role-access-r11/agents/polish-c01-p05.json"
+    },
+    {
+      "label": "polish-c01-p06",
+      "kind": "polish",
+      "lane": "polish",
+      "coverage_check": "polish",
+      "required_hunks": [
+        {
+          "file": "drizzle/meta/0006_snapshot.json",
+          "hunk": "new:1-1200"
+        }
+      ],
+      "rule_ids": [],
+      "prompt": ".deep-review/donor-first-role-access-r11/prompts/polish-c01-p06.md",
+      "output": ".deep-review/donor-first-role-access-r11/agents/polish-c01-p06.json"
+    },
+    {
+      "label": "polish-c01-p07",
+      "kind": "polish",
+      "lane": "polish",
+      "coverage_check": "polish",
+      "required_hunks": [
+        {
+          "file": "drizzle/meta/0006_snapshot.json",
+          "hunk": "new:1201-1596"
+        },
+        {
+          "file": "drizzle/meta/_journal.json",
+          "hunk": "new:46-52"
+        },
+        {
+          "file": "lib/auth/authorization.ts",
+          "hunk": "new:1-83"
+        },
+        {
+          "file": "lib/db/schema.ts",
+          "hunk": "new:1-1"
+        },
+        {
+          "file": "lib/db/schema.ts",
+          "hunk": "new:4-4"
+        },
+        {
+          "file": "lib/db/schema.ts",
+          "hunk": "new:26-27"
+        },
+        {
+          "file": "lib/db/schema.ts",
+          "hunk": "new:31-33"
+        },
+        {
+          "file": "lib/db/schema.ts",
+          "hunk": "new:341-404"
+        },
+        {
+          "file": "lib/db/schema.ts",
+          "hunk": "new:414-415"
+        },
+        {
+          "file": "lib/db/schema.ts",
+          "hunk": "new:426-455"
+        },
+        {
+          "file": "lib/documents/issued-documents.ts",
+          "hunk": "new:1-67"
+        },
+        {
+          "file": "lib/form/scholarship-uploads.ts",
+          "hunk": "old:1-9"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "old:3-3"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "old:28-29"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "old:34-38"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "new:36-37"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "new:77-77"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "new:84-84"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "new:91-91"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "new:94-94"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "new:99-99"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "new:119-119"
+        },
+        {
+          "file": "lib/validations/application-schema.ts",
+          "hunk": "new:130-130"
+        },
+        {
+          "file": "public/seal-arca.svg",
+          "hunk": "new:1-17"
+        },
+        {
+          "file": "scripts/bootstrap.ts",
+          "hunk": "new:44-49"
+        }
+      ],
+      "rule_ids": [],
+      "prompt": ".deep-review/donor-first-role-access-r11/prompts/polish-c01-p07.md",
+      "output": ".deep-review/donor-first-role-access-r11/agents/polish-c01-p07.json"
+    },
+    {
+      "label": "sweep-security",
+      "kind": "sweep",
+      "lane": "sweep",
+      "coverage_check": "sweep:security",
+      "required_hunks": [],
+      "rule_ids": [],
+      "prompt": ".deep-review/donor-first-role-access-r11/prompts/sweep-security.md",
+      "output": ".deep-review/donor-first-role-access-r11/agents/sweep-security.json"
+    },
+    {
+      "label": "sweep-migrations",
+      "kind": "sweep",
+      "lane": "sweep",
+      "coverage_check": "sweep:migrations",
+      "required_hunks": [],
+      "rule_ids": [],
+      "prompt": ".deep-review/donor-first-role-access-r11/prompts/sweep-migrations.md",
+      "output": ".deep-review/donor-first-role-access-r11/agents/sweep-migrations.json"
+    },
+    {
+      "label": "sweep-tests",
+      "kind": "sweep",
+      "lane": "sweep",
+      "coverage_check": "sweep:tests",
+      "required_hunks": [],
+      "rule_ids": [],
+      "prompt": ".deep-review/donor-first-role-access-r11/prompts/sweep-tests.md",
+      "output": ".deep-review/donor-first-role-access-r11/agents/sweep-tests.json"
+    },
+    {
+      "label": "sweep-consistency",
+      "kind": "sweep",
+      "lane": "sweep",
+      "coverage_check": "sweep:consistency",
+      "required_hunks": [],
+      "rule_ids": [],
+      "prompt": ".deep-review/donor-first-role-access-r11/prompts/sweep-consistency.md",
+      "output": ".deep-review/donor-first-role-access-r11/agents/sweep-consistency.json"
+    },
+    {
+      "label": "sweep-spec-parity",
+      "kind": "sweep",
+      "lane": "sweep",
+      "coverage_check": "sweep:spec-parity",
+      "required_hunks": [],
+      "rule_ids": [],
+      "prompt": ".deep-review/donor-first-role-access-r11/prompts/sweep-spec-parity.md",
+      "output": ".deep-review/donor-first-role-access-r11/agents/sweep-spec-parity.json"
+    }
+  ]
+}

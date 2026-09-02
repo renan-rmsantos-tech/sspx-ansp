@@ -1,0 +1,46 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 26,
+      "hunk": "new:1-40",
+      "candidate": "Role constraint could reject legacy administrator rows during rollout",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The additive nullable role column is backfilled to admin on line 28 before the check constraint and NOT NULL enforcement on lines 29-30, preserving pre-existing accounts and decision references."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 1,
+      "hunk": "new:1-40",
+      "candidate": "New foreign keys could reference tables before their creation",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The two new tables are created before their foreign keys are added, and applications/admin_users are established by 0000_init.sql, which is earlier in the journal."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 1,
+      "hunk": "new:1-40",
+      "candidate": "Migration should fabricate historical issued-document rows",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Task 03 explicitly prohibits backfilling historical generation-only exports as issued documents; this migration creates empty storage metadata tables only."
+    },
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1,
+      "hunk": "new:1-1596",
+      "candidate": "Generated snapshot may omit the new database constraints",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "The generated snapshot records admin_users_role_check and the issued_documents check constraints under checkConstraints; it matches the SQL migration and is not manually maintained source."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

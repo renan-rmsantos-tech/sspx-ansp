@@ -1,0 +1,79 @@
+{
+  "defects": [
+    {
+      "file": "app/form/_components/step-4-expenses.tsx",
+      "line": 92,
+      "end_line": 92,
+      "in_diff": true,
+      "hunk": "@@ -79,7 +75,7 @@ export function Step4Expenses",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Arquivos obrigatórios com mesmo nome se sobrescrevem após o envio",
+      "body": "Premise: `step-3-income.tsx:98-105` e `step-4-expenses.tsx:85-94` habilitam múltiplos arquivos por categoria, enquanto `form-actions.ts:349-355` remove o UUID por-upload ao mover cada caminho para `applications/{applicationId}/{category}/{filename}`; o driver em `lib/storage/index.ts:60-65` usa `rename`, que substitui um destino existente no POSIX. → Path: uma família envia, por exemplo, dois extratos bancários chamados `extrato.pdf`; os tickets produzem UUIDs distintos, mas os dois moves miram o mesmo destino e o segundo substitui o primeiro, embora sejam inseridas duas linhas de documento. → Verdict: a aplicação aceita e registra evidências múltiplas, mas uma delas é perdida e ambos os registros passam a apontar para o arquivo remanescente. Preserve o segmento UUID (ou acrescente um nome de destino único) no caminho final e cubra nomes repetidos.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/form/_components/step-3-income.tsx:98-105 e step-4-expenses.tsx:85-94 permitem múltiplos arquivos, app/form/_actions/form-actions.ts:349-355 remove o UUID por upload e lib/storage/index.ts:60-65 chama rename sem recusar um alvo existente. → Path: dois arquivos de mesma categoria e mesmo nome são movidos para applications/{applicationId}/{category}/{filename}. → Verdict: o segundo rename substitui o primeiro, e duas linhas de documentos passam a referenciar apenas o último arquivo."
+      ]
+    },
+    {
+      "file": "components/ui/seal-logo.tsx",
+      "line": 15,
+      "end_line": 16,
+      "in_diff": true,
+      "hunk": null,
+      "category": "potential-issue",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Selos decorativos repetem o nome institucional para leitores de tela",
+      "body": "Premise: `SealLogo` torna toda chamada informativa por padrão, mas a navegação e o rodapé já contêm o nome completo visível, e as páginas canônicas também apresentam texto institucional imediatamente ao lado do selo. → Path: um leitor de tela entra em `app/page.tsx:337-342` ou `app/solicitar-bolsa/page.tsx:16` e recebe primeiro o alt do selo e logo o mesmo nome textual. → Verdict: as instâncias decorativas não usam a semântica decorativa que o novo componente oferece, contrariando o requisito de evitar nomes acessíveis duplicados. Passe `decorative` nessas instâncias (mantendo alt informativo somente quando o selo for a única identificação).",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: components/ui/seal-logo.tsx:8-16 define alt informativo por padrão, enquanto app/page.tsx:337-342 e 546-550 e as páginas canônicas já exibem o nome institucional junto do selo. → Path: um leitor de tela anuncia o alt do img e o texto institucional adjacente em cada uma dessas instâncias. → Verdict: nomes acessíveis são duplicados em usos decorativos, contrariando o requisito de distinguir essas instâncias."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/page.tsx",
+      "line": 346,
+      "hunk": null,
+      "candidate": "Links públicos ainda apontam às rotas legadas",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "As ocorrências executáveis da landing usam /seja-um-benfeitor e /solicitar-bolsa; as rotas legadas examinadas são somente páginas de redirect."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 58,
+      "hunk": null,
+      "candidate": "Experiência de Secretaria recebe a projeção administrativa completa",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "getApplications seleciona explicitamente apenas os campos operacionais para secretaria, e as páginas selecionam clientes distintos conforme staff.role."
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 43,
+      "hunk": "@@ -30,6 +29,35 @@",
+      "candidate": "Categorias de documentos do cliente e servidor ficaram desalinhadas",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "As categorias dos componentes rg_aluno_{i} e certidao_nascimento_{i} coincidem com validateDocumentCategories; collectDocumentRows mantém os dois tipos distintos no banco."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 815,
+      "hunk": null,
+      "candidate": "Secretaria pode baixar versões antigas de documentos finais",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "getIssuedDocumentUrl reconsulta os documentos atuais para secretaria; getIssuedDocumentHistory exige requireAdmin."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

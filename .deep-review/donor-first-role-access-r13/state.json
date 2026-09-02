@@ -1,0 +1,194 @@
+{
+  "target": "worktree:origin/main",
+  "rounds": [
+    {
+      "n": 1,
+      "base": "5c90842fe2309bdc1659268decf3a7ca8358751d",
+      "head": "5c90842fe2309bdc1659268decf3a7ca8358751d",
+      "verdict": "FIX_BEFORE_SHIP",
+      "reviewed_at": "2026-09-01T04:46:29.371644+00:00"
+    }
+  ],
+  "ledger": {
+    "bd1102fa8e96141b": {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "title": "Falha ao registrar emissão final não é protegida pelos testes de exportação",
+      "severity": "major",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "d0fee2c96c5c1cea": {
+      "file": "app/admin/benfeitores/client.tsx",
+      "title": "Lista operacional de benfeitores da Secretaria não é testada",
+      "severity": "major",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "97aedbdddf7c690c": {
+      "file": "app/admin/solicitacoes/client.tsx",
+      "title": "Acompanhamento da Secretaria não testa carregamento nem download",
+      "severity": "major",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "8090deae96fd7335": {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "title": "Banco aceita metadados não-PDF para documento emitido",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "9361b5ccc14bd8d7": {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "title": "Migração em banco populado não tem cobertura no gate",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "36f76c5c004d58a8": {
+      "file": "lib/documents/issued-documents.ts",
+      "title": "Ordem do lock de versão ainda não é observável na suíte",
+      "severity": "major",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "9fa930abd434ed18": {
+      "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+      "title": "Atualize o status das tarefas concluídas",
+      "severity": "trivial",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "7664ad252528d6a9": {
+      "file": ".compozy/tasks/donor-first-role-access/task_02.md",
+      "title": "Sincronizar o rastreamento das tarefas concluídas",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "30449458e6fdaa3b": {
+      "file": "app/admin/benfeitores/client.tsx",
+      "title": "Formate o cliente operacional da Secretaria em blocos legíveis",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "861ac5da771614c0": {
+      "file": "app/admin/solicitacoes/client.tsx",
+      "title": "Tipar os resultados das actions da Secretaria",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "4a059648e9222801": {
+      "file": "app/admin/solicitacoes/page.tsx",
+      "title": "Remover casts duplos na escolha do cliente",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "d6874b5a94525bec": {
+      "file": "app/admin/usuarios/client.tsx",
+      "title": "Estruturar o cliente de usuários em blocos legíveis",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "0b64b203989b8e78": {
+      "file": "app/form/_actions/form-actions.ts",
+      "title": "Centralizar o contrato das categorias de documentos",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "ff77e80b415b6416": {
+      "file": "app/form/_components/scholarship-form.tsx",
+      "title": "Remover escopo autônomo da validação de documentos",
+      "severity": "trivial",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "29cdb39b28355cc2": {
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "title": "Format the donor page's JSX into readable blocks",
+      "severity": "trivial",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "82d194575505d659": {
+      "file": "app/solicitar-bolsa/layout.tsx",
+      "title": "Extract the shared scholarship-form layout",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "42aabfdd35cd3d8b": {
+      "file": "lib/documents/issued-documents.ts",
+      "title": "Trocar o cast da transação por consultas tipadas",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "4d4689daec411a6e": {
+      "file": "public/seal-arca.svg",
+      "title": "Otimizar o selo público antes de servi-lo em todas as páginas",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    }
+  }
+}

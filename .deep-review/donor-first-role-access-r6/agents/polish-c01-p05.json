@@ -1,0 +1,101 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "line": 12,
+      "end_line": 12,
+      "in_diff": true,
+      "hunk": "new:1-13",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Format the new public-page JSX into readable blocks",
+      "body": "The complete donor-page structure, including banking data and the form boundary, is encoded in one physical line. Break the returned JSX into its nested elements so future content, accessibility, and layout edits can be reviewed and changed locally.",
+      "also_applies": [
+        "app/solicitar-bolsa/page.tsx:16"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/seja-um-benfeitor/page.tsx:12 contains the entire page tree on one line → Improvement: nested sections and their accessibility attributes become individually reviewable and diffable → Fix: format the return tree into conventional multiline JSX.",
+        "app/solicitar-bolsa/page.tsx:16 → the same one-line JSX pattern was introduced in the other canonical public page.",
+        "package.json and eslint.config.mjs → no configured formatter owns this source layout change."
+      ]
+    },
+    {
+      "file": "docs/changes/2026-07-27.md",
+      "line": 18,
+      "end_line": 18,
+      "in_diff": true,
+      "hunk": "new:15-18",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Remove the trailing blank line from the change brief",
+      "body": "The edited brief ends with a whitespace-only line, causing the repository's diff-whitespace check to report a warning. Removing it keeps the release diff clean.",
+      "also_applies": [],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: docs/changes/2026-07-27.md:18 is a new blank line at EOF → Improvement: git diff whitespace validation becomes clean for this edited document → Fix: delete the trailing blank line.",
+        "git diff --check 5c90842fe230 -- docs/changes/2026-07-27.md → reports 'new blank line at EOF' at line 18."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "components/ui/seal-logo.tsx",
+      "line": 10,
+      "hunk": "new:10-11",
+      "candidate": "Use next/image instead of the raw img element for the seal asset",
+      "reason": "linter-overlap",
+      "rule_ids": [],
+      "note": "npx eslint reports @next/next/no-img-element on this exact element; the linter lane owns that finding."
+    },
+    {
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "line": 12,
+      "hunk": "new:1-13",
+      "candidate": "Question whether the hard-coded banking details match a source of truth",
+      "reason": "phantom-knowledge",
+      "rule_ids": [],
+      "note": "No inspected repository source establishes alternative banking values, so a factual-correctness claim would rely on unverified external knowledge."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":"app/page.tsx","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"old:333-384","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:338-338","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:346-347","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:350-351","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:370-371","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:380-380","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:458-481","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:496-496","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"old:551-574","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:533-533","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:546-546","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:567-567","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:574-575","checks":["polish"],"outcome":"clear"},
+      {"file":"app/seja-um-benfeitor/page.tsx","hunk":"new:1-13","checks":["polish"],"outcome":"reported"},
+      {"file":"app/solicitar-bolsa/page.tsx","hunk":"new:1-17","checks":["polish"],"outcome":"reported"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:7-8","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:10-11","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"old:12-16","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:15-17","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:1-1","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:6-7","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:9-9","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:11-12","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"old:11-11","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:15-18","checks":["polish"],"outcome":"reported"},
+      {"file":"drizzle/0006_flimsy_spacker_dave.sql","hunk":"new:1-40","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 25,
+      "hunk": "new:1-40",
+      "candidate": "Legacy staff records could lose their identity, credential, or decision reference while roles are introduced.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The migration only adds role and ativo columns, backfills role on existing rows, then constrains role. It neither recreates admin_users nor touches applications.decided_by, so IDs, email/password_hash values, and existing foreign-key references remain intact."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 9,
+      "hunk": "new:1-40",
+      "candidate": "Concurrent or repeated issued-document rows could lack database protection for version identity and current-version reads.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The migration creates the unique application/kind/version index and the application/kind/version DESC index required to reject duplicate versions and support latest-version queries; the application-row locking policy belongs to the issuance service rather than migration DDL."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 32,
+      "hunk": "new:1-40",
+      "candidate": "New observation or issued-document rows could be orphaned or survive deletion of their application.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Both application foreign keys are required and use ON DELETE CASCADE. Author and issuer foreign keys use ON DELETE RESTRICT, preserving attributable records by preventing staff-account deletion while referenced."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 16,
+      "hunk": "new:1-40",
+      "candidate": "The database could accept an issued-document MIME type other than application/pdf.",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The schema gives mime_type a non-null application/pdf default and the sole issuance service sets that literal. The task's explicit database-enforced invariants are kind, positive version/size, uniqueness, and foreign keys; no concrete path in the selected code supplies a caller-controlled MIME type."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

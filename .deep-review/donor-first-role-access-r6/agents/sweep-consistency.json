@@ -1,0 +1,46 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/solicitar-bolsa/page.tsx",
+      "line": 16,
+      "hunk": null,
+      "candidate": "Canonical scholarship route does not inherit the legacy /form layout",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The canonical page independently preserves the required dynamic school-year branch and shared seal; the task contract does not require the legacy presentation wrapper or identify a concrete behavior it must retain."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 822,
+      "hunk": null,
+      "candidate": "Secretariat can request issued document IDs directly",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The ID action resolves server-side metadata, requires issued-documents:read, and for Secretaria compares the ID with the status-filtered current-document query. This is the intended ID-based download flow; it never accepts a client storage path."
+    },
+    {
+      "file": "app/form/_components/step-2-students.tsx",
+      "line": 35,
+      "hunk": null,
+      "candidate": "Student deletion can affect category-indexed upload paths",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The removal guard rejects deletion when any later student has attachments, preventing those categories from shifting. The server independently verifies every submitted indexed category."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 58,
+      "hunk": null,
+      "candidate": "Secretariat application or donor projections could include restricted fields",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Both Secretariat branches use explicit Drizzle column allowlists before data reaches the client; the related role clients consume only those operational shapes."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

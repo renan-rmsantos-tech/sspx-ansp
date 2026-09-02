@@ -1,0 +1,75 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "__tests__/application-schema.test.ts",
+      "line": 154,
+      "end_line": 158,
+      "in_diff": true,
+      "hunk": "new:151-167",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Assert the validation path for each required document",
+      "body": "The table-driven test only checks that parsing fails. Assert that the issue path matches the document field being removed so a future unrelated validation regression cannot satisfy every table row and obscure which required-document rule broke.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: __tests__/application-schema.test.ts:154-158 clears one dynamic field and asserts only `success` is false → Improvement: each row will identify its own required-document constraint → Fix: inspect `result.error.issues` and assert that one path equals `field`.",
+        "__tests__/application-schema.test.ts:8-59 → `validApplication()` supplies a complete baseline, so each table row can safely assert the path changed by that row."
+      ],
+      "guideline": null,
+      "suggestion": null
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 92,
+      "hunk": "new:92-92",
+      "candidate": "Extract the expanded MOCK_USER object onto multiple lines",
+      "reason": "formatting",
+      "rule_ids": [],
+      "note": "This is formatter-owned presentation without a concrete maintainability benefit."
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/task_02.md",
+      "line": 2,
+      "hunk": "new:1-139",
+      "candidate": "Change the pending task status based only on source changes",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The task's unchecked acceptance criteria require completion evidence beyond the files owned by this polish cohort."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-003.md","hunk":"new:1-69","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-004.md","hunk":"new:1-65","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-005.md","hunk":"new:1-68","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-006.md","hunk":"new:1-63","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-007.md","hunk":"new:1-62","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-008.md","hunk":"new:1-63","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_01.md","hunk":"new:1-124","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_02.md","hunk":"new:1-139","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_03.md","hunk":"new:1-131","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_04.md","hunk":"new:1-138","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_05.md","hunk":"new:1-143","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:13-14","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:16-17","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:22-23","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:25-26","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:39-43","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:45-45","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:92-92","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:96-103","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:24-24","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:39-40","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:138-138","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:151-167","checks":["polish"],"outcome":"reported"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:48-48","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:68-68","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:83-96","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

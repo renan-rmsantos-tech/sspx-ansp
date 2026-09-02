@@ -1,0 +1,68 @@
+{
+  "defects": [
+    {
+      "file": "app/form/_components/step-2-students.tsx",
+      "line": 42,
+      "end_line": 43,
+      "in_diff": true,
+      "hunk": "@@ -185,32 +181,28 @@",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Remover aluno invalida os uploads já concluídos dos seguintes",
+      "body": "Premise: `removeStudent` apenas filtra a matriz, enquanto os novos uploads carregam o índice posicional do aluno na categoria (`rg_aluno_${i}` e `certidao_nascimento_${i}`). → Path: uma família adiciona dois alunos, conclui os dois documentos do segundo e remove o primeiro; o segundo passa ao índice 0, mas seus caminhos assinados continuam em `.../rg_aluno_1/...` e `.../certidao_nascimento_1/...`. `submitApplication` então exige as categorias do índice 0 e rejeita a solicitação. → Verdict: documentos obrigatórios corretamente enviados deixam de satisfazer a validação após uma operação normal da UI, sem aviso nem meio de reaproveitá-los. Use uma identidade estável por aluno na categoria/payload, ou impeça/reoriente a remoção quando ela exigiria reenviar anexos.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/task_05.md — requirements 4, 6, 8 and 17",
+      "suggestion": "Associe a categoria a um ID estável do aluno mantido no estado do formulário, ou descarte explicitamente os anexos afetados e informe que eles devem ser reenviados antes de permitir prosseguir.",
+      "evidence": [
+        "Premise: app/form/_components/step-2-students.tsx:41-43 apenas filtra a lista e desloca seus índices → Path: os campos em app/form/_components/step-2-students.tsx:186-205 já emitiram caminhos com o índice antigo, mas app/form/_actions/form-actions.ts:44-59 compara com o índice novo → Verdict: a submissão rejeita anexos obrigatórios que a UI acabou de aceitar.",
+        "Premise: app/form/_components/step-2-students.tsx:186-205 deriva as categorias do índice visual → Path: remover um aluno anterior altera esse índice sem alterar os caminhos já enviados → Verdict: os anexos do aluno remanescente deixam de corresponder à categoria exigida.",
+        "Premise: app/form/_actions/form-actions.ts:44-59 exige correspondência exata por índice → Path: um caminho `rg_aluno_1` persiste após o aluno correspondente tornar-se índice 0 → Verdict: a ação devolve erro de categoria em vez de criar a solicitação."
+      ]
+    },
+    {
+      "file": "app/admin/solicitacoes/client.tsx",
+      "line": 136,
+      "end_line": 136,
+      "in_diff": true,
+      "hunk": "@@ -1,3 +1,139 @@",
+      "category": "potential-issue",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "A tela de observações não oferece a orientação operacional exigida",
+      "body": "Premise: a única instrução perto da entrada de observação é o placeholder genérico `Registrar observação interna`. → Path: a Secretaria abre o acompanhamento e registra uma nota; a interface não informa que o registro deve ser conciso e operacional. → Verdict: a experiência não cumpre o requisito explícito de orientar a equipe a registrar somente informação operacional concisa, aumentando a probabilidade de notas com dados sensíveis desnecessários.",
+      "rule_ids": [],
+      "guideline": ".compozy/tasks/donor-first-role-access/_prd.md — Core Features / Secretariat Observations",
+      "suggestion": "Inclua uma instrução persistente junto ao campo, por exemplo: “Registre apenas informações operacionais breves; não inclua dados sensíveis desnecessários.”",
+      "evidence": [
+        "Premise: app/admin/solicitacoes/client.tsx:136 renderiza apenas o placeholder genérico `Registrar observação interna` → Path: a Secretaria abre o acompanhamento e registra uma nota sem orientação próxima ao campo → Verdict: a interface não comunica a limitação operacional concisa exigida pela especificação.",
+        "Premise: .compozy/tasks/donor-first-role-access/_prd.md, Core Features / Secretariat Observations exige orientação para informação operacional concisa → Path: a única interface de criação está em app/admin/solicitacoes/client.tsx:136 → Verdict: não há texto de orientação que satisfaça esse requisito."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "components/ui/seal-logo.tsx",
+      "line": 8,
+      "hunk": "@@ -1,103 +1,19 @@",
+      "candidate": "Semântica decorativa/informativa do SealLogo",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "O componente oferece `decorative`, alt vazio e aria-hidden para uso decorativo, e alt institucional para uso informativo; isso corresponde ao contrato de logo." 
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 44,
+      "hunk": "@@ -30,6 +29,35 @@",
+      "candidate": "Categorias de uploads em caminho bruto",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "A allowlist fixa e o padrão indexado rejeitam categorias desconhecidas e com separadores antes da emissão do ticket; `pathsMatchCategory` também vincula cada campo ao caminho pending correspondente."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

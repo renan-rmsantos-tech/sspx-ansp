@@ -1,0 +1,128 @@
+{
+  "defects": [
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 552,
+      "end_line": 552,
+      "in_diff": true,
+      "hunk": "new:549-555",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Emissão imutável não é protegida pelos testes de exportação",
+      "body": "Premise: app/admin/_actions/admin-actions.ts:552 persiste a versão final depois de renderizar a decisão (e app/admin/_actions/admin-actions.ts:807 faz o mesmo para contrato), mas __tests__/admin-actions.test.ts:570 e :706 só verificam o PDF retornado. → Path: remover ou quebrar qualquer chamada a persistIssuedDocument nos dois exports ainda deixa os testes atuais verdes. → Verdict: uma regressão elimina o histórico imutável exigido sem teste capaz de falhar. Faça os testes de decisão e contrato verificarem a escrita de issued_documents, incluindo application_id, kind, emissor e a falha de persistência.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/admin/_actions/admin-actions.ts:552 e :807 persistem o artefato final → Path: os testes de exportação só observam PDF/filename → Verdict: remover a persistência mantém a suíte verde e perde o histórico imutável.",
+        "app/admin/_actions/admin-actions.ts:549-554 → o retorno de exportDecision depende de persistIssuedDocument, que é a única gravação do artefato imutável.",
+        "app/admin/_actions/admin-actions.ts:804-809 → exportContract repete a mesma dependência de persistência.",
+        "__tests__/admin-actions.test.ts:570-614 e :706-733 → os casos de sucesso verificam apenas base64/filename/conteúdo renderizado, sem assertir a gravação nem sua falha."
+      ],
+      "also_applies": [
+        "app/admin/_actions/admin-actions.ts:807"
+      ],
+      "guideline": null,
+      "suggestion": "Adicione asserções de inserted para cada export e um caso que simule a falha de persistência e exija o erro de emissão."
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 23,
+      "end_line": 23,
+      "in_diff": true,
+      "hunk": "new:1-67",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": true,
+      "title": "Lock de versão concorrente não é exercitado pela suíte",
+      "body": "Premise: lib/documents/issued-documents.ts:23 usa SELECT ... FOR UPDATE para serializar a alocação de versão, mas __tests__/issued-documents.test.ts:16-22 apenas simula a leitura da última versão e a inserção. → Path: remover o lock, movê-lo para depois da consulta, ou emitir duas solicitações concorrentes com a mesma versão ainda deixa a suíte atual verde. → Verdict: a garantia que evita colisão de versão/reemissão concorrente não tem proteção capaz de detectar regressão. Faça o duplo registrar tx.execute e teste que o lock ocorre antes de findFirst; idealmente cubra duas emissões concorrentes em PostgreSQL ou um teste de integração equivalente.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:23 serializa versões com FOR UPDATE → Path: o teste não observa execute nem a ordem com findFirst → Verdict: remover ou reordenar o lock mantém a suíte verde e permite regressão concorrente.",
+        "lib/documents/issued-documents.ts:21-29 → a segurança da versão depende da ordem lock → leitura da última versão → insert.",
+        "__tests__/helpers/fake-db.ts:100-102 → transaction cria execute como mock, portanto é observável.",
+        "__tests__/issued-documents.test.ts:16-22 → nenhum assert observa tx.execute ou a ordem relativa ao findFirst."
+      ],
+      "guideline": null,
+      "suggestion": "Exponha/registre o execute transacional no fake DB e assegure que o lock ocorre antes da consulta da versão; complemente com uma prova de concorrência real quando a infraestrutura de integração estiver disponível."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 131,
+      "end_line": 153,
+      "in_diff": true,
+      "hunk": "new:131-153",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": true,
+      "title": "Projeção restrita de benfeitores não possui teste de regressão",
+      "body": "Premise: app/admin/_actions/admin-actions.ts:131-153 introduz a allowlist que protege CPF, endereço, CEP e metadados de recibo da Secretaria, mas __tests__/admin-actions.test.ts:220-228 só inspeciona a projeção restrita de solicitações. → Path: substituir esta consulta de Secretaria por findMany sem columns, ou adicionar cpf/endereço/recibo à allowlist, continua aprovando toda a suíte. → Verdict: uma regressão que reexpõe dados sensíveis de benfeitores ao papel Secretaria não tem teste capaz de falhar. Adicione caso com identidade Secretaria que inspecione a projeção de donorPledges e confirme os campos proibidos ausentes.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/admin/_actions/admin-actions.ts:131-153 limita colunas de benfeitores para Secretaria → Path: nenhum teste chama getDonorPledges como Secretaria → Verdict: reintroduzir campos sensíveis mantém a suíte verde.",
+        "app/admin/_actions/admin-actions.ts:127-153 → o desvio por papel e a allowlist de donorPledges são novos e são a fronteira de minimização de dados.",
+        "__tests__/admin-actions.test.ts:220-228 → a única asserção de columns para Secretaria cobre applications/students, não donorPledges.",
+        "rg em __tests__ por getDonorPledges/SecretariatDonorsClient → não há teste que invoque a consulta de benfeitores com papel Secretaria."
+      ],
+      "guideline": null,
+      "suggestion": "Cubra getDonorPledges como Secretaria, verificando a allowlist completa e a ausência explícita de cpf, endereço, cep e recibo_path."
+    },
+    {
+      "file": "app/admin/solicitacoes/client.tsx",
+      "line": 83,
+      "end_line": 141,
+      "in_diff": true,
+      "hunk": "new:71-140",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Fluxo operacional exclusivo da Secretaria não tem cobertura de UI",
+      "body": "Premise: app/admin/solicitacoes/client.tsx:83-141 e app/admin/benfeitores/client.tsx:93-102 adicionam as interfaces pelas quais a Secretaria lê o acompanhamento, emite observações e baixa documentos finais, mas os testes de clientes importam somente SolicitacoesClient administrativo. → Path: quebrar o carregamento ao abrir o cartão, a submissão de observação ou a listagem/busca da interface de Secretaria não falha em teste algum. → Verdict: os fluxos públicos de trabalho introduzidos para o novo papel podem regressar silenciosamente apesar da suíte verde. Teste a abertura do cartão, carregamento de observações/documentos, registro de nota e a busca de benfeitores da Secretaria.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/admin/solicitacoes/client.tsx:103-127 implementa o acompanhamento da Secretaria → Path: os testes montam somente o cliente administrativo → Verdict: falhas de abertura, nota ou documentos da Secretaria mantêm a suíte verde.",
+        "app/admin/solicitacoes/client.tsx:103-127 → os efeitos de abertura chamam ações de observações/documentos e a ação de gravação.",
+        "app/admin/benfeitores/client.tsx:93-102 → a lista de benfeitores exclusiva da Secretaria implementa a busca operacional.",
+        "__tests__/solicitacoes-client.test.tsx:61 e imports → a suíte monta SolicitacoesClient, não SecretariatApplicationsClient; rg em __tests__ não encontra SecretariatDonorsClient."
+      ],
+      "also_applies": [
+        "app/admin/benfeitores/client.tsx:93"
+      ],
+      "guideline": null,
+      "suggestion": "Inclua testes de renderização e interação para ambos os clientes de Secretaria, com ações assíncronas controladas."
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 31,
+      "hunk": "new:31-110",
+      "candidate": "Allowlist de categorias e normalização de upload não têm teste de ramificação.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "__tests__/form-actions.test.ts:104-117 cobre cada categoria suportada e amostras inválidas, enquanto __tests__/submit-application.test.ts:232-241 testa categoria obrigatória trocada, caminho reutilizado e índice de aluno incorreto."
+    },
+    {
+      "file": "lib/auth/authorization.ts",
+      "line": 40,
+      "hunk": "new:1-83",
+      "candidate": "Papel/atividade atuais da sessão podem deixar de ser revalidados.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "__tests__/authorization.test.ts:26-83 cobre identidade ausente, conta removida/inativa, capacidades de Secretaria, administrador e bypass fora de produção."
+    },
+    {
+      "file": "app/admin/_actions/staff-actions.ts",
+      "line": 27,
+      "hunk": "new:1-76",
+      "candidate": "Administração de contas Secretaria não possui proteção contra alteração de administrador.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "__tests__/staff-and-observations.test.ts:28-34 verifica explicitamente que troca de atividade e redefinição de senha não alteram administrador."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

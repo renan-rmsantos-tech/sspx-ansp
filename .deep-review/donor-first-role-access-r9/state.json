@@ -1,0 +1,134 @@
+{
+  "target": "worktree:origin/main",
+  "rounds": [
+    {
+      "n": 1,
+      "base": "5c90842fe2309bdc1659268decf3a7ca8358751d",
+      "head": "5c90842fe2309bdc1659268decf3a7ca8358751d",
+      "verdict": "FIX_BEFORE_SHIP",
+      "reviewed_at": "2026-09-01T03:54:33.993973+00:00"
+    }
+  ],
+  "ledger": {
+    "12123d42536a55f2": {
+      "file": "__tests__/admin-actions.test.ts",
+      "title": "Privileged action tests do not exercise a real Secretaria denial matrix",
+      "severity": "major",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "0572c36824cb0f6f": {
+      "file": "__tests__/admin-actions.test.ts",
+      "title": "Secretariat projections have no field-level regression test",
+      "severity": "major",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "0bdc0f64c3f83ff0": {
+      "file": "__tests__/admin-actions.test.ts",
+      "title": "PDF export tests do not prove immutable issuance is wired to exports",
+      "severity": "major",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "6e761d562684e0a6": {
+      "file": "__tests__/form-page.test.tsx",
+      "title": "The donor-first route and identity migration has no regression suite",
+      "severity": "major",
+      "status": "open",
+      "round": 1,
+      "result_kind": "defect",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "2b55029766623809": {
+      "file": "__tests__/admin-actions.test.ts",
+      "title": "Model the Secretaria fixture without an Administrator cast",
+      "severity": "trivial",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "b12ebfb87364cdf8": {
+      "file": "app/admin/_components/sidebar.tsx",
+      "title": "Require the rendered staff role",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "b9c435d2e2fa4d2f": {
+      "file": "app/admin/benfeitores/page.tsx",
+      "title": "Avoid the double assertion for the admin donor projection",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "0cb11adc44af3fcc": {
+      "file": "app/admin/solicitacoes/client.tsx",
+      "title": "Split the Secretariat card into readable units",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "2596cfb24d3adda1": {
+      "file": "app/admin/solicitacoes/page.tsx",
+      "title": "Expose the role-specific application projection in the action type",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "fa7a4fc1d449f8ea": {
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "title": "Format the canonical donor page as readable JSX",
+      "severity": "trivial",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "be778157dfbc3f43": {
+      "file": "app/solicitar-bolsa/layout.tsx",
+      "title": "Share the duplicated scholarship layout",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    },
+    "0f0c7c6c976aa92c": {
+      "file": "lib/documents/issued-documents.ts",
+      "title": "Give the transaction client its actual type",
+      "severity": "minor",
+      "status": "open",
+      "round": 1,
+      "result_kind": "advisory",
+      "comment_id": null,
+      "resolved_in": null
+    }
+  }
+}

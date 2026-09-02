@@ -1,0 +1,113 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 40,
+      "end_line": 43,
+      "in_diff": true,
+      "hunk": "new:39-43",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Make capability assertions explicit in the action tests",
+      "body": "The new authorization mock resolves every `requireCapability` call to the same Administrator regardless of its argument. The suite therefore keeps exercising happy paths even if an operational action is wired to the wrong capability or if a new capability is accidentally used. Configure the mock by capability (or assert the calls for each action) so these tests document and protect the intended authorization matrix.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: __tests__/admin-actions.test.ts:40-43 defines one unparameterized `mockRequireCapability`, and :95-96 resolves it identically for every authenticated caller → Improvement: detects a mismatched capability name at the server-action boundary rather than only proving that some mocked check ran → Fix: make the mock validate expected capability arguments, or add per-action `toHaveBeenCalledWith(...)` assertions.",
+        "app/admin/_actions/admin-actions.ts:61,128,810,823 → the changed action surface invokes distinct operational capability strings, which the current shared resolved value does not distinguish."
+      ]
+    },
+    {
+      "file": "__tests__/application-schema.test.ts",
+      "line": 138,
+      "end_line": 152,
+      "in_diff": true,
+      "hunk": "new:138-138",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Isolate the remaining mandatory-document assertion",
+      "body": "This test changes the marriage certificate and nine unrelated optional/required values before only asserting a generic validation failure, while the following parameterized test already verifies the marriage-certificate case in isolation. Narrow or remove this overlapping case so a regression points to the field that actually caused it and the focused document matrix remains the single source of coverage.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: __tests__/application-schema.test.ts:138-151 removes `certidao_casamento` and mutates multiple unrelated fields before asserting only `success === false` → Improvement: a focused failure identifies the broken validation contract directly and eliminates duplicate coverage → Fix: retain only the focused missing-marriage case or remove this test in favor of the parameterized matrix at :154-160.",
+        "__tests__/application-schema.test.ts:154-160 → `certidao_casamento` is already exercised as an independently empty required document group."
+      ]
+    },
+    {
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 39,
+      "end_line": 43,
+      "in_diff": true,
+      "hunk": "new:39-43",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Remove the now-unused session mock from this action suite",
+      "body": "After the actions switched to the authorization helpers, this suite still declares and mocks `getSessionUser`, but no tested module imports it. Removing the obsolete test double makes the actual authorization seam evident and avoids future readers changing session behavior while believing it is covered here.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: __tests__/admin-actions.test.ts:35-37 mocks `@/lib/auth/session`, whereas the action module imports only `requireAdmin` and `requireCapability` at app/admin/_actions/admin-actions.ts:4-7 → Improvement: keeps test setup aligned with real dependencies → Fix: remove `mockGetSessionUser` and the `@/lib/auth/session` mock from this suite.",
+        "rg -n 'getSessionUser' app/admin/_actions/admin-actions.ts __tests__/admin-actions.test.ts → the only suite references are the unused mock declaration and factory."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/task_01.md",
+      "line": 2,
+      "hunk": "new:1-124",
+      "candidate": "Completed task tracking asserts coverage and integration checks without embedding their command output.",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The task file is a tracking artifact rather than a verification log; lack of embedded evidence alone does not establish an inaccurate status or a bounded documentation improvement."
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/adrs/adr-003.md",
+      "line": 64,
+      "hunk": "new:1-69",
+      "candidate": "The ADR links an external OWASP authorization reference.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The reference is directly relevant to the authorization decision and does not duplicate executable behavior."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-003.md","hunk":"new:1-69","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-004.md","hunk":"new:1-65","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-005.md","hunk":"new:1-68","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-006.md","hunk":"new:1-63","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-007.md","hunk":"new:1-62","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/adrs/adr-008.md","hunk":"new:1-63","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_01.md","hunk":"new:1-124","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_02.md","hunk":"new:1-139","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_03.md","hunk":"new:1-131","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_04.md","hunk":"new:1-138","checks":["polish"],"outcome":"clear"},
+      {"file":".compozy/tasks/donor-first-role-access/task_05.md","hunk":"new:1-143","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:13-14","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:16-17","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:22-23","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:25-26","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:39-43","checks":["polish"],"outcome":"reported"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:45-45","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:92-92","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/admin-actions.test.ts","hunk":"new:96-103","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:24-24","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:39-40","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:138-138","checks":["polish"],"outcome":"reported"},
+      {"file":"__tests__/application-schema.test.ts","hunk":"new:151-167","checks":["polish"],"outcome":"reported"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:48-48","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:68-68","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/auth-actions.test.ts","hunk":"new:83-96","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

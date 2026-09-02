@@ -1,0 +1,91 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "app/solicitar-bolsa/layout.tsx",
+      "line": 11,
+      "end_line": 104,
+      "in_diff": true,
+      "hunk": "new:1-104",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Centralize the duplicated scholarship layout",
+      "body": "The canonical layout duplicates app/form/layout.tsx exactly. Maintaining both copies lets institutional copy, accessibility semantics, and responsive classes drift even though the legacy route only redirects to the canonical flow.",
+      "also_applies": [
+        "app/form/layout.tsx:1-104"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/solicitar-bolsa/layout.tsx:11-104 has the same layout implementation as app/form/layout.tsx:1-104 → Improvement: one authoritative layout prevents future visual and semantic drift across the two route trees → Fix: extract the shared layout body to a component and make both route layouts delegate to it.",
+        "cmp app/form/layout.tsx app/solicitar-bolsa/layout.tsx → exited 0, confirming the files are currently byte-for-byte identical."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "line": 12,
+      "hunk": "new:1-13",
+      "candidate": "Expand the compressed JSX tree into multiple lines",
+      "reason": "formatting",
+      "rule_ids": [],
+      "note": "The component is emitted as one long JSX line, but the requested change is presentation-only and has no independent maintainability boundary beyond formatter-owned wrapping."
+    },
+    {
+      "file": "docs/changes/2026-07-27.md",
+      "line": 18,
+      "hunk": "new:15-18",
+      "candidate": "Remove the trailing blank line and normalize the request prose",
+      "reason": "pre-existing",
+      "rule_ids": [],
+      "note": "This user-owned change-request document was already modified outside the implementation; its prose and EOF whitespace are not product-source debt introduced by the reviewed feature."
+    },
+    {
+      "file": "components/ui/seal-logo.tsx",
+      "line": 10,
+      "hunk": "new:10-11",
+      "candidate": "Replace the local SVG img with next/image",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The asset is a local SVG with explicit dimensions, so no concrete optimization or maintenance benefit was established for a different image component."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":"app/page.tsx","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"old:333-384","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:338-338","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:346-347","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:350-351","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:370-371","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:374-375","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:380-380","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:458-481","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:496-496","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"old:551-574","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:533-533","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:546-546","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:567-567","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:574-575","checks":["polish"],"outcome":"clear"},
+      {"file":"app/seja-um-benfeitor/page.tsx","hunk":"new:1-13","checks":["polish"],"outcome":"clear"},
+      {"file":"app/solicitar-bolsa/page.tsx","hunk":"new:1-16","checks":["polish"],"outcome":"clear"},
+      {"file":"app/solicitar-bolsa/layout.tsx","hunk":"new:1-104","checks":["polish"],"outcome":"reported"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:7-8","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:10-11","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"old:12-16","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:15-17","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:1-1","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:6-7","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:9-9","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:11-12","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"old:11-11","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:15-18","checks":["polish"],"outcome":"clear"},
+      {"file":"drizzle/0006_flimsy_spacker_dave.sql","hunk":"new:1-40","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

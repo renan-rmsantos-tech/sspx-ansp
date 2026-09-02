@@ -1,0 +1,92 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 102,
+      "end_line": 107,
+      "in_diff": true,
+      "hunk": "new:100-107",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Make the authorization fixture honor the staff role",
+      "body": "`authAs` resolves both authorization mocks for every non-null identity, including `secretaria`. The new Secretary tests therefore need one-off `mockRequireAdmin.mockRejectedValueOnce(...)` calls to simulate the production boundary, and a future direct Secretary call can accidentally execute with Administrator authorization. Configure `requireAdmin` to reject whenever `user.role === \"secretaria\"` while continuing to resolve the permitted capability mock; individual tests then start from the same role invariant as production.",
+      "rule_ids": [],
+      "also_applies": ["__tests__/admin-actions.test.ts:203-207"],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: __tests__/admin-actions.test.ts:102-107 resolves `mockRequireAdmin` and `mockRequireCapability` for every truthy user → Improvement: Secretary tests receive the production role boundary by default → Fix: branch the fixture on `user.role` and reject `mockRequireAdmin` for Secretaria.",
+        "__tests__/admin-actions.test.ts:203-207 → the restricted-detail test must add a one-off rejection because the shared Secretary fixture otherwise authorizes it.",
+        "app/admin/_actions/admin-actions.ts:42-44 → full-detail actions use `requireAdmin`, so a role-faithful mock is the relevant contract."
+      ]
+    },
+    {
+      "file": "__tests__/application-schema.test.ts",
+      "line": 151,
+      "end_line": 167,
+      "in_diff": true,
+      "hunk": "new:151-167",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Assert which required document field produced each rejection",
+      "body": "The new table-driven checks only assert `success === false`. They prove the fixture is rejected, but not that the document group under iteration is the reason; a future unrelated validation regression could keep these tests green while the required-document rule changes. Inspect the Zod issue paths and assert that each iteration includes its field, and do the same for the two student fields.",
+      "rule_ids": [],
+      "also_applies": ["__tests__/application-schema.test.ts:161-166"],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: __tests__/application-schema.test.ts:151-157 mutates one named group but asserts only the aggregate parse result → Improvement: preserves a field-specific regression signal for each mandatory upload → Fix: collect `result.error.issues` and assert the current field path is present.",
+        "__tests__/application-schema.test.ts:161-166 → the student-document loop uses the same aggregate-only assertion pattern.",
+        "lib/validations/application-schema.ts → these tests are intended to lock distinct server-side requirements, so path-level assertions make that distinction explicit."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/task_02.md",
+      "line": 2,
+      "hunk": "new:1-139",
+      "candidate": "Task status remains pending while implementation files exist in the worktree",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The planning artifact alone cannot establish that every listed acceptance criterion is complete; its pending state is not a bounded polish defect in this cohort."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file": ".compozy/tasks/donor-first-role-access/adrs/adr-003.md", "hunk": "new:1-69", "checks": ["polish"], "outcome": "clear"},
+      {"file": ".compozy/tasks/donor-first-role-access/adrs/adr-004.md", "hunk": "new:1-65", "checks": ["polish"], "outcome": "clear"},
+      {"file": ".compozy/tasks/donor-first-role-access/adrs/adr-005.md", "hunk": "new:1-68", "checks": ["polish"], "outcome": "clear"},
+      {"file": ".compozy/tasks/donor-first-role-access/adrs/adr-006.md", "hunk": "new:1-63", "checks": ["polish"], "outcome": "clear"},
+      {"file": ".compozy/tasks/donor-first-role-access/adrs/adr-007.md", "hunk": "new:1-62", "checks": ["polish"], "outcome": "clear"},
+      {"file": ".compozy/tasks/donor-first-role-access/adrs/adr-008.md", "hunk": "new:1-63", "checks": ["polish"], "outcome": "clear"},
+      {"file": ".compozy/tasks/donor-first-role-access/task_01.md", "hunk": "new:1-124", "checks": ["polish"], "outcome": "clear"},
+      {"file": ".compozy/tasks/donor-first-role-access/task_02.md", "hunk": "new:1-139", "checks": ["polish"], "outcome": "clear"},
+      {"file": ".compozy/tasks/donor-first-role-access/task_03.md", "hunk": "new:1-131", "checks": ["polish"], "outcome": "clear"},
+      {"file": ".compozy/tasks/donor-first-role-access/task_04.md", "hunk": "new:1-138", "checks": ["polish"], "outcome": "clear"},
+      {"file": ".compozy/tasks/donor-first-role-access/task_05.md", "hunk": "new:1-143", "checks": ["polish"], "outcome": "clear"},
+      {"file": "__tests__/admin-actions.test.ts", "hunk": "new:13-14", "checks": ["polish"], "outcome": "clear"},
+      {"file": "__tests__/admin-actions.test.ts", "hunk": "new:16-17", "checks": ["polish"], "outcome": "clear"},
+      {"file": "__tests__/admin-actions.test.ts", "hunk": "new:22-23", "checks": ["polish"], "outcome": "clear"},
+      {"file": "__tests__/admin-actions.test.ts", "hunk": "new:25-26", "checks": ["polish"], "outcome": "clear"},
+      {"file": "__tests__/admin-actions.test.ts", "hunk": "new:39-43", "checks": ["polish"], "outcome": "clear"},
+      {"file": "__tests__/admin-actions.test.ts", "hunk": "new:45-45", "checks": ["polish"], "outcome": "clear"},
+      {"file": "__tests__/admin-actions.test.ts", "hunk": "new:74-77", "checks": ["polish"], "outcome": "clear"},
+      {"file": "__tests__/admin-actions.test.ts", "hunk": "new:96-96", "checks": ["polish"], "outcome": "clear"},
+      {"file": "__tests__/admin-actions.test.ts", "hunk": "new:98-98", "checks": ["polish"], "outcome": "clear"},
+      {"file": "__tests__/admin-actions.test.ts", "hunk": "new:100-107", "checks": ["polish"], "outcome": "reported"},
+      {"file": "__tests__/admin-actions.test.ts", "hunk": "new:192-251", "checks": ["polish"], "outcome": "clear"},
+      {"file": "__tests__/application-schema.test.ts", "hunk": "new:24-24", "checks": ["polish"], "outcome": "clear"},
+      {"file": "__tests__/application-schema.test.ts", "hunk": "new:39-40", "checks": ["polish"], "outcome": "clear"},
+      {"file": "__tests__/application-schema.test.ts", "hunk": "new:138-138", "checks": ["polish"], "outcome": "clear"},
+      {"file": "__tests__/application-schema.test.ts", "hunk": "new:151-167", "checks": ["polish"], "outcome": "reported"},
+      {"file": "__tests__/auth-actions.test.ts", "hunk": "new:48-48", "checks": ["polish"], "outcome": "clear"},
+      {"file": "__tests__/auth-actions.test.ts", "hunk": "new:68-68", "checks": ["polish"], "outcome": "clear"},
+      {"file": "__tests__/auth-actions.test.ts", "hunk": "new:83-96", "checks": ["polish"], "outcome": "clear"}
+    ],
+    "rules": []
+  }
+}

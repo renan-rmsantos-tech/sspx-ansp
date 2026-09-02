@@ -1,0 +1,161 @@
+{
+  "sources": [
+    {
+      "source": "CLAUDE.md",
+      "kind": "instruction",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/compozy/SKILL.md",
+      "kind": "skill",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/cy-create-prd/SKILL.md",
+      "kind": "skill",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/cy-create-tasks/SKILL.md",
+      "kind": "skill",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/cy-create-techspec/SKILL.md",
+      "kind": "skill",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/cy-execute-task/SKILL.md",
+      "kind": "skill",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/cy-final-verify/SKILL.md",
+      "kind": "skill",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/cy-fix-reviews/SKILL.md",
+      "kind": "skill",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/cy-review-round/SKILL.md",
+      "kind": "skill",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/cy-workflow-memory/SKILL.md",
+      "kind": "skill",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/impeccable/SKILL.md",
+      "kind": "skill",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/compozy/references/cli-reference.md",
+      "kind": "skill-reference",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/compozy/references/config-reference.md",
+      "kind": "skill-reference",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/compozy/references/skills-reference.md",
+      "kind": "skill-reference",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/compozy/references/workflow-guide.md",
+      "kind": "skill-reference",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/cy-create-prd/references/adr-template.md",
+      "kind": "skill-reference",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/cy-create-prd/references/prd-template.md",
+      "kind": "skill-reference",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/cy-create-prd/references/question-protocol.md",
+      "kind": "skill-reference",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/cy-create-tasks/references/task-context-schema.md",
+      "kind": "skill-reference",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/cy-create-tasks/references/task-template.md",
+      "kind": "skill-reference",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/cy-create-techspec/references/adr-template.md",
+      "kind": "skill-reference",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/cy-create-techspec/references/techspec-template.md",
+      "kind": "skill-reference",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/cy-execute-task/references/tracking-checklist.md",
+      "kind": "skill-reference",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/cy-review-round/references/issue-template.md",
+      "kind": "skill-reference",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/cy-review-round/references/review-criteria.md",
+      "kind": "skill-reference",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    },
+    {
+      "source": ".agents/skills/cy-workflow-memory/references/memory-guidelines.md",
+      "kind": "skill-reference",
+      "status": "not-applicable",
+      "reason": "The source does not define review rules for the selected production paths in this round."
+    }
+  ],
+  "rules": []
+}

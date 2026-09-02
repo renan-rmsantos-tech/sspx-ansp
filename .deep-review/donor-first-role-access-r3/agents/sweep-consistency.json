@@ -1,0 +1,113 @@
+{
+  "defects": [
+    {
+      "file": "app/page.tsx",
+      "line": 574,
+      "end_line": 575,
+      "in_diff": true,
+      "hunk": "new:574-575",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": true,
+      "title": "Quick-access order still makes scholarship primary",
+      "body": "Premise: `app/page.tsx:574-575` renders the scholarship link before `Seja um benfeitor`, while the updated primary navigation (`app/page.tsx:344-347`) and content bands (`app/page.tsx:459-483`) correctly place benefactor enrollment first → Path: a visitor using the footer's ‘Acesso rápido’ follows the remaining public shortcut → Verdict: one of the explicitly required public entry points contradicts the donor-first hierarchy and exposes the secondary scholarship journey first. Swap these two list items so all three hierarchy surfaces use the same order.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/page.tsx:344-350 puts benefactor enrollment first in the primary navigation and CTA → Path: app/page.tsx:574-575 is the footer quick-access route that visitors can use instead → Verdict: it reverses the required primary/secondary order.",
+        "Premise: app/page.tsx:459-506 places the benefactor band before the scholarship band → Path: the footer represents the remaining quick-access surface → Verdict: its opposite order leaves the donor-first invariant incomplete.",
+        "Premise: .compozy/tasks/donor-first-role-access/task_04.md:5 requires benefactor enrollment before scholarship in quick access → Path: app/page.tsx:574-575 renders scholarship first → Verdict: the explicit route-hierarchy acceptance criterion fails."
+      ]
+    },
+    {
+      "file": "lib/validations/application-schema.ts",
+      "line": 36,
+      "end_line": 37,
+      "in_diff": true,
+      "hunk": "new:36-37",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Server accepts one uploaded path as every required document",
+      "body": "Premise: the newly required student fields at `lib/validations/application-schema.ts:36-37` (and every other required upload field) all use `requiredFileArray`, whose shared path predicate only checks `pending/` and absence of `..` (`lib/validations/application-schema.ts:18-24`) → Path: a direct `submitApplication` caller can obtain one valid pending upload (including a `recibo_pagamento` ticket) and submit that same path in the vacancy, parent, marriage, address, income, bank, identity, and birth-certificate arrays; `collectDocumentRows` then persists it under each asserted category (`app/form/_actions/form-actions.ts:277-291`) → Verdict: server-side validation does not prove category-specific document requirements, so a direct call bypasses the enabled-flow document contract and may leave duplicate rows pointing at a path moved only once. Validate each field against its expected path category (and the student index for student documents), rejecting duplicate/reused paths as appropriate.",
+      "also_applies": [
+        "lib/validations/application-schema.ts:77",
+        "lib/validations/application-schema.ts:84",
+        "lib/validations/application-schema.ts:91",
+        "lib/validations/application-schema.ts:94",
+        "lib/validations/application-schema.ts:99",
+        "lib/validations/application-schema.ts:119",
+        "lib/validations/application-schema.ts:130",
+        "app/form/_actions/form-actions.ts:277-291"
+      ],
+      "rule_ids": [],
+      "evidence": [
+        "Premise: lib/validations/application-schema.ts:18-30 accepts any non-traversal pending path for every required array → Path: a direct caller can put one ticketed path into all required fields → Verdict: category-specific document requirements are bypassed.",
+        "Premise: app/form/_actions/form-actions.ts:32-37 encodes a category into upload paths, including recibo_pagamento → Path: the generic schema predicate does not compare that encoded category with the receiving field → Verdict: a donor-receipt path can satisfy scholarship-document fields.",
+        "Premise: app/form/_actions/form-actions.ts:277-291 relabels submitted paths as asserted document categories → Path: duplicated identical pending paths are moved after commit one row at a time → Verdict: the first move can leave later metadata rows referring to the old path.",
+        "Premise: .compozy/tasks/donor-first-role-access/task_05.md:28-34 requires direct calls to enforce category-specific document requirements → Path: the new fields reuse the category-agnostic predicate → Verdict: the changed server contract does not meet its stated acceptance criterion."
+      ]
+    },
+    {
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "line": 12,
+      "end_line": 12,
+      "in_diff": true,
+      "hunk": "new:1-12",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Canonical donor flow dropped its payment instructions",
+      "body": "Premise: the legacy donor page removed in this change contained the Pix/transfer account details, while the canonical page now renders only its short header and `DonorForm` at `app/seja-um-benfeitor/page.tsx:12` → Path: the retained form still tells a donor to upload a receipt ‘Após realizar o Pix ou a transferência’ (`app/benfeitor/_components/donor-form.tsx:344`) but provides neither Pix nor transfer destination → Verdict: visitors routed to the new canonical donor journey cannot complete the advertised payment/receipt step. Preserve the institutional and bank-transfer section in the canonical page (or render an equivalent source shared with the form).",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: git diff 5c90842fe230 -- app/benfeitor/page.tsx shows the removed route had ACIPEC/Santander, agency, account, and CNPJ details → Path: the canonical route replaced it → Verdict: the canonical flow lost the payment destination.",
+        "Premise: app/seja-um-benfeitor/page.tsx:12 renders only a header and DonorForm → Path: a donor reaches this route through every updated public CTA → Verdict: no payment instructions are available on the new journey.",
+        "Premise: app/benfeitor/_components/donor-form.tsx:344 instructs the visitor to send a receipt after Pix or transfer → Path: the form provides no corresponding Pix or transfer destination → Verdict: the payment-and-receipt workflow cannot be completed from the canonical page.",
+        "Premise: .compozy/tasks/donor-first-role-access/task_04.md:1-2 makes the canonical route the donor-enrollment implementation → Path: payment information stayed only in deleted legacy markup → Verdict: the route transition regresses the existing enrollment journey."
+      ]
+    },
+    {
+      "file": "app/solicitar-bolsa/page.tsx",
+      "line": 1,
+      "end_line": 11,
+      "in_diff": true,
+      "hunk": "new:1-11",
+      "category": "potential-issue",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Canonical scholarship route lost its route metadata",
+      "body": "Premise: `app/form/page.tsx` is now only a permanent redirect, and its former metadata remains attached to the unused legacy `app/form/layout.tsx`; the new canonical `app/solicitar-bolsa/page.tsx:1-11` exports no `metadata` → Path: requests and crawlers for `/solicitar-bolsa` resolve the canonical page but inherit only root metadata rather than the scholarship-specific title and description → Verdict: the route-transition requirement that canonical metadata describe the correct flow is not met. Move or define the scholarship metadata on the canonical route/layout.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/form/page.tsx:1-5 makes the legacy segment a redirect only → Path: crawlers resolve /solicitar-bolsa as the canonical page → Verdict: metadata scoped only to app/form no longer describes the public destination.",
+        "Premise: app/form/layout.tsx:5-9 contains scholarship-specific metadata → Path: app/solicitar-bolsa/page.tsx:1-11 is a separate segment without a metadata export → Verdict: the canonical page inherits generic metadata instead.",
+        "Premise: .compozy/tasks/donor-first-role-access/task_04.md:105-108 requires canonical metadata for the correct flow → Path: the metadata was not moved with the implementation → Verdict: the route-transition acceptance criterion is unmet."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/page.tsx",
+      "line": 230,
+      "hunk": null,
+      "candidate": "FSSPX footer text might clip at an unrendered breakpoint",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The full affiliation text exists and the inspected CSS supplies responsive one-column layout; without rendered viewport evidence this sweep cannot certify a concrete clipping failure."
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 20,
+      "hunk": null,
+      "candidate": "Concurrent issued-document versions could collide",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The transaction acquires a PostgreSQL advisory transaction lock keyed by application and kind before reading the latest version, which addresses the cross-request version race."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

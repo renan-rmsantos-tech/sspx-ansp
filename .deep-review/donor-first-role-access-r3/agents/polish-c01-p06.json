@@ -1,0 +1,101 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 20,
+      "end_line": 20,
+      "in_diff": true,
+      "hunk": "new:1-66",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Use the typed transaction query API instead of casting it to the root database",
+      "body": "The double cast makes the relation query appear to be the root `db` inside a transaction, so future changes to the transaction or query shape can silently escape TypeScript's checking. Read the latest version with `tx.select(...).from(...).where(...).orderBy(...).limit(1)` and insert with `tx.insert(...)`; this keeps both operations visibly bound to the same typed transaction.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:20 casts `tx` through `unknown` to `typeof db` before querying → Improvement: retain compile-time transaction-bound query types → Fix: replace the relation query and cast with a direct `tx.select` query for the latest version.",
+        "lib/documents/issued-documents.ts:19-38 → the advisory lock, latest-version read, and insert are intended to run in the same transaction."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1201,
+      "hunk": "new:1201-1596",
+      "candidate": "Reformat or hand-simplify generated Drizzle snapshot metadata",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "The snapshot is Drizzle-generated migration metadata; schema and SQL are the maintainable sources reviewed elsewhere."
+    },
+    {
+      "file": "drizzle/meta/_journal.json",
+      "line": 46,
+      "hunk": "new:46-52",
+      "candidate": "Change generated journal entry layout or timestamp",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "The journal entry is generated migration bookkeeping and matches migration index 0006."
+    },
+    {
+      "file": "lib/db/schema.ts",
+      "line": 341,
+      "hunk": "new:341-404",
+      "candidate": "Enforce append-only observations with database-level mutation prevention",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "No application caller in the inspected checkout updates or deletes observations; a database trigger would be a separate policy design rather than a bounded local polish change."
+    },
+    {
+      "file": "lib/form/scholarship-uploads.ts",
+      "line": 1,
+      "hunk": "old:1-9",
+      "candidate": "Retain the temporary scholarship upload feature flag",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The implementation contract explicitly makes the enabled upload path the only supported behavior and removes the temporary gate."
+    },
+    {
+      "file": "public/seal-arca.svg",
+      "line": 9,
+      "hunk": "new:1-17",
+      "candidate": "Replace the embedded image payload with an independently optimized asset",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The executable asset is an exact copy of the approved Open Design master, as required by the technical specification; altering it would require a separate approval of the brand asset."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":"drizzle/meta/0006_snapshot.json","hunk":"new:1201-1596","checks":["polish"],"outcome":"clear"},
+      {"file":"drizzle/meta/_journal.json","hunk":"new:46-52","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/auth/authorization.ts","hunk":"new:1-83","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:1-1","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:26-27","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:31-33","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:341-404","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:414-415","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:426-455","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/documents/issued-documents.ts","hunk":"new:1-66","checks":["polish"],"outcome":"reported"},
+      {"file":"lib/form/scholarship-uploads.ts","hunk":"old:1-9","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"old:3-3","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"old:28-29","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"old:34-38","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:36-37","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:77-77","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:84-84","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:91-91","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:94-94","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:99-99","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:119-119","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:130-130","checks":["polish"],"outcome":"clear"},
+      {"file":"public/seal-arca.svg","hunk":"new:1-17","checks":["polish"],"outcome":"clear"},
+      {"file":"scripts/bootstrap.ts","hunk":"new:44-49","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

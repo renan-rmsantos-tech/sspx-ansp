@@ -1,0 +1,111 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 20,
+      "end_line": 20,
+      "in_diff": true,
+      "hunk": "new:1-67",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Remove the opaque transaction-to-database cast",
+      "body": "The double assertion makes the transaction look exactly like the root Drizzle client, including the relational query API, so TypeScript cannot detect a future mismatch in the transaction surface. Use the typed transaction query builder (or a small typed repository function accepting the transaction) for the version lookup and insert instead.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:20 casts tx through unknown to typeof db → Improvement: preserves compile-time checking of the transaction API used for the serialized version allocation → Fix: express the lookup and insert against the transaction's native typed query builder or a transaction-parameterized repository helper.",
+        "lib/documents/issued-documents.ts:19-39 → the cast is the sole type bridge for both the version query and insert inside the locked transaction."
+      ]
+    },
+    {
+      "file": "public/seal-arca.svg",
+      "line": 1,
+      "end_line": 17,
+      "in_diff": true,
+      "hunk": "new:1-17",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Publish a web-sized seal asset",
+      "body": "This public SVG embeds a 2048px base64 PNG and is 1,880,568 bytes. Every public page that renders the seal downloads that payload as an SVG asset; create a web-sized optimized rendition before publishing it under public/.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: public/seal-arca.svg:1-17 embeds its raster artwork as a data URI → Improvement: reduces public-page transfer and decode cost while keeping the same seal treatment → Fix: export and commit an optimized web-resolution seal instead of the 2048px master with embedded PNG.",
+        "wc -c public/seal-arca.svg docs/design/opendesign/assets/seal-arca-master.svg → the served asset is an unchanged 1,880,568-byte design master."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1201,
+      "hunk": "new:1201-1596",
+      "candidate": "Hand-simplify the migration snapshot",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "The snapshot is Drizzle-generated migration metadata; manual simplification would make it diverge from the schema generator."
+    },
+    {
+      "file": "drizzle/meta/_journal.json",
+      "line": 46,
+      "hunk": "new:46-52",
+      "candidate": "Reformat the journal entry",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "The journal is generated Drizzle migration bookkeeping and the added entry is structurally consistent with prior entries."
+    },
+    {
+      "file": "lib/form/scholarship-uploads.ts",
+      "line": 1,
+      "hunk": "old:1-9",
+      "candidate": "Keep a disabled-upload compatibility flag",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The deletion implements the specified permanent removal of the provisional upload gate."
+    },
+    {
+      "file": "lib/validations/application-schema.ts",
+      "line": 27,
+      "hunk": "new:36-37",
+      "candidate": "Duplicate required-file validation across document fields",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "All fields share the single requiredFileArray schema, and distinct student fields are necessary to retain the required transport distinction."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":"drizzle/meta/0006_snapshot.json","hunk":"new:1201-1596","checks":["polish"],"outcome":"clear"},
+      {"file":"drizzle/meta/_journal.json","hunk":"new:46-52","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/auth/authorization.ts","hunk":"new:1-83","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:1-1","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:26-27","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:31-33","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:341-404","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:414-415","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:426-455","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/documents/issued-documents.ts","hunk":"new:1-67","checks":["polish"],"outcome":"reported"},
+      {"file":"lib/form/scholarship-uploads.ts","hunk":"old:1-9","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"old:3-3","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"old:28-29","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"old:34-38","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:36-37","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:77-77","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:84-84","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:91-91","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:94-94","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:99-99","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:119-119","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:130-130","checks":["polish"],"outcome":"clear"},
+      {"file":"public/seal-arca.svg","hunk":"new:1-17","checks":["polish"],"outcome":"reported"},
+      {"file":"scripts/bootstrap.ts","hunk":"new:44-49","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

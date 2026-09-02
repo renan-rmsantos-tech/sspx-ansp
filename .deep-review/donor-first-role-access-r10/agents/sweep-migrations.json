@@ -1,0 +1,48 @@
+{
+  "defects": [
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 26,
+      "end_line": 31,
+      "in_diff": true,
+      "hunk": "new:1-40",
+      "category": "potential-issue",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Migration rollout is not covered against populated data",
+      "body": "Premise: `0006` mutates populated `admin_users` rows at lines 26–31, but the repository has no test that runs the migration against the preceding schema and a legacy user/application decision. → Path: a future edit to the ordering, backfill, or constraints can pass the fake-DB action suite without exercising the deployed DDL path. → Verdict: the required populated-database compatibility behavior can regress undetected.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: `0006` changes populated `admin_users` rows → Path: no automated migration invocation establishes the pre-0006 legacy-user/decision state → Verdict: rollout compatibility regressions are not detected before deployment.",
+        "drizzle/0006_flimsy_spacker_dave.sql:26-31 → role is added nullable, backfilled, constrained, then made non-null on an existing table.",
+        ".compozy/tasks/donor-first-role-access/task_01.md:105-111 → the implementation contract explicitly requires integration coverage for legacy identities, decision references, constraints, foreign keys, and additive migration behavior.",
+        "rg -n -i 'migration|migrat|0006|legacy' __tests__ → no test file invokes Drizzle migrations or creates the required pre-0006 populated database state."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 26,
+      "hunk": "new:1-40",
+      "candidate": "Role constraints could reject legacy accounts during rollout",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The migration explicitly adds nullable role, backfills every null role to admin, then adds the check and non-null enforcement; this matches the documented migration sequence."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 32,
+      "hunk": "new:1-40",
+      "candidate": "New foreign keys could invalidate the existing data model",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Both new tables start empty and their foreign keys target pre-existing primary keys; the specified application cascade and staff restriction are encoded explicitly."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

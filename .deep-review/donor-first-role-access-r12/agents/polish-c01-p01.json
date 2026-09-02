@@ -1,0 +1,80 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 207,
+      "end_line": 216,
+      "in_diff": true,
+      "hunk": "new:1-707",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Remove o pseudo-contrato Go sem consumidor",
+      "body": "O TechSpec introduz um struct Go apenas para alegada conformidade de template, embora o projeto seja Next.js/TypeScript e o próprio texto diga que não há componente Go. Mantê-lo cria uma segunda representação de identidade que não é usada nem verificada e aumenta o risco de documentação divergente.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:207-216 declara que CapabilityContext é somente uma estrutura Go de conformidade e não introduz runtime → Improvement: elimina uma representação de contrato sem consumidor, deixando a especificação alinhada ao runtime TypeScript → Fix: remova o parágrafo e o bloco Go.",
+        "package.json:1-90 → os scripts e dependências são de uma aplicação Next.js/TypeScript; não há runtime Go declarado.",
+        "rg -n \"CapabilityContext\" . --glob '!**/.deep-review/**' → a única ocorrência é o bloco documental, sem consumidor ou teste."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+      "line": 7,
+      "hunk": "new:1-11",
+      "candidate": "Os status pending das tarefas 02 a 05 parecem defasados em relação aos arquivos de implementação.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "O registro de tarefas é o artefato de acompanhamento da entrega e a rodada ainda está em andamento; não há evidência objetiva de que os status devam mudar antes do aceite final."
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 535,
+      "hunk": "new:1-707",
+      "candidate": "A seção de testes lista cenários de integração além dos gates npm test e npm run build.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "A seção é planejamento de cobertura, não uma alegação de que os testes de integração já fazem parte dos scripts de gate; os dois gates obrigatórios estão explicitados nas linhas 611-616."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+        "hunk": "new:1-330",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+        "hunk": "new:1-11",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+        "hunk": "new:1-707",
+        "checks": ["polish"],
+        "outcome": "reported"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md",
+        "hunk": "new:1-67",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md",
+        "hunk": "new:1-76",
+        "checks": ["polish"],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

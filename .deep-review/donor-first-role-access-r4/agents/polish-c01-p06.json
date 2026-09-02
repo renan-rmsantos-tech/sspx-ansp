@@ -1,0 +1,104 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 20,
+      "end_line": 20,
+      "in_diff": true,
+      "hunk": "new:1-66",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Evite mascarar o tipo da transação como o cliente global",
+      "body": "O cast duplo permite chamar a API relacional do cliente global dentro da transação sem que TypeScript possa confirmar que ela existe no objeto transacional. Consulte a versão com o query builder do próprio `tx` (por exemplo, `tx.select({ version: issuedDocuments.version })...`) e mantenha o tipo real da transação; assim uma mudança na API do driver não vira uma falha de emissão em tempo de execução.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:20 converte `tx` por `unknown` para `typeof db` → Improvement: preserva a verificação estática da API transacional → Fix: substitua a leitura `query.issuedDocuments.findFirst` por uma seleção tipada no próprio `tx`.",
+        "lib/db.ts:17 → `db` é o cliente Drizzle completo, enquanto o callback de `transaction` recebe o objeto transacional.",
+        "__tests__/helpers/fake-db.ts:122 → o teste também aceita `tx` como `unknown`, portanto não oferece proteção de tipo para este cast."
+      ]
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 51,
+      "end_line": 57,
+      "in_diff": true,
+      "hunk": "new:1-66",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Busque somente as versões atuais no banco",
+      "body": "A tela e a autorização precisam somente da maior versão de cada tipo, mas a função lê todas as versões imutáveis e as descarta em memória. À medida que reemissões se acumulam, isso transfere histórico desnecessário para cada consulta. Use `selectDistinctOn([issuedDocuments.kind], ...)` com ordenação por tipo e versão decrescente (Postgres já é o banco do projeto) para retornar no máximo decisão e contrato.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:51-57 faz `findMany` de todo o histórico e filtra com `Set` → Improvement: limita a leitura a dois registros independentemente de reemissões → Fix: faça a deduplicação por `DISTINCT ON` na consulta Postgres.",
+        "lib/db/schema.ts:391-400 → o índice existente já ordena `application_id`, `kind` e `version DESC`, compatível com a seleção das versões atuais.",
+        "__tests__/issued-documents.test.ts:29-36 → o contrato observável da função é retornar apenas a maior versão por tipo."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1201,
+      "hunk": "new:1201-1596",
+      "candidate": "Reformatar ou simplificar o snapshot extenso da migração",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "O snapshot é metadado gerado do Drizzle; a inspeção confirmou que contém as três tabelas e colunas correspondentes ao schema." 
+    },
+    {
+      "file": "public/seal-arca.svg",
+      "line": 11,
+      "hunk": "new:1-17",
+      "candidate": "Extrair a imagem PNG embutida para reduzir o SVG",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "A especificação exige copiar o master aprovado como um único ativo executável; alterar o conteúdo incorporado deixaria de ser essa cópia." 
+    },
+    {
+      "file": "lib/form/scholarship-uploads.ts",
+      "line": 1,
+      "hunk": "old:1-9",
+      "candidate": "Preservar o flag de uploads para alternância futura",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "A especificação define o caminho habilitado como o único comportamento suportado, portanto a exclusão do flag temporário é deliberada." 
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":"drizzle/meta/0006_snapshot.json","hunk":"new:1201-1596","checks":["polish"],"outcome":"clear"},
+      {"file":"drizzle/meta/_journal.json","hunk":"new:46-52","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/auth/authorization.ts","hunk":"new:1-83","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:1-1","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:26-27","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:31-33","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:341-404","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:414-415","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:426-455","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/documents/issued-documents.ts","hunk":"new:1-66","checks":["polish"],"outcome":"reported"},
+      {"file":"lib/form/scholarship-uploads.ts","hunk":"old:1-9","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"old:3-3","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"old:28-29","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"old:34-38","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:36-37","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:77-77","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:84-84","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:91-91","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:94-94","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:99-99","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:119-119","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:130-130","checks":["polish"],"outcome":"clear"},
+      {"file":"public/seal-arca.svg","hunk":"new:1-17","checks":["polish"],"outcome":"clear"},
+      {"file":"scripts/bootstrap.ts","hunk":"new:44-49","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

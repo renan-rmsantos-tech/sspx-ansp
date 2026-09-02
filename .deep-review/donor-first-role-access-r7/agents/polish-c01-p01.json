@@ -1,0 +1,89 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+      "line": 8,
+      "end_line": 11,
+      "in_diff": true,
+      "hunk": "new:1-11",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Atualize o rastreador para refletir as tarefas entregues",
+      "body": "As tarefas 02–05 continuam marcadas como `pending`, embora o mesmo change set já inclua seus módulos, rotas, migração e testes. Isso torna o artefato de acompanhamento inconsistente com a entrega e impede que um leitor determine quais critérios ainda demandam trabalho. Marque cada tarefa concluída após conferir seus critérios de aceite e os gates finais.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_tasks.md:8-11 mantém as quatro tarefas de implementação como `pending` → Improvement: o status passa a comunicar com precisão o estado da release e os critérios restantes → Fix: após a verificação final de cada tarefa, altere seus quatro status para `completed`.",
+        "git diff --name-status 5c90842fe230 → o change set inclui implementações e testes correspondentes a perfis, documentos emitidos, experiência pública e uploads."
+      ]
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 207,
+      "end_line": 216,
+      "in_diff": true,
+      "hunk": "new:1-707",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Remova o exemplo Go que não pertence ao runtime",
+      "body": "A TechSpec de uma aplicação TypeScript introduz um `CapabilityContext` em Go apenas para uma alegada conformidade de template, sem consumidor ou outra referência Go no projeto. O contrato fica duplicado e pode divergir do `StaffIdentity` TypeScript que a própria seção já define. Preserve somente a interface TypeScript como fonte documental do contrato de autorização.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:207-216 adiciona uma struct Go declarada como sem componente de runtime → Improvement: elimina um segundo contrato sem consumidor e reduz risco de divergência da interface TypeScript → Fix: remova o bloco de explicação e a struct Go, mantendo `StaffIdentity` em linhas 167-179 como contrato documentado.",
+        "rg -n --glob '!public/seal-arca.svg' 'CapabilityContext|```go|\\bGo\\b' . → a ocorrência pertinente está somente neste bloco da TechSpec."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+      "line": 328,
+      "hunk": "new:1-330",
+      "candidate": "A pergunta aberta sobre a caixa postal poderia ser removida do PRD.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "A dependência operacional é explicitamente condicionada à confirmação antes da publicação em _techspec.md:497-501; mantê-la visível no PRD é uma decisão de rollout, não dívida de redação."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+        "hunk": "new:1-330",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+        "hunk": "new:1-11",
+        "checks": ["polish"],
+        "outcome": "reported"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+        "hunk": "new:1-707",
+        "checks": ["polish"],
+        "outcome": "reported"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md",
+        "hunk": "new:1-67",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md",
+        "hunk": "new:1-76",
+        "checks": ["polish"],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

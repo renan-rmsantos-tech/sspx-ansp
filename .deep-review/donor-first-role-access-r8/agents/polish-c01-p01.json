@@ -1,0 +1,71 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 407,
+      "end_line": 408,
+      "in_diff": true,
+      "hunk": "new:1-707",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Align the issued-document action names with the implemented surface",
+      "body": "The action table calls the issuance operations `issueDecision` and `issueContract`, but the task specification and implementation expose the persisted operations as `exportDecision` and `exportContract`. Using the actual names in this contract prevents a future maintainer from looking for nonexistent actions or introducing duplicate wrappers.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:407-408 names `issueDecision` and `issueContract` → Improvement: one action vocabulary makes the technical contract searchable and unambiguous → Fix: rename those two table entries to `exportDecision` and `exportContract`, retaining their described issuance behavior.",
+        ".compozy/tasks/donor-first-role-access/task_03.md:52 → the task explicitly identifies the existing `exportDecision` and `exportContract` actions as the issuance surface to evolve.",
+        "app/admin/_actions/admin-actions.ts:491,741 → the exported server-action symbols are `exportDecision` and `exportContract`; no `issueDecision` or `issueContract` action exists."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 207,
+      "hunk": "new:1-707",
+      "candidate": "Documentation-only Go capability struct in a TypeScript application",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The surrounding text explicitly identifies the struct as workflow-template compliance only and says it introduces no Go runtime component."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+        "hunk": "new:1-330",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+        "hunk": "new:1-11",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+        "hunk": "new:1-707",
+        "checks": ["polish"],
+        "outcome": "reported"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md",
+        "hunk": "new:1-67",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md",
+        "hunk": "new:1-76",
+        "checks": ["polish"],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

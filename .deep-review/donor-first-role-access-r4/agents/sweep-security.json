@@ -1,0 +1,55 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "lib/auth/authorization.ts",
+      "line": 53,
+      "hunk": "new:1-83",
+      "candidate": "Session claims could retain a role after a database revocation",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "requireStaff reloads id, email, role, and ativo from admin_users on every protected operation; requireAdmin and requireCapability consume that database-backed identity."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 64,
+      "hunk": "new:64-83",
+      "candidate": "Secretariat application query could expose financial or evidence fields",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The secretaria branch uses an explicit columns projection and a student name/id projection; it omits incomes, expenses, CPF/RG, discounts, rationale, and documents. Full detail remains requireAdmin-only."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 822,
+      "hunk": "new:808-837",
+      "candidate": "A Secretariat caller could turn an old, ineligible, or contract document ID into a download ticket",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The action resolves metadata server-side, then Secretariat callers must match getCurrentIssuedDocuments, which excludes pending applications, rejected contracts, and non-current versions before the ticket is created."
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 36,
+      "hunk": "new:32-59",
+      "candidate": "Public upload category input could form an arbitrary or traversal storage path",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Categories are a fixed allowlist plus indexed student patterns; filename dot segments are rejected and submission independently requires exact pending/UUID/category/filename shapes."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 231,
+      "hunk": null,
+      "candidate": "Legacy raw-path applicant-evidence download helper could be reached by Secretariat",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "getDocumentUrl remains requireAdmin-only (and this change routes it through the database-backed requireAdmin helper); final-document downloads use the separate ID-based action."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

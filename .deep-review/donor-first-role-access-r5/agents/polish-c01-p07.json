@@ -1,0 +1,93 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 20,
+      "end_line": 20,
+      "in_diff": true,
+      "hunk": "new:1-67",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Remova a asserção que mascara a API transacional",
+      "body": "A asserção dupla faz `tx` parecer o cliente global, embora só seja usada para acessar o query builder. Consultar a versão diretamente com `tx.select` elimina a fuga de tipos e mantém esta rotina verificável quando a API do Drizzle ou seus mocks mudarem.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:20 converte `tx` para `typeof db` via `unknown` → Improvement: preserva a checagem de tipos da transação e reduz o acoplamento desta função à forma do cliente global → Fix: substitua `queryable.query.issuedDocuments.findFirst` por uma consulta `tx.select` que obtenha a maior versão e use `tx.insert` diretamente.",
+        "lib/documents/issued-documents.ts:19-39 → toda a leitura e a escrita já ocorrem dentro do callback da transação; o cast serve apenas para contornar a tipagem."
+      ]
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 58,
+      "end_line": 58,
+      "in_diff": true,
+      "hunk": "new:1-67",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Torne explícita a seleção da versão corrente",
+      "body": "A expressão com vírgula dentro de `filter` mistura deduplicação e predicado de retenção. Um laço simples ou uma condição com `if` deixa claro que a primeira versão de cada tipo é a escolhida e evita depender do valor de retorno de `Set.add`.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:57-58 usa `!seen.has(...) && (seen.add(...), true)` como predicado → Improvement: torna a regra de seleção da versão corrente legível sem efeito colateral embutido → Fix: percorra os itens ordenados, pule os tipos já vistos e acrescente os restantes a um array de resultado.",
+        "lib/documents/issued-documents.ts:51-59 → a consulta é ordenada por versão decrescente, portanto a regra depende de preservar apenas a primeira ocorrência por `kind`."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1201,
+      "hunk": "new:1201-1596",
+      "candidate": "Simplificar ou editar manualmente o snapshot de metadados do Drizzle",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "O snapshot é artefato gerado da migração; uma alteração manual seria frágil e não é uma melhoria de manutenção acionável."
+    },
+    {
+      "file": "drizzle/meta/_journal.json",
+      "line": 46,
+      "hunk": "new:46-52",
+      "candidate": "Reformatar a entrada do journal da migração",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "O journal é mantido pelo gerador de migrações e a entrada segue as entradas existentes."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":"drizzle/meta/0006_snapshot.json","hunk":"new:1201-1596","checks":["polish"],"outcome":"clear"},
+      {"file":"drizzle/meta/_journal.json","hunk":"new:46-52","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/auth/authorization.ts","hunk":"new:1-83","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:1-1","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:26-27","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:31-33","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:341-404","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:414-415","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:426-455","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/documents/issued-documents.ts","hunk":"new:1-67","checks":["polish"],"outcome":"reported"},
+      {"file":"lib/form/scholarship-uploads.ts","hunk":"old:1-9","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"old:3-3","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"old:28-29","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"old:34-38","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:36-37","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:77-77","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:84-84","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:91-91","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:94-94","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:99-99","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:119-119","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:130-130","checks":["polish"],"outcome":"clear"},
+      {"file":"public/seal-arca.svg","hunk":"new:1-17","checks":["polish"],"outcome":"clear"},
+      {"file":"scripts/bootstrap.ts","hunk":"new:44-49","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

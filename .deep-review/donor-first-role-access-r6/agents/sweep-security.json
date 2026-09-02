@@ -1,0 +1,58 @@
+{
+  "defects": [
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 231,
+      "end_line": 251,
+      "in_diff": false,
+      "hunk": null,
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": true,
+      "title": "The path-based ticket action also authorizes final-document paths",
+      "body": "Premise: `getDocumentUrl` accepts the caller-controlled `path` and signs every existing storage object after only an Administrator check, while the new final-document design explicitly makes the persisted issued-document ID the authorization handle and keeps `storage_path` server-only. → Path: an Administrator client invokes `getDocumentUrl(\"applications/{applicationId}/issued/{kind}/{uuid}.pdf\")` instead of `getIssuedDocumentUrl(id)`, and receives a valid download ticket for that final document. → Verdict: final-document authorization can be bypassed through an arbitrary path rather than the issued-document ID boundary, defeating the intended namespace/metadata policy and making future role-specific controls easier to bypass. Reject `applications/*/issued/*` paths in this legacy applicant-evidence action and leave final documents reachable only through `getIssuedDocumentUrl`.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/admin/_actions/admin-actions.ts:231-251 accepts a caller-controlled path and signs any existing storage object. → Path: an Administrator invokes getDocumentUrl for applications/{applicationId}/issued/{kind}/{uuid}.pdf instead of getIssuedDocumentUrl(id). → Verdict: a final document is authorized by arbitrary path rather than its persisted issued-document ID.",
+        "app/admin/_actions/admin-actions.ts:231-251 → getDocumentUrl accepts a path parameter, checks storage existence, and creates a download ticket without validating the path namespace or an issued-document record.",
+        "app/admin/_actions/admin-actions.ts:822-831 → getIssuedDocumentUrl already resolves a persisted issued-document ID and applies current-version restrictions for Secretaria.",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:300-317 → final-document storage_path is server-only and the persisted issued-document ID is the authorization handle.",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:559-570 → download authorization must use document ID and reject applicant evidence."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/api/documents/route.ts",
+      "line": 13,
+      "hunk": null,
+      "candidate": "Download ticket is not bound to an active session when redeemed",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The TechSpec explicitly keeps the endpoint ticket-only and places authorization before ticket issuance; tickets are HMAC-signed and expire after 300 seconds."
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 96,
+      "hunk": null,
+      "candidate": "Public uploader does not inspect file contents or allowlist extensions",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The supplied filename is sanitized, destination category is server-allowlisted, storage resolves paths within its root, and unknown extensions are served as application/octet-stream; no concrete executable-content or path-escape flow was found."
+    },
+    {
+      "file": "app/admin/_actions/observation-actions.ts",
+      "line": 11,
+      "hunk": null,
+      "candidate": "Observation body may contain markup supplied by Secretariat",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The only reviewed renderer places body in a React text node and does not use dangerouslySetInnerHTML, so markup is escaped rather than executed."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

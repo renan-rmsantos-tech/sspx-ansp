@@ -1,0 +1,114 @@
+{
+  "defects": [
+    {
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 96,
+      "end_line": 142,
+      "in_diff": true,
+      "hunk": null,
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Privileged action tests do not exercise a real Secretaria denial matrix",
+      "body": "Premise: __tests__/admin-actions.test.ts:96-105 makes both mocked guards resolve for any non-null identity, including the Secretaria fixture at :191, while :117-142 tests only an unauthenticated caller. → Path: a future change that replaces requireAdmin() in approve/reject, applicant-detail/evidence, donor mutation/export, templates, or school-year actions with a Secretariat capability will still make every current test pass. → Verdict: the suite cannot detect a regression that grants a Secretaria role prohibited administrative operations, despite Task 2 requiring a deny assertion for every exported action outside the explicit matrix. Add a table-driven test that configures requireAdmin to reject and requireCapability to resolve for Secretaria, then verifies every privileged export rejects before any database/storage call; keep separate positive tests only for the approved operational actions.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: __tests__/admin-actions.test.ts:96-105 resolves both authorization mocks for every authenticated identity → Path: a privileged action is weakened from requireAdmin() to an operational capability that resolves for Secretaria → Verdict: the suite stays green while Secretaria gains a prohibited administrative operation.",
+        "__tests__/admin-actions.test.ts:117-142 → the exhaustive guard test covers no-session access only.",
+        "__tests__/admin-actions.test.ts:190-208 → the only Secretaria cases cover current issued documents and manually force a single history rejection.",
+        ".compozy/tasks/donor-first-role-access/task_02.md → requires every exported administrative action to accept Administrator and deny Secretaria unless explicitly granted."
+      ]
+    },
+    {
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 154,
+      "end_line": 188,
+      "in_diff": true,
+      "hunk": null,
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": true,
+      "title": "Secretariat projections have no field-level regression test",
+      "body": "Premise: __tests__/admin-actions.test.ts:154-188 exercises getApplications only with the default Administrator identity and asserts returned fixture data, while no test invokes getApplications or getDonorPledges as Secretaria or inspects the Drizzle columns. → Path: adding cpf, income, discounts, rationale, documents, receipt metadata, or another sensitive field to either Secretaria query in app/admin/_actions/admin-actions.ts will leave the current suite green. → Verdict: the changed server-side privacy boundary has no failing-capable protection against leaking family or donor data to the Secretaria client. Add role-specific tests that assert the exact selected and returned key sets (including nested students) and that forbidden fields are absent for both application and donor projections.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: __tests__/admin-actions.test.ts:154-188 calls getApplications only as the default Administrator and asserts no selected/returned keys → Path: a forbidden sensitive column is added to a Secretaria application or donor projection → Verdict: family or donor data reaches the Secretaria client while npm test remains green.",
+        "rg --files __tests__ → no dedicated benfeitores role-access/projection test exists in the current suite.",
+        "app/admin/_actions/admin-actions.ts:43-86 → the Secretariat application projection is an explicit columns allowlist distinct from the Administrator query.",
+        "app/admin/_actions/admin-actions.ts:103-132 → the Secretariat donor projection is an explicit columns allowlist distinct from the Administrator query."
+      ]
+    },
+    {
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 536,
+      "end_line": 706,
+      "in_diff": true,
+      "hunk": null,
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": true,
+      "title": "PDF export tests do not prove immutable issuance is wired to exports",
+      "body": "Premise: __tests__/issued-documents.test.ts:15-34 verifies persistIssuedDocument in isolation, but the decision and contract export tests at __tests__/admin-actions.test.ts:536-706 assert only base64/filename/template rendering and never inspect storage or issued_documents writes. → Path: deleting or bypassing persistIssuedDocument after either render leaves exports visually successful and all current tests passing. → Verdict: the primary Task 3 contract—each final export creates an immutable persisted version—is unprotected at the action boundary. Add one success test per export asserting storage write plus an issued_documents row with kind, actor, version, immutable path, and a compensating failure test for metadata persistence.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: __tests__/issued-documents.test.ts:15-34 tests persistence directly while export tests assert only rendered output → Path: persistIssuedDocument is removed or bypassed after a decision or contract render → Verdict: a final PDF is returned without an immutable issued-document version and all current tests pass.",
+        "__tests__/admin-actions.test.ts:536-566 → exportDecision asserts rendered PDF content but no mockPut or issuedDocuments insert.",
+        "__tests__/admin-actions.test.ts:672-706 → exportContract likewise asserts rendering/status only.",
+        "app/admin/_actions/admin-actions.ts → exportDecision/exportContract are the integration boundary that calls persistIssuedDocument after rendering."
+      ]
+    },
+    {
+      "file": "__tests__/form-page.test.tsx",
+      "line": 1,
+      "end_line": 60,
+      "in_diff": true,
+      "hunk": null,
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "The donor-first route and identity migration has no regression suite",
+      "body": "Premise: the changed public surface adds canonical donor/scholarship routes, permanent legacy redirects, link hierarchy, contact replacement, and shared seal usage, but the current test directory contains no public-experience test and form-page coverage is limited to the scholarship page. → Path: changing /benfeitor or /form to a temporary/chained redirect, restoring an old public CTA/email/admin shortcut, or breaking SealLogo accessibility would pass npm test. → Verdict: the Task 4 route and public-identity contract lacks failing-capable automated protection. Add a focused public-experience suite covering direct 308 targets, DOM order/CTA destinations, old-link/email absence, SealLogo informative/decorative semantics, canonical dynamic page behavior, and the FSSPX responsive acceptance with rendered checks.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: rg --files __tests__ finds no public-experience, canonical-route, or seal-logo suite → Path: a legacy route becomes temporary/chained or a public CTA/email/seal semantic regresses → Verdict: the donor-first public contract breaks while npm test remains green.",
+        "__tests__/form-page.test.tsx → current public-page test imports only the canonical scholarship page.",
+        "app/benfeitor/page.tsx:1-5 and app/form/page.tsx:1-5 → legacy permanent redirects are newly introduced behavior.",
+        ".compozy/tasks/donor-first-role-access/task_04.md → explicitly requires unit and integration coverage for redirects, hierarchy, contact, footer, and seal semantics."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "__tests__/application-schema.test.ts",
+      "line": 151,
+      "hunk": null,
+      "candidate": "Required scholarship document groups have no isolated schema coverage",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The parameterized test covers every fixed document group, and the following test independently covers both per-student document groups."
+    },
+    {
+      "file": "__tests__/file-upload-flow.test.tsx",
+      "line": 1,
+      "hunk": null,
+      "candidate": "Upload errors and concurrent removal may be untested after gate removal",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The focused upload-flow suite exercises ticket failure, failed PUT, over-limit client rejection, and removal while another upload resolves."
+    },
+    {
+      "file": "__tests__/issued-documents.test.ts",
+      "line": 15,
+      "hunk": null,
+      "candidate": "Issued-document allocation and storage compensation are absent",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The service suite explicitly asserts version allocation/current selection and removes the written file when metadata persistence fails; the surviving gap is only action-to-service wiring."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "defects": [
+    {
+      "file": "app/page.tsx",
+      "line": 397,
+      "end_line": 405,
+      "in_diff": true,
+      "hunk": "@@ -397,10 +397,10 @@",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Apply the donor-first hierarchy across every landing surface",
+      "body": "Premise: the public-route migration changes destinations but leaves the navigation, primary CTA, DOM band order, and quick-access order scholarship-first. → Path: a visitor reaches the landing page and follows the first visible action or the page content sequence. → Verdict: the required donor-first experience is not delivered: the primary navigation/hero CTA still sends visitors to `/solicitar-bolsa`, the scholarship band precedes the benefactor band, and quick access also places scholarship first.",
+      "also_applies": [
+        "app/page.tsx:423",
+        "app/page.tsx:518",
+        "app/page.tsx:551",
+        "app/page.tsx:636"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/page.tsx:397-405 retains `Solicitar bolsa` before `Seja um benfeitor` and makes `/solicitar-bolsa` the nav CTA → Path: the landing page's primary navigation is rendered → Verdict: its primary route remains scholarship rather than donor.",
+        "app/page.tsx:423-425 → the hero's only direct public CTA is `Faça sua solicitação de bolsa` to `/solicitar-bolsa`.",
+        "app/page.tsx:518-573 → the scholarship section is rendered before the benefactor section in DOM order.",
+        "app/page.tsx:636-637 → quick access lists the scholarship form before `Seja um benfeitor`.",
+        ".compozy/tasks/donor-first-role-access/task_04.md:103-107 → requires benefactor before scholarship in navigation, content bands, and quick access, and primary navigation/hero CTAs to target `/seja-um-benfeitor`."
+      ]
+    },
+    {
+      "file": "app/solicitar-bolsa/page.tsx",
+      "line": 7,
+      "end_line": 9,
+      "in_diff": true,
+      "hunk": "new:1-10",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Move the scholarship public shell to the canonical route",
+      "body": "Premise: `/form` now permanently redirects, while its route-local layout still owns the scholarship shell and its inline legacy seal; Next route layouts do not wrap sibling `/solicitar-bolsa` segments. → Path: a visitor follows any canonical scholarship link. → Verdict: `/solicitar-bolsa` renders only the form/unavailable component without the back link, explanatory header, or approved web seal, while the obsolete inline seal remains stranded on the redirect route. This breaks the canonical public-page and shared-seal migration together.",
+      "also_applies": [
+        "app/form/page.tsx:1-5",
+        "app/form/layout.tsx:10-28",
+        "app/form/layout.tsx:29-118"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/solicitar-bolsa/page.tsx:7-9 returns ScholarshipForm or FormUnavailableMessage directly → Path: the canonical route is requested → Verdict: no layout from the sibling `app/form` segment is part of its route tree.",
+        "app/form/page.tsx:1-5 → the old page permanently redirects, so it cannot render the canonical route's content under its own layout.",
+        "app/form/layout.tsx:10-28 and :29-118 → the missing shell contains the public header/navigation and an inline SVG rather than SealLogo.",
+        ".compozy/tasks/donor-first-role-access/task_04.md:64-77 → canonical public routes must provide the public experience and every web surface must use the approved shared seal."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/admin/solicitacoes/client.tsx",
+      "line": 80,
+      "hunk": "new:69-107",
+      "candidate": "Secretariat observation and issued-document workflows have actions but no rendered consumer",
+      "reason": "duplicate-within-job",
+      "rule_ids": [],
+      "note": "The same causal failures are already represented by cohort-c01 as two defects anchored at this component; repeating them in the consistency sweep would add no independent root cause."
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 21,
+      "hunk": "new:1-64",
+      "candidate": "Version allocation reads and increments without serialization",
+      "reason": "duplicate-within-job",
+      "rule_ids": [],
+      "note": "cohort-c01 already reports the same concurrency path with the unique index and required serialized allocation as evidence."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

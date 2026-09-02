@@ -1,0 +1,112 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "line": 12,
+      "end_line": 12,
+      "in_diff": true,
+      "hunk": "new:1-13",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": false,
+      "title": "Formatar as árvores JSX das novas páginas públicas",
+      "body": "A página inteira é retornada em uma única linha. Estruturar o JSX em linhas e blocos aninhados torna alterações futuras nos dados bancários, no formulário e na hierarquia semântica revisáveis sem alterar o comportamento.",
+      "rule_ids": [],
+      "also_applies": [
+        "app/solicitar-bolsa/page.tsx:16 (new:1-17)"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: app/seja-um-benfeitor/page.tsx:12 contém toda a árvore de retorno em uma linha → Improvement: blocos JSX legíveis permitem revisar e editar cada seção independentemente → Fix: reformatar o retorno em elementos e props em múltiplas linhas, sem mudar a estrutura.",
+        "app/solicitar-bolsa/page.tsx:16 → o mesmo padrão de retorno em linha única aparece na outra página pública adicionada."
+      ]
+    },
+    {
+      "file": "docs/changes/2026-07-27.md",
+      "line": 17,
+      "end_line": 17,
+      "in_diff": true,
+      "hunk": "new:15-18",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Revisar a redação atualizada dos requisitos da secretaria",
+      "body": "O requisito recém-adicionado contém erros de concordância e capitalização (por exemplo, “observaçÕes” e “a os documentos”), o que reduz a clareza do documento que orienta a manutenção dessa matriz de acesso.",
+      "rule_ids": [],
+      "also_applies": [
+        "docs/changes/2026-07-27.md:12 (new:11-12)"
+      ],
+      "guideline": null,
+      "suggestion": "A secretaria poderá acessar e ver os nomes e os dados dos benfeitores. Poderá incluir observações e consultar somente o resultado — se a solicitação foi aceita ou não —, o contato de referência dos pais e a escola. Também terá acesso aos documentos finais gerados para enviar aos pais. Não poderá aprovar ou rejeitar uma solicitação.",
+      "evidence": [
+        "Premise: docs/changes/2026-07-27.md:17 registra o novo escopo com “observaçÕes”, “a os documentos” e frases elípticas → Improvement: texto gramaticalmente claro reduz ambiguidade na consulta futura do requisito → Fix: substituir o parágrafo pela redação autocontida sugerida.",
+        "docs/changes/2026-07-27.md:12 → a frase de escopo do administrador no mesmo documento também usa “todos as funcionalidades”, confirmando que a edição necessita de uma revisão textual localizada."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "components/ui/seal-logo.tsx",
+      "line": 10,
+      "hunk": "new:10-11",
+      "candidate": "Trocar a tag img do selo por next/image",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "O ativo é um SVG local com dimensões explícitas; não há benefício concreto demonstrado de otimização de imagem para esta mudança."
+    },
+    {
+      "file": "app/page.tsx",
+      "line": 380,
+      "hunk": "new:380-380",
+      "candidate": "Remover size do selo hero porque o CSS define suas dimensões",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "O atributo mantém dimensões intrínsecas e não há falha ou ambiguidade operacional concreta; não justifica um comentário separado."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 25,
+      "hunk": "new:1-40",
+      "candidate": "Reescrever o comentário de preservação de decisões",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "A migração não modifica decisões existentes e o comentário não cria ambiguidade executável ou de manutenção suficiente para um resultado."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":"app/page.tsx","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"old:333-384","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:338-338","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:346-347","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:350-351","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:370-371","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:374-375","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:380-380","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:458-481","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:496-496","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"old:551-574","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:533-533","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:546-546","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:567-567","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:574-575","checks":["polish"],"outcome":"clear"},
+      {"file":"app/seja-um-benfeitor/page.tsx","hunk":"new:1-13","checks":["polish"],"outcome":"reported"},
+      {"file":"app/solicitar-bolsa/page.tsx","hunk":"new:1-17","checks":["polish"],"outcome":"reported"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:7-8","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:10-11","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"old:12-16","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:15-17","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:1-1","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:6-7","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:9-9","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:11-12","checks":["polish"],"outcome":"reported"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"old:11-11","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:15-18","checks":["polish"],"outcome":"reported"},
+      {"file":"drizzle/0006_flimsy_spacker_dave.sql","hunk":"new:1-40","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

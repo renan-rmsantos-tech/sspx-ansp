@@ -1,0 +1,49 @@
+{
+  "defects": [
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 828,
+      "end_line": 837,
+      "in_diff": true,
+      "hunk": "new:828-837",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": true,
+      "title": "The final-document ticket boundary has no regression test",
+      "body": "Premise: `getIssuedDocumentUrl` is the only path that converts an issued-document ID into a download ticket, but the suite never calls it as Secretaria. → Path: removing the current-document membership check at lines 831–833 (or issuing the ticket before it) makes an old version or a rejected-application contract downloadable by Secretaria while the current tests still pass. → Verdict: the Task 3 confidentiality boundary for ticketed final documents has no failing-capable protection.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: `getIssuedDocumentUrl` is the only issued-ID-to-download-ticket action and no test invokes it as Secretaria → Path: the current-document membership check is removed or moved after ticket creation → Verdict: Secretaria can download an old version or ineligible contract while the suite remains green.",
+        "app/admin/_actions/admin-actions.ts:828-837 → the action resolves the client-supplied issued ID, limits Secretaria to `getCurrentIssuedDocuments`, checks storage, then creates the download ticket.",
+        "__tests__/admin-actions.test.ts:190-208 → the only issued-document role tests call `getCurrentIssuedDocuments` and `getIssuedDocumentHistory`; neither calls `getIssuedDocumentUrl`.",
+        "rg -n 'getIssuedDocumentUrl' __tests__ → no production-action test invokes the ticket action; the only other match is a client-component mock.",
+        ".compozy/tasks/donor-first-role-access/task_03.md:103-110 → requires unknown, old Secretaria, evidence, and missing-file issued-document IDs to be denied, and valid issued IDs to create a download-scoped ticket."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 214,
+      "hunk": "new:211-229",
+      "candidate": "Secretariat application projection has no field-level regression assertion",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The test asserts the exact selected application and nested-student allowlist, so adding a sensitive Drizzle column changes the assertion."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 127,
+      "hunk": "new:127-158",
+      "candidate": "Secretariat donor projection lacks a dedicated assertion",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The observed absence of a role-specific donor test is a coverage concern, but without a concrete failing path in the current changed behavior it does not independently clear the taxonomy defect bar for this sweep."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

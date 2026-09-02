@@ -1,0 +1,59 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "line": 12,
+      "hunk": "new:1-13",
+      "candidate": "Compressed JSX formatting",
+      "reason": "formatting",
+      "rule_ids": [],
+      "note": "The entire component is serialized onto one line, but this is a formatter-owned presentation concern and a sibling defect review already accounted for the candidate."
+    },
+    {
+      "file": "docs/changes/2026-07-27.md",
+      "line": 18,
+      "hunk": "new:15-18",
+      "candidate": "Trailing blank line at end of change request",
+      "reason": "pre-existing",
+      "rule_ids": [],
+      "note": "git diff --check reports the blank line, but this user-owned requirements document was already modified outside the implementation and is not product source debt introduced by the reviewed feature."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      { "file": "app/page.tsx", "hunk": "new:4-4", "checks": ["polish"], "outcome": "clear" },
+      { "file": "app/page.tsx", "hunk": "old:333-384", "checks": ["polish"], "outcome": "clear" },
+      { "file": "app/page.tsx", "hunk": "new:338-338", "checks": ["polish"], "outcome": "clear" },
+      { "file": "app/page.tsx", "hunk": "new:346-347", "checks": ["polish"], "outcome": "clear" },
+      { "file": "app/page.tsx", "hunk": "new:350-351", "checks": ["polish"], "outcome": "clear" },
+      { "file": "app/page.tsx", "hunk": "new:370-371", "checks": ["polish"], "outcome": "clear" },
+      { "file": "app/page.tsx", "hunk": "new:374-375", "checks": ["polish"], "outcome": "clear" },
+      { "file": "app/page.tsx", "hunk": "new:380-380", "checks": ["polish"], "outcome": "clear" },
+      { "file": "app/page.tsx", "hunk": "new:458-481", "checks": ["polish"], "outcome": "clear" },
+      { "file": "app/page.tsx", "hunk": "new:496-496", "checks": ["polish"], "outcome": "clear" },
+      { "file": "app/page.tsx", "hunk": "old:551-574", "checks": ["polish"], "outcome": "clear" },
+      { "file": "app/page.tsx", "hunk": "new:533-533", "checks": ["polish"], "outcome": "clear" },
+      { "file": "app/page.tsx", "hunk": "new:546-546", "checks": ["polish"], "outcome": "clear" },
+      { "file": "app/page.tsx", "hunk": "new:567-567", "checks": ["polish"], "outcome": "clear" },
+      { "file": "app/page.tsx", "hunk": "new:574-575", "checks": ["polish"], "outcome": "clear" },
+      { "file": "app/seja-um-benfeitor/page.tsx", "hunk": "new:1-13", "checks": ["polish"], "outcome": "clear" },
+      { "file": "app/solicitar-bolsa/page.tsx", "hunk": "new:1-16", "checks": ["polish"], "outcome": "clear" },
+      { "file": "app/solicitar-bolsa/layout.tsx", "hunk": "new:1-104", "checks": ["polish"], "outcome": "clear" },
+      { "file": "components/ui/seal-logo.tsx", "hunk": "new:4-4", "checks": ["polish"], "outcome": "clear" },
+      { "file": "components/ui/seal-logo.tsx", "hunk": "new:7-8", "checks": ["polish"], "outcome": "clear" },
+      { "file": "components/ui/seal-logo.tsx", "hunk": "new:10-11", "checks": ["polish"], "outcome": "clear" },
+      { "file": "components/ui/seal-logo.tsx", "hunk": "old:12-16", "checks": ["polish"], "outcome": "clear" },
+      { "file": "components/ui/seal-logo.tsx", "hunk": "new:15-17", "checks": ["polish"], "outcome": "clear" },
+      { "file": "docs/changes/2026-07-27.md", "hunk": "new:1-1", "checks": ["polish"], "outcome": "clear" },
+      { "file": "docs/changes/2026-07-27.md", "hunk": "new:6-7", "checks": ["polish"], "outcome": "clear" },
+      { "file": "docs/changes/2026-07-27.md", "hunk": "new:9-9", "checks": ["polish"], "outcome": "clear" },
+      { "file": "docs/changes/2026-07-27.md", "hunk": "new:11-12", "checks": ["polish"], "outcome": "clear" },
+      { "file": "docs/changes/2026-07-27.md", "hunk": "old:11-11", "checks": ["polish"], "outcome": "clear" },
+      { "file": "docs/changes/2026-07-27.md", "hunk": "new:15-18", "checks": ["polish"], "outcome": "clear" },
+      { "file": "drizzle/0006_flimsy_spacker_dave.sql", "hunk": "new:1-40", "checks": ["polish"], "outcome": "clear" }
+    ],
+    "rules": []
+  }
+}

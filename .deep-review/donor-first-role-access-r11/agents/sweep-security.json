@@ -1,0 +1,91 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "lib/auth/authorization.ts",
+      "line": 40,
+      "hunk": "new:1-83",
+      "candidate": "A stale staff cookie could retain capabilities after role change or deactivation.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "requireStaff treats the session as an identity hint only, then reads admin_users for role and ativo on each protected action or page; missing and inactive users are rejected before capability dispatch."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 64,
+      "hunk": "new:58-84",
+      "candidate": "Secretariat application responses could include financial or applicant-evidence data.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The Secretaria branch uses explicit applications and students column allowlists at the database boundary, before the client component receives any rows."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 131,
+      "hunk": "new:127-153",
+      "candidate": "Secretariat donor responses could include CPF, address, CEP, or receipt metadata.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The Secretaria donor query selects only the operational allowlist and omits CPF, address, CEP, and receipt fields before serialization."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 231,
+      "hunk": "new:231-258",
+      "candidate": "A Secretariat user could mint a ticket for applicant evidence by supplying a storage path.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "getDocumentUrl calls requireAuth, whose only implementation requires Administrator. The distinct final-document action resolves a persisted document ID server-side."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 828,
+      "hunk": "new:815-843",
+      "candidate": "A Secretariat user could download a historical final version or an ineligible contract by guessing its ID.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The action resolves the ID server-side and, for Secretaria, compares it with the role-aware current-document list. That list excludes pending applications and contracts for rejected applications, while current selection keeps only the latest version per kind."
+    },
+    {
+      "file": "app/admin/_actions/observation-actions.ts",
+      "line": 11,
+      "hunk": "new:1-37",
+      "candidate": "An observation could execute markup entered by Secretariat.",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The reviewed observation renderers put body content in React text nodes and contain no dangerouslySetInnerHTML path, so supplied markup is escaped."
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 94,
+      "hunk": "new:31-110",
+      "candidate": "An anonymous caller could mint a ticket for traversal, arbitrary namespace, or uncontrolled category.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Category values are an allowlist plus strictly indexed student categories, filenames are sanitized with dot segments rejected, and every signed target is generated under a fresh pending UUID."
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 44,
+      "hunk": "new:1-67",
+      "candidate": "The current-document API could expose server-only storage paths to Secretariat.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Current and history listings use explicit selections that omit storage_path. The only path-bearing lookup remains internal to the ticket-issuing server action."
+    },
+    {
+      "file": "app/api/documents/route.ts",
+      "line": 13,
+      "hunk": null,
+      "candidate": "Download ticket redemption is not bound to an active session.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The retained design authorizes before issuing a ticket. Delivery verifies a download-scoped HMAC signature and five-minute expiry, matching the stated ticket-only endpoint contract."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

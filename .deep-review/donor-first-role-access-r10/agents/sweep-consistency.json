@@ -1,0 +1,73 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 31,
+      "hunk": "new:31-59",
+      "candidate": "Mandatory document fields could still accept an upload from a sibling document category.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The Zod schema first establishes required nonempty arrays, then submitApplication invokes validateDocumentCategories. It enumerates every required parent, family, financial, and indexed student field and requires its pending path to match the exact category before persistence."
+    },
+    {
+      "file": "app/form/_components/step-1-applicant.tsx",
+      "line": 89,
+      "hunk": "new:86-266",
+      "candidate": "The mandatory-upload change could leave a form field without a corresponding signed category.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "All FileUpload category call sites across the scholarship steps map to the fixed allowlist or to the two indexed student patterns. The donor receipt uses the same explicit fixed allowlist entry and is not accepted by scholarship submission validation."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 58,
+      "hunk": "new:58-153",
+      "candidate": "A restricted client could receive an Administrator-shaped application or donor object through an unprojected sibling read.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Both list actions branch on the database-refreshed staff identity and use explicit Drizzle columns for Secretaria before rows cross the server/client boundary. The restricted pages render their distinct client components, while full application detail and path-based evidence require requireAdmin."
+    },
+    {
+      "file": "app/admin/layout.tsx",
+      "line": 10,
+      "hunk": "new:1-20",
+      "candidate": "Hiding sidebar entries could be the only protection for Administrator-only administration routes.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The layout authenticates every /admin page, each restricted page separately calls requireAdmin, and the matching server actions use requireAdmin rather than relying on role-aware navigation."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 815,
+      "hunk": "new:815-844",
+      "candidate": "Final-document downloads could regress to the old client-controlled storage-path flow.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "getIssuedDocumentUrl accepts an issued row ID, resolves storage_path only server-side, and checks the role-aware current-document result for Secretaria. getDocumentUrl explicitly rejects issued namespace paths and remains Administrator-only."
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 16,
+      "hunk": "new:1-68",
+      "candidate": "Reissuance could allocate duplicate versions or leave a file after a database failure.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Persistence creates a UUID storage path, locks the application row inside the transaction before reading the latest same-kind version, and has a unique application/kind/version constraint in the schema. Its catch compensates the just-created storage object."
+    },
+    {
+      "file": "app/form/page.tsx",
+      "line": 4,
+      "hunk": "new:1-5",
+      "candidate": "Old public entry routes could coexist with the canonical donor-first destinations and present divergent form layouts.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The legacy /form and /benfeitor pages permanently redirect to the canonical routes; landing-page links target only /solicitar-bolsa and /seja-um-benfeitor, and the canonical scholarship route has its own shared layout."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

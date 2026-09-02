@@ -1,0 +1,70 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+      "line": 8,
+      "end_line": 11,
+      "in_diff": true,
+      "hunk": "new:1-11",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Atualize o status das tarefas concluídas",
+      "body": "O quadro ainda marca as tarefas 02–05 como `pending`, embora a árvore já contenha suas implementações e testes. Sincronizar esses estados torna o artefato de acompanhamento confiável para a liberação e evita que uma retomada do fluxo replique trabalho já entregue.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_tasks.md:8-11 marca as tarefas 02–05 como pending → Improvement: o quadro passa a refletir o progresso real de implementação → Fix: marque como completed as tarefas cujos critérios já foram concluídos e verificados.",
+        "git status --short → a árvore contém as implementações correspondentes de perfis, documentos emitidos, rotas públicas e uploads, além de suas suítes de teste."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 207,
+      "hunk": "new:1-707",
+      "candidate": "O trecho Go não corresponde ao runtime TypeScript do repositório.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "A própria especificação declara que o struct existe apenas para conformidade de template e não introduz componente Go em runtime."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+        "hunk": "new:1-330",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+        "hunk": "new:1-11",
+        "checks": ["polish"],
+        "outcome": "reported"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+        "hunk": "new:1-707",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md",
+        "hunk": "new:1-67",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md",
+        "hunk": "new:1-76",
+        "checks": ["polish"],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

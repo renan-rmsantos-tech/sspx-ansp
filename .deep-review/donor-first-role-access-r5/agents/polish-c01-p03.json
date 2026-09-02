@@ -1,0 +1,148 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "app/admin/_components/issued-documents.tsx",
+      "line": 11,
+      "end_line": 13,
+      "in_diff": true,
+      "hunk": "new:1-14",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Expand the new client components into maintainable JSX",
+      "body": "The issued-document component now compresses its effect, download handler, conditional rendering, and both document lists into three very long lines. With no configured formatter in package scripts, this makes later changes to loading/error handling or document visibility needlessly difficult to review. Split the state type, effect, handler, and JSX branches across normal blocks before extending this UI.",
+      "also_applies": [
+        "app/admin/_components/application-observations.tsx:7-9",
+        "app/admin/benfeitores/client.tsx:93-100"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/admin/_components/issued-documents.tsx:11-13 contains the whole asynchronous load, download behavior, and rendered lists in three lines → Improvement: future edits can isolate a single branch or handler and retain reviewable diffs → Fix: format the component into named, multiline effect/handler/JSX blocks.",
+        "package.json:scripts → defines no formatter command, so this layout is not an automatically enforced formatter result.",
+        "app/admin/_components/application-observations.tsx:7-9 and app/admin/benfeitores/client.tsx:93-100 → the same compressed component pattern appears in the related new UI."
+      ]
+    },
+    {
+      "file": "app/admin/benfeitores/page.tsx",
+      "line": 20,
+      "end_line": 24,
+      "in_diff": true,
+      "hunk": "new:20-24",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Give the role-specific donor result a typed boundary",
+      "body": "The page uses two unchecked casts to reinterpret the same nullable action result as unrelated client contracts. A later query projection change can therefore compile while silently passing an incomplete record to either client. Export explicit row/result types from the action (or map each branch into a typed DTO) so the role-specific projections are checked at the server/client boundary.",
+      "also_applies": [],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/admin/benfeitores/page.tsx:21 and :23 cast `donors` through `SecretariatDonorPledge[]` and `unknown as DonorPledge[]` → Improvement: TypeScript will detect projection drift for each role-specific client → Fix: define and return typed donor DTOs or explicitly map the query result per branch.",
+        "app/admin/_actions/admin-actions.ts:131-152 → getDonorPledges conditionally selects different column sets but has no declared role-aware return type."
+      ]
+    },
+    {
+      "file": "app/admin/_actions/staff-actions.ts",
+      "line": 47,
+      "end_line": 72,
+      "in_diff": true,
+      "hunk": "new:1-76",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Centralize the Secretariat-target predicate",
+      "body": "Activation and password reset duplicate the same lookup and role-qualified update predicate. Keeping those expressions in two flows makes the invariant easier to weaken in only one operation. Extract a `secretariatUserWhere(id)` helper (and, optionally, a shared target lookup) and use it in both actions.",
+      "also_applies": [
+        "app/admin/_actions/staff-actions.ts:62-72"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/admin/_actions/staff-actions.ts:49-55 and :65-71 repeat `and(eq(adminUsers.id, id), eq(adminUsers.role, \"secretaria\"))` for lookup and update → Improvement: the role-safety condition has one maintainable definition → Fix: extract a local predicate helper and reuse it in both management operations.",
+        "app/admin/_actions/staff-actions.ts:47-76 → these are the only two target-mutating Secretariat operations and both carry the same duplicated condition."
+      ]
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 543,
+      "end_line": 549,
+      "in_diff": true,
+      "hunk": "new:543-549",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": false,
+      "title": "Factor the repeated final-document persistence sequence",
+      "body": "Decision and contract export duplicate the actor resolution, no-actor result, persistence call, and persistence-error mapping. A small internal helper accepting kind, filename, PDF, and localized labels would preserve the same behavior while making future issuance invariants change in one place.",
+      "also_applies": [
+        "app/admin/_actions/admin-actions.ts:798-804"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/admin/_actions/admin-actions.ts:543-549 resolves an issuer and persists the decision, while :798-804 repeats the same control flow for a contract → Improvement: additions such as audit metadata or error handling cannot diverge between final document kinds → Fix: introduce one internal persistence helper parameterized by kind and caller-facing labels.",
+        "app/admin/_actions/admin-actions.ts:543-549 and :798-804 → both branches call `issuanceActorId`, reject a missing actor, call `persistIssuedDocument`, and translate a catch into an error result."
+      ]
+    }
+  ],
+  "suppressions": [],
+  "coverage": {
+    "hunks": [
+      {"file":"__tests__/authorization.test.ts","hunk":"new:1-124","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-actions.test.ts","hunk":"old:9-14","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-actions.test.ts","hunk":"new:107-118","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-page.test.tsx","hunk":"new:15-15","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/form-page.test.tsx","hunk":"new:19-19","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/helpers/fake-db.ts","hunk":"new:123-123","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/issued-documents.test.ts","hunk":"new:1-36","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/export-decision.test.tsx","hunk":"new:23-26","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/scholarship-form.test.tsx","hunk":"old:15-21","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/solicitacoes-client.test.tsx","hunk":"new:11-15","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/solicitacoes-client.test.tsx","hunk":"new:23-27","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/solicitacoes-client.test.tsx","hunk":"new:47-58","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/solicitacoes-client.test.tsx","hunk":"new:101-102","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/staff-and-observations.test.ts","hunk":"new:1-47","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/step-1-applicant.test.tsx","hunk":"old:7-12","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/submit-application.test.ts","hunk":"new:58-58","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/submit-application.test.ts","hunk":"new:61-61","checks":["polish"],"outcome":"clear"},
+      {"file":"__tests__/submit-application.test.ts","hunk":"new:68-69","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:4-8","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"old:5-5","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:13-13","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:29-29","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:43-45","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:47-53","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:61-61","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:64-83","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:128-128","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:131-152","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:488-488","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:543-549","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:738-738","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:798-804","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/_actions/admin-actions.ts","hunk":"new:808-837","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/observation-actions.ts","hunk":"new:1-37","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_actions/staff-actions.ts","hunk":"new:1-76","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:7-7","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:35-40","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:94-94","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:190-193","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:199-199","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/sidebar.tsx","hunk":"new:220-220","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/application-card.tsx","hunk":"new:7-8","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/application-card.tsx","hunk":"new:311-311","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/_components/issued-documents.tsx","hunk":"new:1-14","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/_components/application-observations.tsx","hunk":"new:1-10","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/benfeitores/client.tsx","hunk":"new:77-102","checks":["polish"],"outcome":"reported"},
+      {"file":"app/admin/benfeitores/page.tsx","hunk":"new:4-5","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/benfeitores/page.tsx","hunk":"new:8-8","checks":["polish"],"outcome":"clear"},
+      {"file":"app/admin/benfeitores/page.tsx","hunk":"new:20-24","checks":["polish"],"outcome":"reported"}
+    ],
+    "rules": []
+  }
+}

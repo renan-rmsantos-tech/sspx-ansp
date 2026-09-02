@@ -1,0 +1,46 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/form/layout.tsx",
+      "line": 11,
+      "hunk": null,
+      "candidate": "The legacy and canonical scholarship layouts duplicate the same shared public shell",
+      "reason": "duplicate-within-job",
+      "rule_ids": [],
+      "note": "The duplicate is already represented by the bounded refactor advisory in polish-c01-p05 at app/solicitar-bolsa/layout.tsx:11; both paths are covered by that single shared-layout improvement."
+    },
+    {
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "line": 3,
+      "hunk": "new:1-13",
+      "candidate": "The canonical donor page imports its reusable form component from the legacy route directory",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "This is a module import, not an executable public URL. The legacy page itself performs a direct permanent redirect, while the canonical page reuses the existing form implementation without creating a link or redirect chain."
+    },
+    {
+      "file": "app/admin/solicitacoes/client.tsx",
+      "line": 119,
+      "hunk": "new:71-140",
+      "candidate": "The Secretariat UI loads observation history and current issued documents independently of the list projection",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Those server actions each revalidate their explicit capabilities and return only their role-appropriate projections; this keeps the initial application list allowlisted and avoids embedding sensitive relations in it."
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 32,
+      "hunk": "new:32-60",
+      "candidate": "Upload category names differ between ticket paths and persisted marriage-document metadata",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The ticket category certidao is enforced by validateDocumentCategories before the database write, while collectDocumentRows deliberately maps that verified source to the domain label certidao_casamento. This preserves separate storage validation and document-domain classification."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

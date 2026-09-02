@@ -1,0 +1,32 @@
+{
+  "candidates": 59,
+  "reported": 11,
+  "suppressed": 48,
+  "suppression_reasons": {
+    "formatting": 3,
+    "generated-vendored": 2,
+    "intentional": 34,
+    "pre-existing": 1,
+    "speculative": 8
+  },
+  "raw_defects": 2,
+  "raw_advisories": 9,
+  "canonical_defects": 2,
+  "canonical_advisories": 9,
+  "coverage": {
+    "selected_hunk_lines": 5426,
+    "lanes": {
+      "defect": {
+        "rows": 210,
+        "covered_lines": 5426,
+        "complete": true
+      },
+      "polish": {
+        "rows": 211,
+        "covered_lines": 5426,
+        "complete": true
+      }
+    },
+    "rules": {}
+  }
+}

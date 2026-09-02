@@ -1,0 +1,113 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 207,
+      "end_line": 216,
+      "in_diff": true,
+      "hunk": "new:1-707",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Remove the unrelated Go contract excerpt",
+      "body": "The specification is for a TypeScript/Next.js system and already defines the authorization interface in TypeScript. Keeping a second, documentation-only Go shape duplicates the same contract with different names (`Active` versus `ativo`) and creates an unnecessary synchronization point for implementers.",
+      "also_applies": [],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:149-178 defines the executable TypeScript authorization contract, while :207-216 adds a documentation-only Go mirror → Improvement: one authoritative vocabulary prevents drift between `ativo`/`Active` and avoids an irrelevant language artifact → Fix: remove the Go excerpt and its workflow-template-compliance preface.",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:17-29 → names `lib/auth/authorization.ts` as the authorization boundary and makes no Go runtime part of the architecture."
+      ]
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 380,
+      "end_line": 380,
+      "in_diff": true,
+      "hunk": "new:1-707",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Remove the duplicated donor-query paragraph",
+      "body": "The same `getDonorPledges` behavior is stated twice consecutively. Removing the duplicate makes the benefactor contract easier to scan without losing any requirement.",
+      "also_applies": [],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:379-380 contains identical `getDonorPledges` sentences → Improvement: eliminates redundant normative prose → Fix: delete one of the two consecutive lines.",
+        "git diff 5c90842fe230 -- .compozy/tasks/donor-first-role-access/_techspec.md → both duplicate sentences belong to the owned new-side hunk."
+      ]
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 580,
+      "end_line": 580,
+      "in_diff": true,
+      "hunk": "new:1-707",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Make the footer visual acceptance check observable",
+      "body": "The requirement is visual—no clipping, overlap, or truncation at supported viewports—but the listed test only checks that the text exists in rendered markup. That check cannot distinguish a visible footer from one hidden by overflow or a responsive layout regression, leaving the acceptance criterion ambiguous for implementation and release verification.",
+      "also_applies": [
+        ".compozy/tasks/donor-first-role-access/_techspec.md:453"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:453 requires responsive acceptance at 320, 768, 1024, and 1440 CSS-pixel widths, but :580 only requires presence in rendered markup → Improvement: a concrete visual assertion makes the no-clipping criterion reproducible → Fix: specify a browser-level viewport check (or screenshot review) at those widths that verifies the identity text is visible and the footer does not overflow horizontally.",
+        ".compozy/tasks/donor-first-role-access/_prd.md:94 and :308 require the full FSSPX name to remain visible without clipping, overlap, or truncation."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+      "line": 7,
+      "hunk": "new:1-11",
+      "candidate": "Task-list lifecycle statuses may not reflect every worktree change.",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The assignment supplies no authoritative completion tracker beyond this list, and status accuracy depends on workflow state outside the documentation hunk; no bounded documentation correction can be established from this review." 
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+        "hunk": "new:1-330",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+        "hunk": "new:1-11",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+        "hunk": "new:1-707",
+        "checks": ["polish"],
+        "outcome": "reported"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md",
+        "hunk": "new:1-67",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md",
+        "hunk": "new:1-76",
+        "checks": ["polish"],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

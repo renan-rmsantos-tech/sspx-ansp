@@ -1,0 +1,120 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 20,
+      "end_line": 20,
+      "in_diff": true,
+      "hunk": "new:1-67",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Evite converter a transação para o tipo global de banco",
+      "body": "A conversão `tx as unknown as typeof db` descarta a verificação de tipos exatamente no bloco que precisa permanecer atômico. Consultar a versão com o query builder da própria transação (por exemplo, `tx.select({ version: issuedDocuments.version })...`) preserva os tipos e torna futuras mudanças na transação verificáveis pelo compilador.",
+      "also_applies": [],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: lib/documents/issued-documents.ts:20 converte `tx` por `unknown` para `typeof db` → Improvement: o compilador volta a validar a API usada dentro da unidade atômica → Fix: substitua a leitura relacional por uma consulta tipada em `tx`.",
+        "lib/documents/issued-documents.ts:19-39 → a única finalidade do cast é chamar `query.issuedDocuments.findFirst` antes do insert da transação."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "drizzle/meta/0006_snapshot.json",
+      "line": 1201,
+      "hunk": "new:1201-1596",
+      "candidate": "Alterar manualmente a representação extensa do snapshot Drizzle",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "O snapshot é artefato gerado da migração; não há melhoria manual específica e segura a propor."
+    },
+    {
+      "file": "drizzle/meta/_journal.json",
+      "line": 52,
+      "hunk": "new:46-52",
+      "candidate": "Adicionar quebra de linha ao fim do journal",
+      "reason": "formatting",
+      "rule_ids": [],
+      "note": "A possível alteração é de formatação de arquivo gerado e não entrega benefício de manutenção local."
+    },
+    {
+      "file": "lib/auth/authorization.ts",
+      "line": 29,
+      "hunk": "new:1-83",
+      "candidate": "Trocar o Set de capacidades por objeto ou enum",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "O conjunto é curto, imutável por encapsulamento e a troca não apresenta benefício concreto sobre o uso atual."
+    },
+    {
+      "file": "lib/db/schema.ts",
+      "line": 341,
+      "hunk": "new:341-404",
+      "candidate": "Exigir imutabilidade de observações exclusivamente por restrição SQL",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "A mudança adiciona a tabela; a inexistência de permissões SQL específicas não prova um caminho concreto de mutação dentro desta aplicação."
+    },
+    {
+      "file": "lib/validations/application-schema.ts",
+      "line": 20,
+      "hunk": "old:3-3",
+      "candidate": "Restringir ainda mais o formato dos caminhos pendentes no schema",
+      "reason": "duplicate-within-job",
+      "rule_ids": [],
+      "note": "A validação de categoria e namespace é realizada pelo fluxo de submissão; qualquer avaliação de segurança dessa fronteira pertence à varredura de segurança."
+    },
+    {
+      "file": "public/seal-arca.svg",
+      "line": 1,
+      "hunk": "new:1-17",
+      "candidate": "Alterar a marcação interna do SVG para acessibilidade",
+      "reason": "phantom-knowledge",
+      "rule_ids": [],
+      "note": "A acessibilidade é determinada pelo componente consumidor da imagem; o asset isolado não permite afirmar uma melhoria local."
+    },
+    {
+      "file": "scripts/bootstrap.ts",
+      "line": 44,
+      "hunk": "new:44-49",
+      "candidate": "Remover os valores explícitos de papel e atividade no bootstrap",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Os valores explícitos documentam a identidade inicial e alinham o bootstrap à nova política de papéis."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":"drizzle/meta/0006_snapshot.json","hunk":"new:1201-1596","checks":["polish"],"outcome":"clear"},
+      {"file":"drizzle/meta/_journal.json","hunk":"new:46-52","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/auth/authorization.ts","hunk":"new:1-83","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:1-1","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:26-27","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:31-33","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:341-404","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:414-415","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/db/schema.ts","hunk":"new:426-455","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/documents/issued-documents.ts","hunk":"new:1-67","checks":["polish"],"outcome":"reported"},
+      {"file":"lib/form/scholarship-uploads.ts","hunk":"old:1-9","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"old:3-3","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"old:28-29","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"old:34-38","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:36-37","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:77-77","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:84-84","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:91-91","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:94-94","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:99-99","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:119-119","checks":["polish"],"outcome":"clear"},
+      {"file":"lib/validations/application-schema.ts","hunk":"new:130-130","checks":["polish"],"outcome":"clear"},
+      {"file":"public/seal-arca.svg","hunk":"new:1-17","checks":["polish"],"outcome":"clear"},
+      {"file":"scripts/bootstrap.ts","hunk":"new:44-49","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

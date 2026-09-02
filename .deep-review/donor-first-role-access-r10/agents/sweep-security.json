@@ -1,0 +1,91 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "lib/auth/authorization.ts",
+      "line": 40,
+      "hunk": "new:1-83",
+      "candidate": "A stale staff cookie could retain capabilities after role change or deactivation.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "requireStaff treats the session as an identity hint only, then queries admin_users for role and ativo on every protected call; absent or inactive users are rejected before capability dispatch."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 64,
+      "hunk": "new:58-84",
+      "candidate": "Secretariat application payloads could include financial or applicant-evidence data.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The Secretaria query selects an explicit applications allowlist and an explicit student allowlist at the database boundary, before the client component receives the rows."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 131,
+      "hunk": "new:127-153",
+      "candidate": "Secretariat donor payloads could include CPF, address, CEP, or receipt metadata.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The Secretaria donor projection omits CPF, address, CEP, receipt path, and receipt filename at query time; the restricted client only consumes the operational fields."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 231,
+      "hunk": "new:231-258",
+      "candidate": "A Secretariat user could obtain an applicant-evidence ticket by supplying a storage path.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "getDocumentUrl is guarded by requireAuth, whose sole implementation delegates to requireAdmin. The separate final-document action accepts an issued-document ID and is the only Secretariat download path."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 828,
+      "hunk": "new:815-843",
+      "candidate": "A Secretariat user could download a historical final-document version or an ineligible contract by guessing its ID.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The action resolves the persisted ID server-side and compares it against the role-aware current-document query for Secretaria. That query excludes all pending documents and excludes contracts for rejected applications, while listCurrentIssuedDocuments returns only the latest version per kind."
+    },
+    {
+      "file": "app/admin/_actions/observation-actions.ts",
+      "line": 11,
+      "hunk": "new:1-37",
+      "candidate": "An observation could execute markup entered by Secretariat.",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The reviewed observation renderers place body content in React text nodes and use no dangerouslySetInnerHTML path, so supplied markup is escaped."
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 94,
+      "hunk": "new:31-110",
+      "candidate": "An anonymous caller could mint an upload ticket for traversal, arbitrary namespace, or an uncontrolled category.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Categories are an allowlist plus strictly indexed student categories, filenames are sanitized and reject dot segments, and signed targets are generated below a fresh pending UUID. resolveStoragePath independently enforces storage-root containment."
+    },
+    {
+      "file": "lib/documents/issued-documents.ts",
+      "line": 44,
+      "hunk": "new:1-68",
+      "candidate": "The current-document API could expose server-only storage paths to Secretariat.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "listCurrentIssuedDocuments and listIssuedDocumentHistory use explicit column selections that omit storage_path; the sole path-bearing lookup is internal to the ticket-issuing action."
+    },
+    {
+      "file": "app/api/documents/route.ts",
+      "line": 13,
+      "hunk": null,
+      "candidate": "Download ticket redemption is not bound to an active session.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The retained design authorizes before issuing a ticket. The delivery route verifies an HMAC signature with a separate download key and a five-minute expiry, matching the established ticket-only delivery contract."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

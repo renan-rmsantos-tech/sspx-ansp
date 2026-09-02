@@ -1,0 +1,99 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": "app/seja-um-benfeitor/page.tsx",
+      "line": 12,
+      "end_line": 12,
+      "in_diff": true,
+      "hunk": "new:1-13",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Format the donor page's JSX into readable blocks",
+      "body": "The complete page tree, including the bank details, is a single source line. Splitting it into the project's normal JSX indentation makes later content and accessibility edits reviewable without changing behavior.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: app/seja-um-benfeitor/page.tsx:12 contains the full returned DOM tree on one line → Improvement: each semantic region and attribute becomes independently readable in diffs → Fix: format the returned JSX into nested multiline elements.",
+        "nl -ba app/seja-um-benfeitor/page.tsx → the implementation spans 13 lines and the returned page occupies line 12."
+      ]
+    },
+    {
+      "file": "app/solicitar-bolsa/layout.tsx",
+      "line": 11,
+      "end_line": 104,
+      "in_diff": true,
+      "hunk": "new:1-104",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Extract the shared scholarship-form layout",
+      "body": "The canonical route adds a byte-for-byte copy of the legacy form layout. Future wording, metadata, or accessibility changes can now drift between the two public URLs; keeping the markup in one shared layout component leaves the legacy route as a thin wrapper or redirect.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "also_applies": ["app/form/layout.tsx:1"],
+      "evidence": [
+        "Premise: app/solicitar-bolsa/layout.tsx:1-104 duplicates app/form/layout.tsx:1-104 exactly → Improvement: one maintained source prevents public-route layout drift → Fix: move the shared shell to a component and import it from both routes, or make the legacy route redirect before rendering it.",
+        "cmp -s app/form/layout.tsx app/solicitar-bolsa/layout.tsx → exit status 0, confirming byte-for-byte duplication."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": "docs/changes/2026-07-27.md",
+      "line": 18,
+      "hunk": "new:15-18",
+      "candidate": "Capitalization typo in the retained Secretaria requirement",
+      "reason": "pre-existing",
+      "rule_ids": [],
+      "note": "The unusual capitalization in 'observaçÕes' already appears in the old-side requirement; the hunk only restructures that existing text."
+    },
+    {
+      "file": "drizzle/0006_flimsy_spacker_dave.sql",
+      "line": 26,
+      "hunk": "new:1-40",
+      "candidate": "Statement breakpoint markers share lines with SQL statements",
+      "reason": "generated-vendored",
+      "rule_ids": [],
+      "note": "This is the Drizzle migration serialization convention used by the repository's generated migration files, not a hand-formatting concern."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {"file":"app/page.tsx","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"old:333-384","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:338-338","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:346-347","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:350-351","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:370-371","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:374-375","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:380-380","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:458-481","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:496-496","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"old:551-574","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:533-533","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:546-546","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:567-567","checks":["polish"],"outcome":"clear"},
+      {"file":"app/page.tsx","hunk":"new:574-575","checks":["polish"],"outcome":"clear"},
+      {"file":"app/seja-um-benfeitor/page.tsx","hunk":"new:1-13","checks":["polish"],"outcome":"reported"},
+      {"file":"app/solicitar-bolsa/page.tsx","hunk":"new:1-16","checks":["polish"],"outcome":"clear"},
+      {"file":"app/solicitar-bolsa/layout.tsx","hunk":"new:1-104","checks":["polish"],"outcome":"reported"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:4-4","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:7-8","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:10-11","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"old:12-16","checks":["polish"],"outcome":"clear"},
+      {"file":"components/ui/seal-logo.tsx","hunk":"new:15-17","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:1-1","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:6-7","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:9-9","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:11-12","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"old:11-11","checks":["polish"],"outcome":"clear"},
+      {"file":"docs/changes/2026-07-27.md","hunk":"new:15-18","checks":["polish"],"outcome":"clear"},
+      {"file":"drizzle/0006_flimsy_spacker_dave.sql","hunk":"new:1-40","checks":["polish"],"outcome":"clear"}
+    ],
+    "rules": []
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+      "line": 240,
+      "end_line": 290,
+      "in_diff": true,
+      "hunk": "new:1-330",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Clarify that the rollout phases are not separate releases",
+      "body": "The PRD first requires one coordinated release, then labels the implementation sections as three rollout phases without saying whether they are delivery sequencing or independently deployable releases. State explicitly that they are implementation/acceptance phases within one release, or revise the release goal, so deployment planning and acceptance do not infer incompatible rollout behavior.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_prd.md:25 requires a single coordinated release, while lines 240-290 divide the work into three named rollout phases → Improvement: removes an ambiguity that can lead release planning to treat the phases as independently deployable → Fix: label them as internal implementation phases of the coordinated release or define their release relationship.",
+        ".compozy/tasks/donor-first-role-access/_prd.md:240-290 → the three phase headings and their exit criteria do not state whether deployment occurs after each phase or after all phases."
+      ]
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 62,
+      "end_line": 68,
+      "in_diff": true,
+      "hunk": "new:1-707",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Specify a deterministic observation ordering",
+      "body": "“Chronological history” leaves the display/query direction and equal-timestamp tie-breaker unspecified. Define the contract as, for example, `created_at ASC, id ASC` (or the intended newest-first order), so action, database query, and UI tests implement the same stable history order.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "also_applies": [
+        ".compozy/tasks/donor-first-role-access/_techspec.md:551-557"
+      ],
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:62-68 requires a chronological history but supplies no sort direction or same-time tie-breaker → Improvement: makes the persisted-history contract deterministic across implementations and tests → Fix: state the ordered keys and direction in the observation flow and test requirements.",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:551-557 → verification requires chronological return order but likewise leaves the observable ordering undefined."
+      ]
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 76,
+      "end_line": 87,
+      "in_diff": true,
+      "hunk": "new:1-707",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "Make the issuance serialization boundary concrete",
+      "body": "The issuance flow requires serialization, and later rules require an application-row lock, but the flow does not state that version lookup and insert happen in the same transaction after that lock. Adding this explicit sequence makes the concurrency invariant implementable and reviewable rather than leaving it to interpretation.",
+      "rule_ids": [],
+      "guideline": null,
+      "suggestion": null,
+      "also_applies": [
+        ".compozy/tasks/donor-first-role-access/_techspec.md:410-419",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:559-570"
+      ],
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:76-87 says to serialize allocation but does not define the transaction/lock scope for reading the last version and inserting the next one → Improvement: gives implementers one auditable concurrency boundary and avoids divergent interpretations of serialization → Fix: require locking the application row, selecting the latest version, and inserting the metadata in one database transaction.",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:410-419 → the issuance rules mention a locked application row, but do not connect that lock to the version read and insert sequence.",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:559-570 → tests require concurrent issuance not to duplicate versions, making the precise serialization contract valuable."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 207,
+      "hunk": "new:1-707",
+      "candidate": "Remove the documentation-only Go capability struct from a TypeScript project",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The adjacent text explicitly identifies the Go struct as workflow-template compliance documentation and states that it introduces no runtime component."
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+      "line": 6,
+      "hunk": "new:1-11",
+      "candidate": "Mark every pending task as completed",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The task list alone does not prove the implementation or acceptance evidence necessary to change its current pending state."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+        "hunk": "new:1-330",
+        "checks": ["polish"],
+        "outcome": "reported"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+        "hunk": "new:1-11",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+        "hunk": "new:1-707",
+        "checks": ["polish"],
+        "outcome": "reported"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md",
+        "hunk": "new:1-67",
+        "checks": ["polish"],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md",
+        "hunk": "new:1-76",
+        "checks": ["polish"],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

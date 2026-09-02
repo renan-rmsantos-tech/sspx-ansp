@@ -1,0 +1,136 @@
+{
+  "defects": [],
+  "advisories": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+      "line": 51,
+      "in_diff": true,
+      "hunk": "new:1-330",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Clarify the Secretariat's pending-application state",
+      "body": "The PRD describes the Secretariat result as only approved or rejected, while the TechSpec intentionally exposes pending applications as \"Aguardando decisão\". State that the final result is shown only after a decision and that pending applications show the waiting state, so product acceptance and the implementation contract use the same vocabulary.",
+      "also_applies": [
+        ".compozy/tasks/donor-first-role-access/_prd.md:132"
+      ],
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_prd.md:51 promises only a final approved or rejected result → Improvement: aligns the product requirement with .compozy/tasks/donor-first-role-access/_techspec.md:367, which specifies pending applications as \"Aguardando decisão\" → Fix: qualify the result wording at both PRD locations with the explicit pending-state behavior.",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:347-367 → the implementation contract includes status and expressly defines pending visibility."
+      ]
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 207,
+      "in_diff": true,
+      "hunk": "new:1-707",
+      "category": "refactor",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Remove the unrelated Go mirror from the TypeScript specification",
+      "body": "The documentation-only Go type has no runtime consumer and duplicates only a subset of the TypeScript StaffIdentity contract. Keeping a second-language mirror creates a stale artifact that readers can mistake for an implementation requirement; retain the TypeScript interfaces as the sole executable-language contract.",
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:207-216 labels CapabilityContext as documentation-only and explicitly says it introduces no Go runtime component → Improvement: removes an unconsumed second-language contract that can drift from StaffIdentity → Fix: delete the explanatory paragraph and Go code block.",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:166-179 → StaffIdentity and authorization helpers already define the relevant TypeScript contract."
+      ]
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 410,
+      "in_diff": true,
+      "hunk": "new:1-707",
+      "category": "refactor",
+      "severity": "minor",
+      "quick_win": true,
+      "title": "Name the final-document capability in its action contract",
+      "body": "The core capability union defines `issued-documents:read`, but the current-document action is authorized as the undefined label “Operational read”. Naming the concrete capability here makes the action table directly auditable against the capability matrix and prevents an implementer from coupling document downloads to the broader application projection permission.",
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:410 uses “Operational read” whereas the declared capability union at :160 contains `issued-documents:read` → Improvement: gives the download/listing boundary one unambiguous permission name → Fix: replace “Operational read” for getCurrentIssuedDocuments with `issued-documents:read` (and use the same name wherever this access is described).",
+        ".compozy/tasks/donor-first-role-access/_techspec.md:220-236 → the matrix separately distinguishes operational application access from downloading issued documents."
+      ]
+    },
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+      "line": 460,
+      "in_diff": true,
+      "hunk": "new:1-707",
+      "category": "nitpick",
+      "severity": "trivial",
+      "quick_win": true,
+      "title": "Remove the duplicate disabled-banner removal item",
+      "body": "The removal checklist lists “Disabled upload banner” twice consecutively. Removing the duplicate keeps the implementation checklist one-to-one with its required cleanup work.",
+      "guideline": null,
+      "suggestion": null,
+      "rule_ids": [],
+      "evidence": [
+        "Premise: .compozy/tasks/donor-first-role-access/_techspec.md:459-464 contains two consecutive “Disabled upload banner” bullets → Improvement: avoids duplicate checklist work and noise → Fix: remove one of the duplicate bullets.",
+        "rg -n 'Disabled upload banner' .compozy/tasks/donor-first-role-access/_techspec.md → both occurrences are the same adjacent checklist entry."
+      ]
+    }
+  ],
+  "suppressions": [
+    {
+      "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+      "line": 8,
+      "hunk": "new:1-11",
+      "candidate": "The pending task status may be stale relative to implementation progress",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The checked-in task records themselves still mark tasks 02 through 05 pending; this read-only documentation cohort has no authoritative completion event that would establish a stale status."
+    }
+  ],
+  "coverage": {
+    "hunks": [
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_prd.md",
+        "hunk": "new:1-330",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "reported"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_tasks.md",
+        "hunk": "new:1-11",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/_techspec.md",
+        "hunk": "new:1-707",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "reported"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-001.md",
+        "hunk": "new:1-67",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      },
+      {
+        "file": ".compozy/tasks/donor-first-role-access/adrs/adr-002.md",
+        "hunk": "new:1-76",
+        "checks": [
+          "polish"
+        ],
+        "outcome": "clear"
+      }
+    ],
+    "rules": []
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "defects": [
+    {
+      "file": "__tests__/admin-actions.test.ts",
+      "line": 517,
+      "end_line": 517,
+      "in_diff": true,
+      "hunk": "new:96-103",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Issued-document persistence and access lack failing-capable coverage",
+      "body": "Premise: __tests__/admin-actions.test.ts:517 and :653 assert only returned PDF bytes/templating after the new issuance calls, while no test imports lib/documents/issued-documents.ts or calls getCurrentIssuedDocuments, getIssuedDocumentUrl, or getIssuedDocumentHistory. → Path: a regression that removes persistence, allocates duplicate versions, leaves a newly written file after an insert failure, or returns an old/ineligible document to Secretaria still lets the current export tests pass because their fake transaction/storage calls are not asserted. → Verdict: the immutable-issuance, compensation, and role-scoped download contract can silently regress despite a green suite.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: __tests__/admin-actions.test.ts:517-561 asserts PDF rendering and pending/template errors, not storage metadata. → Path: a persistence regression after rendering. → Verdict: the decision test still passes.",
+        "Premise: __tests__/admin-actions.test.ts:653-681 asserts rendered contract output only. → Path: contract issuance skips metadata or compensation. → Verdict: the contract test still passes.",
+        "Premise: lib/documents/issued-documents.ts:16-64 has no focused test file or import under __tests__. → Path: version allocation or cleanup changes. → Verdict: no focused test fails.",
+        "Premise: app/admin/_actions/admin-actions.ts:795-823 has no matching action test. → Path: current-document, ticket, or history authorization regresses. → Verdict: the suite does not exercise the affected path."
+      ]
+    },
+    {
+      "file": "__tests__/form-actions.test.ts",
+      "line": 65,
+      "end_line": 110,
+      "in_diff": true,
+      "hunk": "new:65-65",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": true,
+      "title": "Upload-category allowlist has no negative regression test",
+      "body": "Premise: __tests__/form-actions.test.ts:63-116 invokes createUploadUrl only with doc_pai and checks generated tickets/filenames. → Path: removing or weakening isAllowedUploadCategory in app/form/_actions/form-actions.ts:33 would make traversal, separators, unknown categories, and non-numeric student indexes receive a signed upload ticket, yet every current test would still pass. → Verdict: the newly introduced server-side path/category boundary has no failing-capable test against its adversarial inputs.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: __tests__/form-actions.test.ts:63-116 uses only the valid doc_pai category. → Path: invalid category handling is removed. → Verdict: all existing createUploadUrl tests still pass.",
+        "Premise: app/form/_actions/form-actions.ts:32-33 relies on a fixed set and indexed-student regex. → Path: either predicate is weakened. → Verdict: a forbidden category can become eligible without a test failure.",
+        "Premise: app/form/_actions/form-actions.ts:72 is the explicit rejection before ticket creation. → Path: that guard is bypassed. → Verdict: a signed path is returned for an invalid category."
+      ]
+    },
+    {
+      "file": "__tests__/application-schema.test.ts",
+      "line": 138,
+      "end_line": 151,
+      "in_diff": true,
+      "hunk": "new:138-138",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": true,
+      "title": "Mandatory-upload tests do not protect each required document",
+      "body": "Premise: __tests__/application-schema.test.ts:137-154 removes only certidao_casamento; the valid fixture always supplies both student uploads and every other document. → Path: deleting any other requiredFileArray constraint, or making documento_identidade and certidao_nascimento share one optional aggregate, still leaves the valid fixture accepted and the lone negative case rejected for marriage. → Verdict: direct Server Action submissions can regain a bypass for a required document without a test failure.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: __tests__/application-schema.test.ts:21-42 supplies every document in its positive fixture. → Path: any one independent requirement is removed. → Verdict: the positive test continues to pass.",
+        "Premise: __tests__/application-schema.test.ts:137-154 deletes certidao_casamento only. → Path: another mandatory field is made optional. → Verdict: the sole negative case still rejects because marriage remains absent.",
+        "Premise: lib/validations/application-schema.ts:36-37,77,84,91,94,119,130 has separate required-document constraints. → Path: a student identity/birth constraint is aggregated or deleted. → Verdict: no test isolates the lost constraint."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "__tests__/authorization.test.ts",
+      "line": 67,
+      "hunk": "new:1-124",
+      "candidate": "Authorization does not test every capability name individually",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The capability mapping is a finite constant and the focused tests cover active/inactive refresh, bypass behavior, one Secretariat grant, one Secretariat denial, and an Administrator grant; no concrete unprotected capability path was established in this sweep."
+    },
+    {
+      "file": "__tests__/staff-and-observations.test.ts",
+      "line": 35,
+      "hunk": "new:1-47",
+      "candidate": "Observation ordering/read path lacks a direct assertion",
+      "reason": "duplicate-within-job",
+      "rule_ids": [],
+      "note": "It is part of the broader role-scoped issued/operational action coverage gap reported above; a separate report here would not identify an additional causal test failure root."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

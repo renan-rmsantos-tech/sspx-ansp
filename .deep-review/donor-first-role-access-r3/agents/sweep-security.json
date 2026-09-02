@@ -1,0 +1,55 @@
+{
+  "defects": [],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "lib/auth/authorization.ts",
+      "line": 38,
+      "hunk": "1-83",
+      "candidate": "Session role or active status could be trusted after login",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "requireStaff reads the session only for identity and reloads id, email, role and ativo from admin_users on every protected operation; inactive or missing rows are rejected before capability checks."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 51,
+      "hunk": "48-80",
+      "candidate": "Secretaria could receive full application or donor records through a direct Server Action call",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The operational actions independently require the capability and select explicit secretary-safe column projections; detailed applications, source documents, decisions, exports and donor management remain behind requireAdmin."
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 71,
+      "hunk": "71-88",
+      "candidate": "Public upload URL creation could sign an arbitrary storage destination",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The category allowlist and generated UUID constrain every ticket to pending/{uuid}/{approved category}/{sanitized filename}; the upload route verifies the scope-specific HMAC and never accepts a destination from the request body."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 808,
+      "hunk": "794-818",
+      "candidate": "Secretaria could download arbitrary historical or ineligible issued documents by id",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The action reloads the issued-document row, re-evaluates the application status and current version set for Secretaria, and only then emits a short-lived download ticket; history remains requireAdmin."
+    },
+    {
+      "file": "app/api/documents/route.ts",
+      "line": 12,
+      "hunk": null,
+      "candidate": "Download endpoint lacks a session check",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The endpoint is deliberately bearer-ticket based. It accepts only an unexpired HMAC ticket with the download scope; tickets are minted by protected actions and responses are private/no-store."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

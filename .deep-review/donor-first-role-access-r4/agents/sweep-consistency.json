@@ -1,0 +1,60 @@
+{
+  "defects": [
+    {
+      "file": "app/page.tsx",
+      "line": 347,
+      "end_line": 347,
+      "in_diff": true,
+      "hunk": "new:346+1",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": true,
+      "title": "Make the remaining scholarship navigation link canonical",
+      "body": "Premise: `app/page.tsx:347` keeps the visible primary-navigation scholarship link at `#solicitar`, while the same release establishes `/solicitar-bolsa` as the canonical scholarship journey and requires every scholarship action/owned landing link to use it. → Path: a visitor chooses \"Solicitar bolsa\" from the primary navigation; the browser only scrolls to the landing-page band instead of opening the scholarship application. → Verdict: the navigation path fails the canonical-route contract, and it remains a divergent scholarship entry point. Change this href to `/solicitar-bolsa`; the footer's same navigation link at line 567 should follow the same invariant.",
+      "rule_ids": [],
+      "also_applies": [
+        "app/page.tsx:567"
+      ],
+      "guideline": null,
+      "suggestion": "Point both visible `Solicitar bolsa` navigation links directly to `/solicitar-bolsa` and add a DOM-level regression assertion for their hrefs.",
+      "evidence": [
+        "Premise: app/page.tsx:347 uses `#solicitar` for the visible primary-navigation scholarship link and app/page.tsx:567 repeats it in footer navigation. → Path: selecting either labeled `Solicitar bolsa` link only navigates to the landing-page fragment. → Verdict: it bypasses the required canonical `/solicitar-bolsa` scholarship route.",
+        "Premise: task_04.md:27-30,108-109,120,133 requires owned landing links and every scholarship action to use `/solicitar-bolsa`. → Path: the donor-first route migration changed the neighboring app/page.tsx navigation hunk while preserving `#solicitar`. → Verdict: the changed public-navigation surface is not consistently migrated to the canonical route."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/admin/ano-letivo/page.tsx",
+      "line": 5,
+      "hunk": null,
+      "candidate": "Secretariat can reach an admin configuration URL despite the hidden sidebar section",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "The page's initial data call is `getSchoolYears`, and app/admin/_actions/admin-actions.ts:332 first invokes the centralized Admin guard. The parallel header, templates, and contract pages call similarly guarded data actions, so the server boundary denies their data/action path rather than relying on hidden navigation."
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 37,
+      "hunk": "new:32+29",
+      "candidate": "Student upload categories use a different naming convention than UI fields",
+      "reason": "speculative",
+      "rule_ids": [],
+      "note": "The UI emits `rg_aluno_${i}` and `certidao_nascimento_${i}` (step-2-students.tsx:190,202); the allowlist and submission category validation use exactly those patterns (form-actions.ts:37,55-56)."
+    },
+    {
+      "file": "components/ui/seal-logo.tsx",
+      "line": 8,
+      "hunk": "new:4+1",
+      "candidate": "The shared seal might differ from the approved asset",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "`SealLogo` is the sole web-seal component and references `/seal-arca.svg`; `cmp -s public/seal-arca.svg docs/design/opendesign/assets/seal-arca-master.svg` succeeded, and active public/admin consumers use `SealLogo`."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}

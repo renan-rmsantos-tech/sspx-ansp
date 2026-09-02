@@ -1,0 +1,74 @@
+{
+  "defects": [
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 351,
+      "end_line": 351,
+      "in_diff": true,
+      "hunk": "new:351-351",
+      "category": "potential-issue",
+      "severity": "major",
+      "quick_win": false,
+      "title": "Movimentação pós-commit ainda sobrescreve anexos homônimos",
+      "body": "Premise: `createUploadUrl` isola cada upload em `pending/{uuid}/{category}/{filename}` e os campos de IR e extrato bancário aceitam múltiplos anexos, mas `moveFilesToApplication` em `form-actions.ts:349-355` descarta o UUID e move todos eles para `applications/{appId}/{category}/{filename}`. → Path: uma família envia dois arquivos da mesma categoria e com o mesmo nome; ambos passam pela validação e ganham linhas de documento distintas, mas o segundo `storage.move` substitui o primeiro no destino POSIX. → Verdict: a solicitação persistida referencia duas evidências, embora uma tenha sido perdida e ambas possam apontar para o último arquivo. Preserve o UUID de cada upload (ou gere um destino unívoco) ao promover arquivos após o commit e cubra nomes repetidos.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/form/_components/step-3-income.tsx:98-105 e step-4-expenses.tsx:85-94 permitem múltiplos arquivos, enquanto form-actions.ts:349-355 remove o UUID do destino. → Path: dois anexos homônimos da mesma categoria chegam a applications/{appId}/{category}/{filename}. → Verdict: o segundo move sobrescreve o primeiro e as duas linhas de documentos podem apontar para o arquivo remanescente.",
+        "app/form/_actions/form-actions.ts:99-108 cria caminhos isolados em pending/{uuid}/{category}/{filename}, enquanto app/form/_actions/form-actions.ts:349-355 remove o UUID ao formar applications/{appId}/{category}/{filename}.",
+        "lib/storage/index.ts:60-65 implementa move com rename, que substitui um destino existente no filesystem."
+      ]
+    },
+    {
+      "file": "app/solicitar-bolsa/page.tsx",
+      "line": 16,
+      "end_line": 16,
+      "in_diff": true,
+      "hunk": "new:1-17",
+      "category": "potential-issue",
+      "severity": "minor",
+      "quick_win": false,
+      "title": "A rota canônica abandona o layout completo do formulário",
+      "body": "Premise: a rota legada agora redireciona diretamente para `/solicitar-bolsa`, mas a nova página renderiza apenas uma faixa curta de cabeçalho; o layout completo com volta à página principal, introdução institucional e o mesmo `SealLogo` continua exclusivamente em `app/form/layout.tsx:13-103`, que não envolve a rota canônica. → Path: todo visitante que seguia `/form` passa pelo 308 e chega à implementação nova sem esse layout público existente. → Verdict: a migração de rota altera a experiência do formulário e deixa uma superfície executável de layout divergente, contrariando o contrato de reutilizar o fluxo/layout atual na página canônica. Mova/reutilize o layout em `/solicitar-bolsa` (ou extraia-o para um componente compartilhado) e deixe a rota legada somente como redirect.",
+      "rule_ids": [],
+      "evidence": [
+        "Premise: app/form/page.tsx:1-5 redireciona todo acesso legado para /solicitar-bolsa, mas app/solicitar-bolsa/page.tsx:14-16 não usa o layout existente. → Path: visitantes da URL legada chegam somente à árvore curta da rota canônica. → Verdict: elementos públicos que antes envolviam o formulário deixam de ser renderizados após a migração.",
+        "app/solicitar-bolsa/page.tsx:14-16 renderiza somente um header compacto e o conteúdo dinâmico.",
+        "app/form/layout.tsx:13-103 contém o contêiner, link de retorno, apresentação institucional e seção de texto que não são alcançados pela rota canônica."
+      ]
+    }
+  ],
+  "advisories": [],
+  "suppressions": [
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 58,
+      "hunk": "new:58-84",
+      "candidate": "A projeção administrativa completa poderia alcançar o cliente da Secretaria.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "A ramificação de Secretaria seleciona explicitamente somente os campos operacionais da aplicação e id/nome dos alunos antes de entregar o resultado ao cliente específico do papel."
+    },
+    {
+      "file": "app/admin/_actions/admin-actions.ts",
+      "line": 815,
+      "hunk": "new:815-843",
+      "candidate": "A Secretaria poderia obter uma versão histórica ou contrato inelegível por ID.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Para Secretaria, getIssuedDocumentUrl revalida o ID contra getCurrentIssuedDocuments, que exclui pendentes, contratos de rejeitadas e versões que não sejam a mais recente."
+    },
+    {
+      "file": "app/form/_actions/form-actions.ts",
+      "line": 43,
+      "hunk": "new:32-60",
+      "candidate": "As categorias emitidas no cliente e aceitas no servidor poderiam divergir.",
+      "reason": "intentional",
+      "rule_ids": [],
+      "note": "Os componentes emitem rg_aluno_{i} e certidao_nascimento_{i}; validateDocumentCategories exige exatamente esses padrões, além das categorias gerais allowlisted."
+    }
+  ],
+  "coverage": {
+    "hunks": [],
+    "rules": []
+  }
+}
