@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { DonorForm } from "@/app/benfeitor/_components/donor-form";
 import { SealLogo } from "@/components/ui/seal-logo";
@@ -21,7 +22,8 @@ export default function SejaUmBenfeitorPage() {
           <h1 className="mt-2 font-display text-[28px] font-semibold text-fg">Seja um benfeitor</h1>
           <p className="mx-auto mt-3 max-w-[56ch] text-muted">Sua colaboração sustenta a formação católica e ajuda famílias que precisam de apoio para a educação de seus filhos.</p>
         </header>
-        <section className="mb-8 rounded-xl border border-border bg-surface p-6" aria-labelledby="dados-bancarios-titulo">
+        <DonorForm />
+        <section className="mt-8 rounded-xl border border-border bg-surface p-6" aria-labelledby="dados-bancarios-titulo">
           <h2 id="dados-bancarios-titulo" className="font-display text-xl font-semibold text-fg">Faça sua contribuição por Pix</h2>
           <p className="mt-1 text-sm text-muted">Aponte a câmera do aplicativo do seu banco para o QR Code ou informe a chave Pix. A contribuição não tem valor pré-definido.</p>
           <div className="mt-5 grid items-center gap-6 sm:grid-cols-[1fr_auto]">
@@ -31,10 +33,9 @@ export default function SejaUmBenfeitorPage() {
               <div className="rounded-md bg-bg px-4 py-3"><dt className="text-xs font-semibold uppercase tracking-widest text-muted">Agência / Conta</dt><dd className="mt-1 font-medium text-fg">0197 · 13.008.003-2</dd></div>
               <div className="rounded-md bg-bg px-4 py-3 sm:col-span-2"><dt className="text-xs font-semibold uppercase tracking-widest text-muted">CNPJ</dt><dd className="mt-1 font-medium text-fg">62.611.908/0001-99</dd></div>
             </dl>
-            <figure className="mx-auto w-fit border border-border bg-white p-3 sm:mx-0"><img src="/pix-acipec.png" alt="QR Code Pix para contribuição à ACIPEC" width={200} height={200} /><figcaption className="mt-2 text-center text-xs text-muted">QR Code Pix · ACIPEC</figcaption></figure>
+            <figure className="mx-auto w-fit border border-border bg-white p-3 sm:mx-0"><Image src="/pix-acipec.png" alt="QR Code Pix para contribuição à ACIPEC" width={200} height={200} unoptimized /><figcaption className="mt-2 text-center text-xs text-muted">QR Code Pix · ACIPEC</figcaption></figure>
           </div>
         </section>
-        <DonorForm />
       </main>
     </div>
   );

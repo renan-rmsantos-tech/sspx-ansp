@@ -23,11 +23,22 @@ type Frequencia = "unica" | "mensal";
 type Duracao = "um_ano" | "indeterminado";
 
 const VALOR_PRESETS = {
-  mensal: [80, 100, 200],
-  unica: [300, 500, 800],
+  mensal: [
+    { valor: 80, rotulo: "R$ 80" },
+    { valor: 200, rotulo: "R$ 200" },
+    { valor: 1200, rotulo: "R$ 1.200 (1 bolsa)" },
+  ],
+  unica: [
+    { valor: 500, rotulo: "R$ 500" },
+    { valor: 800, rotulo: "R$ 800" },
+    { valor: 1200, rotulo: "R$ 1.200 (1 bolsa mensal)" },
+    { valor: 14400, rotulo: "R$ 14.400 (12 bolsas / 1 ano)" },
+  ],
 } as const;
 
-type ValorPreset = (typeof VALOR_PRESETS)[Frequencia][number] | "outro";
+type ValorPreset =
+  | (typeof VALOR_PRESETS)[Frequencia][number]["valor"]
+  | "outro";
 
 const inputClass =
   "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg outline-none focus:border-accent";
@@ -256,7 +267,7 @@ export function DonorForm() {
               active={frequencia === "unica"}
               onClick={() => {
                 setFrequencia("unica");
-                if (valorPreset !== "outro") setValorPreset(VALOR_PRESETS.unica[0]);
+                if (valorPreset !== "outro") setValorPreset(VALOR_PRESETS.unica[0].valor);
               }}
             >
               Uma vez
@@ -265,7 +276,7 @@ export function DonorForm() {
               active={frequencia === "mensal"}
               onClick={() => {
                 setFrequencia("mensal");
-                if (valorPreset !== "outro") setValorPreset(VALOR_PRESETS.mensal[0]);
+                if (valorPreset !== "outro") setValorPreset(VALOR_PRESETS.mensal[0].valor);
               }}
             >
               Mensal
@@ -294,9 +305,13 @@ export function DonorForm() {
         <div>
           <FieldLabel>Valor {frequencia === "mensal" ? "(por mês)" : ""}</FieldLabel>
           <div className="flex flex-wrap items-center gap-2">
-            {VALOR_PRESETS[frequencia].map((v) => (
-              <OptionButton key={v} active={valorPreset === v} onClick={() => setValorPreset(v)}>
-                R$ {v}
+            {VALOR_PRESETS[frequencia].map((preset) => (
+              <OptionButton
+                key={preset.valor}
+                active={valorPreset === preset.valor}
+                onClick={() => setValorPreset(preset.valor)}
+              >
+                {preset.rotulo}
               </OptionButton>
             ))}
             <OptionButton active={valorPreset === "outro"} onClick={() => setValorPreset("outro")}>

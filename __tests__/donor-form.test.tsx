@@ -17,14 +17,21 @@ describe("DonorForm", () => {
     render(<DonorForm />);
 
     expect(screen.getByRole("button", { name: "R$ 80" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "R$ 100" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "R$ 200" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "R$ 1.200 (1 bolsa)" })
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Uma vez" }));
 
-    expect(screen.getByRole("button", { name: "R$ 300" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "R$ 500" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "R$ 800" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "R$ 1.200 (1 bolsa mensal)" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "R$ 14.400 (12 bolsas / 1 ano)" })
+    ).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "R$ 80" })).not.toBeInTheDocument();
   });
 });
