@@ -12,6 +12,7 @@ import {
   type DocumentHeaderData,
 } from "./document-header";
 import { prioradoCapelaLabel } from "@/lib/data/priorados-capelas";
+import { formatDonorDate } from "@/lib/donor-date";
 
 // Dados do cadastro de benfeitor, já carregados do banco.
 export interface DonorPdfData {
@@ -114,16 +115,6 @@ function fmtCurrency(v?: number | null): string {
   }).format(v);
 }
 
-function fmtDate(v?: string | null): string {
-  if (!v) return "—";
-  // 'YYYY-MM-DD' sem depender de fuso horário.
-  const isoDate = v.split("T")[0];
-  const [y, m, d] = isoDate.split("-");
-  if (d && m && y) return `${d}/${m}/${y}`;
-  const parsed = new Date(v);
-  return isNaN(parsed.getTime()) ? v : parsed.toLocaleDateString("pt-BR");
-}
-
 function Field({
   label,
   value,
@@ -173,7 +164,7 @@ function DonorDocument({ data }: { data: DonorPdfData }) {
           />
           <Field
             label="Data do cadastro"
-            value={fmtDate(data.created_at)}
+            value={formatDonorDate(data.created_at)}
           />
         </View>
 
@@ -189,7 +180,7 @@ function DonorDocument({ data }: { data: DonorPdfData }) {
           <Field label="Valor" value={valorLabel} />
           <Field
             label="Data de pagamento"
-            value={fmtDate(data.data_pagamento)}
+            value={formatDonorDate(data.data_pagamento)}
           />
           <Field
             label="Recibo anexado"

@@ -8,6 +8,7 @@ import {
 } from "../_actions/admin-actions";
 import { PdfPreviewModal } from "./pdf-preview-modal";
 import { prioradoCapelaLabel } from "@/lib/data/priorados-capelas";
+import { formatDonorDate } from "@/lib/donor-date";
 
 export interface DonorPledge {
   id: string;
@@ -128,7 +129,7 @@ export function DonorCard({ donor, onDelete }: DonorCardProps) {
           onClose={() => setPreview(null)}
         />
       )}
-      <div className="flex items-start gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-base font-semibold text-fg">{donor.nome}</span>
@@ -159,9 +160,7 @@ export function DonorCard({ donor, onDelete }: DonorCardProps) {
                 Priorado/Capela: {prioradoCapelaLabel(donor.priorado_capela)}
               </span>
             )}
-            <span>
-              Cadastro: {new Date(donor.created_at).toLocaleDateString("pt-BR")}
-            </span>
+            <span>Cadastro: {formatDonorDate(donor.created_at)}</span>
           </div>
 
           <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm">
@@ -216,7 +215,7 @@ export function DonorCard({ donor, onDelete }: DonorCardProps) {
           )}
         </div>
 
-        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+        <div className="flex shrink-0 flex-wrap items-center justify-start gap-2 sm:justify-end">
           {donor.recibo_path && (
             <button
               type="button"
