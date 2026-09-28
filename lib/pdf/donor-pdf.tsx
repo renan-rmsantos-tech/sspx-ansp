@@ -87,13 +87,16 @@ const styles = StyleSheet.create({
   },
   field: {
     width: "50%",
-    flexDirection: "row",
-    marginBottom: 3,
-    paddingRight: 8,
+    marginBottom: 8,
+    paddingRight: 12,
+  },
+  fieldFull: {
+    width: "100%",
   },
   fLabel: {
     color: "#555",
-    marginRight: 4,
+    fontSize: 8,
+    marginBottom: 2,
   },
   fValue: {
     fontFamily: "Helvetica-Bold",
@@ -124,13 +127,18 @@ function fmtDate(v?: string | null): string {
 function Field({
   label,
   value,
+  fullWidth = false,
 }: {
   label: string;
   value?: string | number | null;
+  fullWidth?: boolean;
 }) {
   return (
-    <View style={styles.field}>
-      <Text style={styles.fLabel}>{label}:</Text>
+    <View
+      style={fullWidth ? [styles.field, styles.fieldFull] : styles.field}
+      wrap={false}
+    >
+      <Text style={styles.fLabel}>{label}</Text>
       <Text style={styles.fValue}>{value ?? "—"}</Text>
     </View>
   );
@@ -155,10 +163,10 @@ function DonorDocument({ data }: { data: DonorPdfData }) {
         <View style={styles.twoCol}>
           <Field label="Nome" value={data.nome} />
           <Field label="CPF" value={data.cpf} />
-          <Field label="E-mail" value={data.email} />
+          <Field label="E-mail" value={data.email} fullWidth />
           <Field label="Telefone" value={data.telefone} />
-          <Field label="Endereço" value={data.endereco} />
           <Field label="CEP" value={data.cep} />
+          <Field label="Endereço" value={data.endereco} fullWidth />
           <Field
             label="Priorado/Capela"
             value={prioradoCapelaLabel(data.priorado_capela)}
