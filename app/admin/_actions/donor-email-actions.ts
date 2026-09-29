@@ -2,11 +2,12 @@
 
 import { desc, eq, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { requireAdmin } from "@/lib/auth/authorization";
 import { db } from "@/lib/db";
 import { documentHeader, donorPledges, donorWelcomeTemplates } from "@/lib/db/schema";
 import { resolveDocumentHeader } from "@/lib/documents/document-header";
-import { sendDonorWelcomeEmail } from "@/lib/email/send-donor-welcome";
+import { sendDonorWelcomeEmail, sendDonorWelcomeTestEmail } from "@/lib/email/send-donor-welcome";
 import {
   DONOR_WELCOME_BODY,
   DONOR_WELCOME_SUBJECT,
@@ -36,19 +37,28 @@ export async function getDonorEmailSettings() {
   };
 }
 
-export async function saveDonorEmailTemplate(input: {
+interface EmailContent {
   assunto: string;
   corpo: string;
-}): Promise<{ success: boolean; error?: string }> {
-  await requireAdmin();
-  const assunto = input.assunto?.trim();
-  const corpo = input.corpo?.trim();
+}
+
+function validateEmailContent(input: EmailContent): EmailContent | { error: string } {
+  const assunto = input?.assunto?.trim();
+  const corpo = input?.corpo?.trim();
   if (!assunto || assunto.length > 160 || /[\r\n]/.test(assunto)) {
-    return { success: false, error: "Informe um assunto de até 160 caracteres, em uma linha." };
+    return { error: "Informe um assunto de até 160 caracteres, em uma linha." };
   }
   if (!corpo || corpo.length > 10000) {
-    return { success: false, error: "Informe uma mensagem de até 10.000 caracteres." };
+    return { error: "Informe uma mensagem de até 10.000 caracteres." };
   }
+  return { assunto, corpo };
+}
+
+export async function saveDonorEmailTemplate(input: EmailContent): Promise<{ success: boolean; error?: string }> {
+  await requireAdmin();
+  const content = validateEmailContent(input);
+  if ("error" in content) return { success: false, error: content.error };
+  const { assunto, corpo } = content;
 
   try {
     const existing = await db.query.donorWelcomeTemplates.findFirst({
@@ -65,6 +75,23 @@ export async function saveDonorEmailTemplate(input: {
     return { success: true };
   } catch {
     return { success: false, error: "Não foi possível salvar o modelo. Tente novamente." };
+  }
+}
+
+export async function sendDonorTestEmail(input: EmailContent & { email: string }): Promise<{ success: boolean; error?: string }> {
+  await requireAdmin();
+  const recipient = z.string().trim().email().max(254).safeParse(input?.email);
+  if (!recipient.success || /[,;\r\n]/.test(recipient.data)) {
+    return { success: false, error: "Informe um endereço de e-mail válido para o teste." };
+  }
+  const content = validateEmailContent(input);
+  if ("error" in content) return { success: false, error: content.error };
+
+  try {
+    await sendDonorWelcomeTestEmail({ email: recipient.data, ...content });
+    return { success: true };
+  } catch {
+    return { success: false, error: "Não foi possível enviar o teste. Verifique o SMTP e tente novamente." };
   }
 }
 

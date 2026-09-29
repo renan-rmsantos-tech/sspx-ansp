@@ -9,7 +9,7 @@ const { createTransport, sendMail, close } = vi.hoisted(() => ({
 vi.mock("nodemailer", () => ({ default: { createTransport } }));
 vi.mock("@/lib/db", async () => ({ db: (await import("./helpers/fake-db")).fakeDb }));
 
-import { sendDonorWelcomeEmail } from "@/lib/email/send-donor-welcome";
+import { sendDonorWelcomeEmail, sendDonorWelcomeTestEmail } from "@/lib/email/send-donor-welcome";
 import { donorPledges } from "@/lib/db/schema";
 import { queryFor, resetFakeDb, updated } from "./helpers/fake-db";
 
@@ -74,5 +74,18 @@ describe("sendDonorWelcomeEmail", () => {
     await sendDonorWelcomeEmail({ id: "d1", email: "ana@example.com" });
     expect(sendMail.mock.calls[0][0].attachments).toBeUndefined();
     expect(sendMail.mock.calls[0][0].html).not.toContain("cid:ansp-document-seal");
+  });
+
+  it("sends a marked test using the draft without changing a donor", async () => {
+    await sendDonorWelcomeTestEmail({
+      email: "teste@example.com", assunto: "Texto novo", corpo: "Rascunho para teste",
+    });
+    expect(sendMail).toHaveBeenCalledWith(expect.objectContaining({
+      to: "teste@example.com",
+      subject: "[TESTE] Texto novo",
+      text: expect.stringContaining("Rascunho para teste"),
+    }));
+    expect(queryFor("donorWelcomeTemplates").findFirst).not.toHaveBeenCalled();
+    expect(updated).toHaveLength(0);
   });
 });

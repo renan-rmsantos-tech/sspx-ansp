@@ -21,21 +21,17 @@ function smtpConfig() {
   return { host, from, port };
 }
 
-export async function sendDonorWelcomeEmail(donor: {
-  id: string;
-  email: string;
+async function sendWelcomeMessage(input: {
+  to: string;
+  subject: string;
+  body: string;
 }): Promise<void> {
   const config = smtpConfig();
-  const [template, savedHeader] = await Promise.all([
-    db.query.donorWelcomeTemplates.findFirst({
-      orderBy: desc(donorWelcomeTemplates.updated_at),
-    }),
-    db.query.documentHeader.findFirst({
-      orderBy: desc(documentHeader.updated_at),
-    }),
-  ]);
+  const savedHeader = await db.query.documentHeader.findFirst({
+    orderBy: desc(documentHeader.updated_at),
+  });
   const header = resolveDocumentHeader(savedHeader);
-  const { html, text } = renderDonorWelcomeEmail(template?.corpo ?? DONOR_WELCOME_BODY, header);
+  const { html, text } = renderDonorWelcomeEmail(input.body, header);
   const secure = process.env.SMTP_SECURE === "true" || config.port === 465;
   const transport = nodemailer.createTransport({
     host: config.host,
@@ -53,8 +49,8 @@ export async function sendDonorWelcomeEmail(donor: {
   try {
     await transport.sendMail({
       from: config.from,
-      to: donor.email,
-      subject: template?.assunto ?? DONOR_WELCOME_SUBJECT,
+      to: input.to,
+      subject: input.subject,
       text,
       html,
       attachments: header.mostrar_selo ? [{
@@ -70,9 +66,35 @@ export async function sendDonorWelcomeEmail(donor: {
   } finally {
     transport.close();
   }
+}
+
+export async function sendDonorWelcomeEmail(donor: {
+  id: string;
+  email: string;
+}): Promise<void> {
+  const template = await db.query.donorWelcomeTemplates.findFirst({
+    orderBy: desc(donorWelcomeTemplates.updated_at),
+  });
+  await sendWelcomeMessage({
+    to: donor.email,
+    subject: template?.assunto ?? DONOR_WELCOME_SUBJECT,
+    body: template?.corpo ?? DONOR_WELCOME_BODY,
+  });
 
   await db
     .update(donorPledges)
     .set({ welcome_email_sent_at: new Date().toISOString() })
     .where(eq(donorPledges.id, donor.id));
+}
+
+export async function sendDonorWelcomeTestEmail(input: {
+  email: string;
+  assunto: string;
+  corpo: string;
+}): Promise<void> {
+  await sendWelcomeMessage({
+    to: input.email,
+    subject: `[TESTE] ${input.assunto}`,
+    body: input.corpo,
+  });
 }

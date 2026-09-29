@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { DocumentHeaderPreview } from "../_components/document-header-preview";
 import {
   retryDonorWelcomeEmail,
   saveDonorEmailTemplate,
+  sendDonorTestEmail,
 } from "../_actions/donor-email-actions";
 import { DONOR_EMAIL_FOOTER } from "@/lib/email/donor-welcome-template";
 import type { DocumentHeaderData } from "@/lib/documents/document-header";
@@ -40,6 +41,9 @@ export function DonorEmailClient({
   const [sendingId, setSendingId] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [retryError, setRetryError] = useState<{ id: string; text: string } | null>(null);
+  const [testEmail, setTestEmail] = useState("");
+  const [sendingTest, setSendingTest] = useState(false);
+  const [testMessage, setTestMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const dirty = template.assunto !== saved.assunto || template.corpo !== saved.corpo;
 
   async function save() {
@@ -77,6 +81,23 @@ export function DonorEmailClient({
     }
   }
 
+  async function sendTest(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (sendingTest) return;
+    setSendingTest(true);
+    setTestMessage(null);
+    try {
+      const result = await sendDonorTestEmail({ email: testEmail, ...template });
+      setTestMessage(result.success
+        ? { type: "success", text: `E-mail de teste enviado para ${testEmail.trim()}.` }
+        : { type: "error", text: result.error ?? "Não foi possível enviar o teste." });
+    } catch {
+      setTestMessage({ type: "error", text: "Não foi possível enviar o teste. Tente novamente." });
+    } finally {
+      setSendingTest(false);
+    }
+  }
+
   return (
     <div className="space-y-8">
       {!smtpConfigured && (
@@ -98,7 +119,7 @@ export function DonorEmailClient({
               <input
                 id="donor-email-subject"
                 value={template.assunto}
-                onChange={(event) => { setTemplate((value) => ({ ...value, assunto: event.target.value })); setMessage(null); }}
+                onChange={(event) => { setTemplate((value) => ({ ...value, assunto: event.target.value })); setMessage(null); setTestMessage(null); }}
                 maxLength={160}
                 className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg outline-none focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/20"
               />
@@ -108,7 +129,7 @@ export function DonorEmailClient({
               <textarea
                 id="donor-email-body"
                 value={template.corpo}
-                onChange={(event) => { setTemplate((value) => ({ ...value, corpo: event.target.value })); setMessage(null); }}
+                onChange={(event) => { setTemplate((value) => ({ ...value, corpo: event.target.value })); setMessage(null); setTestMessage(null); }}
                 maxLength={10000}
                 rows={16}
                 className="w-full resize-y rounded-md border border-border bg-surface px-3 py-2 text-sm leading-relaxed text-fg outline-none focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/20"
@@ -153,6 +174,39 @@ export function DonorEmailClient({
           </div>
         </section>
       </div>
+
+      <section className="border-t border-border pt-6" aria-labelledby="test-email-heading">
+        <h2 id="test-email-heading" className="text-base font-semibold text-fg">Enviar e-mail de teste</h2>
+        <p className="mt-1 max-w-[70ch] text-sm text-muted">
+          Envie o texto que está na tela para conferir o resultado. O teste não salva alterações e o assunto recebe [TESTE].
+        </p>
+        <form onSubmit={(event) => void sendTest(event)} className="mt-4 flex max-w-[720px] flex-wrap items-end gap-3">
+          <div className="min-w-[240px] flex-1">
+            <label htmlFor="donor-test-email" className="mb-1.5 block text-sm font-medium text-fg">E-mail de destino</label>
+            <input
+              id="donor-test-email"
+              type="email"
+              required
+              autoComplete="email"
+              maxLength={254}
+              value={testEmail}
+              onChange={(event) => { setTestEmail(event.target.value); setTestMessage(null); }}
+              placeholder="nome@exemplo.com"
+              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg outline-none placeholder:text-muted focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/20"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={sendingTest || !smtpConfigured || !testEmail.trim()}
+            className="rounded-md border border-accent px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {sendingTest ? "Enviando..." : "Enviar teste"}
+          </button>
+        </form>
+        <p role={testMessage?.type === "error" ? "alert" : "status"} aria-live="polite" className={`mt-2 text-sm ${testMessage?.type === "error" ? "text-danger" : "text-success"}`}>
+          {testMessage?.text}
+        </p>
+      </section>
 
       <section aria-labelledby="pending-emails-heading">
         <h2 id="pending-emails-heading" className="text-base font-semibold text-fg">Envios pendentes</h2>

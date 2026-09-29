@@ -1,14 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { requireAdmin, sendDonorWelcomeEmail, revalidatePath } = vi.hoisted(() => ({
+const { requireAdmin, sendDonorWelcomeEmail, sendDonorWelcomeTestEmail, revalidatePath } = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   sendDonorWelcomeEmail: vi.fn(),
+  sendDonorWelcomeTestEmail: vi.fn(),
   revalidatePath: vi.fn(),
 }));
 
 vi.mock("@/lib/db", async () => ({ db: (await import("./helpers/fake-db")).fakeDb }));
 vi.mock("@/lib/auth/authorization", () => ({ requireAdmin }));
-vi.mock("@/lib/email/send-donor-welcome", () => ({ sendDonorWelcomeEmail }));
+vi.mock("@/lib/email/send-donor-welcome", () => ({ sendDonorWelcomeEmail, sendDonorWelcomeTestEmail }));
 vi.mock("next/cache", () => ({ revalidatePath }));
 vi.mock("@/lib/storage", () => ({ getStorage: () => ({ move: vi.fn() }) }));
 
@@ -17,6 +18,7 @@ import {
   getDonorEmailSettings,
   retryDonorWelcomeEmail,
   saveDonorEmailTemplate,
+  sendDonorTestEmail,
 } from "@/app/admin/_actions/donor-email-actions";
 import { donorPledges, donorWelcomeTemplates } from "@/lib/db/schema";
 import { renderDonorWelcomeEmail } from "@/lib/email/donor-welcome-template";
@@ -40,6 +42,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   requireAdmin.mockResolvedValue({ id: "admin", role: "admin" });
   sendDonorWelcomeEmail.mockResolvedValue(undefined);
+  sendDonorWelcomeTestEmail.mockResolvedValue(undefined);
 });
 
 describe("e-mail de boas-vindas ao benfeitor", () => {
@@ -130,5 +133,24 @@ describe("administração do modelo", () => {
     requireAdmin.mockRejectedValue(new Error("forbidden"));
     await expect(saveDonorEmailTemplate({ assunto: "Oi", corpo: "Texto" })).rejects.toThrow("forbidden");
     expect(inserted).toHaveLength(0);
+  });
+
+  it("validates the test recipient and sends the current draft without a database write", async () => {
+    expect((await sendDonorTestEmail({ email: "ana@example.com, outra@example.com", assunto: "Oi", corpo: "Texto" })).success).toBe(false);
+    expect((await sendDonorTestEmail({ email: "ana@example.com", assunto: "Oi\nBcc: x", corpo: "Texto" })).success).toBe(false);
+    expect(sendDonorWelcomeTestEmail).not.toHaveBeenCalled();
+
+    expect(await sendDonorTestEmail({ email: " ana@example.com ", assunto: " Assunto novo ", corpo: " Rascunho " })).toEqual({ success: true });
+    expect(sendDonorWelcomeTestEmail).toHaveBeenCalledWith({
+      email: "ana@example.com", assunto: "Assunto novo", corpo: "Rascunho",
+    });
+    expect(inserted).toHaveLength(0);
+    expect(updated).toHaveLength(0);
+  });
+
+  it("requires admin rights to send a test email", async () => {
+    requireAdmin.mockRejectedValue(new Error("forbidden"));
+    await expect(sendDonorTestEmail({ email: "ana@example.com", assunto: "Oi", corpo: "Texto" })).rejects.toThrow("forbidden");
+    expect(sendDonorWelcomeTestEmail).not.toHaveBeenCalled();
   });
 });
