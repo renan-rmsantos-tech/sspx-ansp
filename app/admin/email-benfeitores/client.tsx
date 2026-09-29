@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { DocumentHeaderPreview } from "../_components/document-header-preview";
 import {
   retryDonorWelcomeEmail,
   saveDonorEmailTemplate,
 } from "../_actions/donor-email-actions";
-import {
-  DONOR_EMAIL_FOOTER,
-  DONOR_EMAIL_HEADER,
-} from "@/lib/email/donor-welcome-template";
+import { DONOR_EMAIL_FOOTER } from "@/lib/email/donor-welcome-template";
+import type { DocumentHeaderData } from "@/lib/documents/document-header";
 
 interface EmailTemplate {
   assunto: string;
@@ -25,10 +25,12 @@ interface PendingDonor {
 export function DonorEmailClient({
   initialTemplate,
   initialPending,
+  header,
   smtpConfigured,
 }: {
   initialTemplate: EmailTemplate;
   initialPending: PendingDonor[];
+  header: DocumentHeaderData;
   smtpConfigured: boolean;
 }) {
   const [template, setTemplate] = useState(initialTemplate);
@@ -86,7 +88,9 @@ export function DonorEmailClient({
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-lg border border-border bg-surface p-5" aria-labelledby="email-editor-heading">
           <h2 id="email-editor-heading" className="text-base font-semibold text-fg">Conteúdo da mensagem</h2>
-          <p className="mt-1 text-sm text-muted">O cabeçalho e a assinatura institucionais são incluídos automaticamente.</p>
+          <p className="mt-1 text-sm text-muted">
+            O e-mail usa o <Link href="/admin/cabecalho" className="font-medium text-accent underline-offset-2 hover:underline">Cabeçalho dos Documentos</Link> e a assinatura institucional.
+          </p>
 
           <div className="mt-5 space-y-4">
             <div>
@@ -135,9 +139,7 @@ export function DonorEmailClient({
             <div className="border-b border-border px-5 py-3 text-xs text-muted">
               <span className="font-medium text-fg">Assunto:</span> {template.assunto || "—"}
             </div>
-            <div className="bg-accent px-6 py-5 font-heading text-[19px] font-semibold leading-snug text-white">
-              {DONOR_EMAIL_HEADER}
-            </div>
+            <div className="px-6 pt-5"><DocumentHeaderPreview header={header} /></div>
             <div className="space-y-4 px-6 py-7 text-sm leading-relaxed text-fg">
               {template.corpo.trim()
                 ? template.corpo.trim().split(/\n\s*\n/).map((paragraph, index) => (

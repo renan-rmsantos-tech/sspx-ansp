@@ -4,7 +4,7 @@ import { DonorEmailClient } from "./client";
 
 export default async function DonorEmailPage() {
   await requireAdmin();
-  const { template, pending } = await getDonorEmailSettings();
+  const { template, pending, header } = await getDonorEmailSettings();
   const smtpConfigured = Boolean(process.env.SMTP_HOST && process.env.SMTP_FROM);
 
   return (
@@ -19,6 +19,7 @@ export default async function DonorEmailPage() {
         <DonorEmailClient
           initialTemplate={template}
           initialPending={pending}
+          header={header}
           smtpConfigured={smtpConfigured}
         />
       </div>

@@ -1,36 +1,12 @@
 import { Image, Text, View, StyleSheet } from "@react-pdf/renderer";
 import { SEAL_DATA_URI } from "./seal-image";
+import type { DocumentHeaderData } from "@/lib/documents/document-header";
 
-// Cabeçalho institucional compartilhado pelos PDFs (Decisão e Contrato).
-export interface DocumentHeaderData {
-  linha1: string;
-  linha2: string;
-  linha3: string;
-  mostrar_selo: boolean;
-}
-
-// Cabeçalho padrão quando ainda não há configuração salva em document_header.
-export const DEFAULT_DOCUMENT_HEADER: DocumentHeaderData = {
-  linha1: "Arca Nossa Senhora da Providência",
-  linha2: "",
-  linha3: "",
-  mostrar_selo: true,
-};
-
-// Aplica o cabeçalho padrão sobre uma configuração parcial/ausente, garantindo
-// que todos os PDFs sempre exibam o cabeçalho institucional.
-export function resolveDocumentHeader(
-  header: Partial<DocumentHeaderData> | null | undefined
-): DocumentHeaderData {
-  return {
-    linha1: header?.linha1?.trim()
-      ? header.linha1
-      : DEFAULT_DOCUMENT_HEADER.linha1,
-    linha2: header?.linha2 ?? DEFAULT_DOCUMENT_HEADER.linha2,
-    linha3: header?.linha3 ?? DEFAULT_DOCUMENT_HEADER.linha3,
-    mostrar_selo: header?.mostrar_selo ?? DEFAULT_DOCUMENT_HEADER.mostrar_selo,
-  };
-}
+export {
+  DEFAULT_DOCUMENT_HEADER,
+  resolveDocumentHeader,
+} from "@/lib/documents/document-header";
+export type { DocumentHeaderData } from "@/lib/documents/document-header";
 
 const styles = StyleSheet.create({
   wrap: {

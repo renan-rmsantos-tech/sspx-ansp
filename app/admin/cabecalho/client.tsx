@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { SealLogo } from "@/components/ui/seal-logo";
+import { DocumentHeaderPreview } from "../_components/document-header-preview";
 import { saveDocumentHeader } from "../_actions/admin-actions";
 
 interface HeaderForm {
@@ -141,20 +141,7 @@ export function CabecalhoClient({ initialHeader }: CabecalhoClientProps) {
       <div className="rounded-lg border border-border bg-surface p-5">
         <h2 className="text-sm font-semibold text-fg">Pré-visualização</h2>
         <div className="mt-4 rounded-md border border-border bg-white p-6">
-          <div className="flex flex-col items-center border-b border-[#c9a84c] pb-4 text-center">
-            {form.mostrar_selo && <SealLogo size={64} className="mb-2" />}
-            {form.linha1.trim() !== "" && (
-              <p className="font-heading text-[15px] font-bold text-[#1a1a1a]">
-                {form.linha1}
-              </p>
-            )}
-            {form.linha2.trim() !== "" && (
-              <p className="mt-0.5 text-[11px] text-[#444]">{form.linha2}</p>
-            )}
-            {form.linha3.trim() !== "" && (
-              <p className="text-[11px] text-[#444]">{form.linha3}</p>
-            )}
-          </div>
+          <DocumentHeaderPreview header={form} />
           <p className="mt-4 text-center text-xs text-muted">
             O cabeçalho acima aparece no topo dos PDFs de Decisão e de Contrato.
           </p>

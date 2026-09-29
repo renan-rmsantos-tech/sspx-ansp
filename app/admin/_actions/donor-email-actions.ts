@@ -4,7 +4,8 @@ import { desc, eq, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/authorization";
 import { db } from "@/lib/db";
-import { donorPledges, donorWelcomeTemplates } from "@/lib/db/schema";
+import { documentHeader, donorPledges, donorWelcomeTemplates } from "@/lib/db/schema";
+import { resolveDocumentHeader } from "@/lib/documents/document-header";
 import { sendDonorWelcomeEmail } from "@/lib/email/send-donor-welcome";
 import {
   DONOR_WELCOME_BODY,
@@ -13,13 +14,16 @@ import {
 
 export async function getDonorEmailSettings() {
   await requireAdmin();
-  const [template, pending] = await Promise.all([
+  const [template, pending, savedHeader] = await Promise.all([
     db.query.donorWelcomeTemplates.findFirst(),
     db.query.donorPledges.findMany({
       columns: { id: true, nome: true, email: true, created_at: true },
       where: isNull(donorPledges.welcome_email_sent_at),
       orderBy: desc(donorPledges.created_at),
       limit: 50,
+    }),
+    db.query.documentHeader.findFirst({
+      orderBy: desc(documentHeader.updated_at),
     }),
   ]);
   return {
@@ -28,6 +32,7 @@ export async function getDonorEmailSettings() {
       corpo: template?.corpo ?? DONOR_WELCOME_BODY,
     },
     pending,
+    header: resolveDocumentHeader(savedHeader),
   };
 }
 

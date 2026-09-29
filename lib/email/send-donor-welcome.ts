@@ -1,8 +1,11 @@
 import nodemailer from "nodemailer";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { donorPledges, donorWelcomeTemplates } from "@/lib/db/schema";
+import { documentHeader, donorPledges, donorWelcomeTemplates } from "@/lib/db/schema";
+import { resolveDocumentHeader } from "@/lib/documents/document-header";
+import { SEAL_DATA_URI } from "@/lib/pdf/seal-image";
 import {
+  DOCUMENT_HEADER_SEAL_CID,
   DONOR_WELCOME_BODY,
   DONOR_WELCOME_SUBJECT,
   renderDonorWelcomeEmail,
@@ -23,10 +26,16 @@ export async function sendDonorWelcomeEmail(donor: {
   email: string;
 }): Promise<void> {
   const config = smtpConfig();
-  const template = await db.query.donorWelcomeTemplates.findFirst({
-    orderBy: desc(donorWelcomeTemplates.updated_at),
-  });
-  const { html, text } = renderDonorWelcomeEmail(template?.corpo ?? DONOR_WELCOME_BODY);
+  const [template, savedHeader] = await Promise.all([
+    db.query.donorWelcomeTemplates.findFirst({
+      orderBy: desc(donorWelcomeTemplates.updated_at),
+    }),
+    db.query.documentHeader.findFirst({
+      orderBy: desc(documentHeader.updated_at),
+    }),
+  ]);
+  const header = resolveDocumentHeader(savedHeader);
+  const { html, text } = renderDonorWelcomeEmail(template?.corpo ?? DONOR_WELCOME_BODY, header);
   const secure = process.env.SMTP_SECURE === "true" || config.port === 465;
   const transport = nodemailer.createTransport({
     host: config.host,
@@ -48,6 +57,13 @@ export async function sendDonorWelcomeEmail(donor: {
       subject: template?.assunto ?? DONOR_WELCOME_SUBJECT,
       text,
       html,
+      attachments: header.mostrar_selo ? [{
+        filename: "selo-ansp.png",
+        content: Buffer.from(SEAL_DATA_URI.slice(SEAL_DATA_URI.indexOf(",") + 1), "base64"),
+        cid: DOCUMENT_HEADER_SEAL_CID,
+        contentType: "image/png",
+        contentDisposition: "inline" as const,
+      }] : undefined,
       disableFileAccess: true,
       disableUrlAccess: true,
     });

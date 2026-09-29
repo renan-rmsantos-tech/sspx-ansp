@@ -33,6 +33,9 @@ describe("sendDonorWelcomeEmail", () => {
     queryFor("donorWelcomeTemplates").findFirst.mockResolvedValue({
       assunto: "Novo assunto", corpo: "Obrigado, <Ana>!",
     });
+    queryFor("documentHeader").findFirst.mockResolvedValue({
+      linha1: "Instituição <ANSP>", linha2: "Mantenedora da escola", linha3: "Itatiba/SP", mostrar_selo: true,
+    });
     await sendDonorWelcomeEmail({ id: "d1", email: "ana@example.com" });
 
     expect(createTransport).toHaveBeenCalledWith(expect.objectContaining({
@@ -41,8 +44,15 @@ describe("sendDonorWelcomeEmail", () => {
     expect(sendMail).toHaveBeenCalledWith(expect.objectContaining({
       to: "ana@example.com", subject: "Novo assunto",
       text: expect.stringContaining("Obrigado, <Ana>!"),
-      html: expect.stringContaining("Obrigado, &lt;Ana&gt;!"),
+      html: expect.stringContaining("Instituição &lt;ANSP&gt;"),
+      attachments: [expect.objectContaining({
+        cid: "ansp-document-seal", contentType: "image/png", content: expect.any(Buffer),
+      })],
     }));
+    expect(sendMail.mock.calls[0][0].text).toContain("Mantenedora da escola\nItatiba/SP\n\nObrigado, <Ana>!");
+    expect(sendMail.mock.calls[0][0].html).toContain("Obrigado, &lt;Ana&gt;!");
+    expect(sendMail.mock.calls[0][0].attachments[0].content.subarray(0, 8))
+      .toEqual(Buffer.from("89504e470d0a1a0a", "hex"));
     expect(updated[0]).toMatchObject({
       table: donorPledges,
       values: { welcome_email_sent_at: expect.any(String) },
@@ -55,5 +65,14 @@ describe("sendDonorWelcomeEmail", () => {
     await expect(sendDonorWelcomeEmail({ id: "d1", email: "ana@example.com" })).rejects.toThrow("rejected");
     expect(updated).toHaveLength(0);
     expect(close).toHaveBeenCalled();
+  });
+
+  it("omits the seal when document settings disable it", async () => {
+    queryFor("documentHeader").findFirst.mockResolvedValue({
+      linha1: "Arca", linha2: "", linha3: "", mostrar_selo: false,
+    });
+    await sendDonorWelcomeEmail({ id: "d1", email: "ana@example.com" });
+    expect(sendMail.mock.calls[0][0].attachments).toBeUndefined();
+    expect(sendMail.mock.calls[0][0].html).not.toContain("cid:ansp-document-seal");
   });
 });

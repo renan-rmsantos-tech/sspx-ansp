@@ -14,6 +14,7 @@ vi.mock("@/lib/storage", () => ({ getStorage: () => ({ move: vi.fn() }) }));
 
 import { registerDonorPledge } from "@/app/benfeitor/_actions/donor-actions";
 import {
+  getDonorEmailSettings,
   retryDonorWelcomeEmail,
   saveDonorEmailTemplate,
 } from "@/app/admin/_actions/donor-email-actions";
@@ -72,15 +73,29 @@ describe("e-mail de boas-vindas ao benfeitor", () => {
   });
 
   it("escapes edited text in HTML and includes the institutional header and footer", () => {
-    const message = renderDonorWelcomeEmail("Olá <Ana> & família\n\nUma linha");
+    const message = renderDonorWelcomeEmail("Olá <Ana> & família\n\nUma linha", {
+      linha1: "Arca <ANSP>", linha2: "Mantenedora", linha3: "", mostrar_selo: false,
+    });
     expect(message.html).toContain("Olá &lt;Ana&gt; &amp; família");
     expect(message.html).not.toContain("Olá <Ana>");
+    expect(message.html).toContain("Arca &lt;ANSP&gt;");
+    expect(message.html).not.toContain("cid:ansp-document-seal");
     expect(message.html).toContain("Obra de Assistência Educacional Católica");
-    expect(message.text).toContain("Arca Nossa Senhora da Providência\n\nOlá <Ana>");
+    expect(message.text).toContain("Arca <ANSP>\nMantenedora\n\nOlá <Ana>");
   });
 });
 
 describe("administração do modelo", () => {
+  it("loads the same document header shown in the PDF settings", async () => {
+    queryFor("documentHeader").findFirst.mockResolvedValue({
+      linha1: "Arca", linha2: "Colégio São José", linha3: "Itatiba/SP", mostrar_selo: false,
+    });
+    const settings = await getDonorEmailSettings();
+    expect(settings.header).toEqual({
+      linha1: "Arca", linha2: "Colégio São José", linha3: "Itatiba/SP", mostrar_selo: false,
+    });
+  });
+
   it("validates subject and saves an edited template", async () => {
     expect((await saveDonorEmailTemplate({ assunto: "Assunto\nextra", corpo: "Texto" })).success).toBe(false);
     expect(inserted).toHaveLength(0);

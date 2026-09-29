@@ -24,12 +24,16 @@ describe("DonorEmailClient", () => {
     render(<DonorEmailClient
       initialTemplate={{ assunto: "Boas-vindas", corpo: "Mensagem inicial" }}
       initialPending={[]}
+      header={{ linha1: "Arca Nossa Senhora da Providência", linha2: "Mantenedora do Colégio São José", linha3: "Itatiba/SP", mostrar_selo: true }}
       smtpConfigured
     />);
 
     fireEvent.change(screen.getByLabelText("Mensagem"), { target: { value: "Novo texto" } });
     const preview = screen.getByRole("region", { name: "Pré-visualização" });
     expect(within(preview).getByText("Novo texto")).toBeInTheDocument();
+    expect(within(preview).getByText("Mantenedora do Colégio São José")).toBeInTheDocument();
+    expect(within(preview).getByText("Itatiba/SP")).toBeInTheDocument();
+    expect(within(preview).getByAltText("Logo Arca Nossa Senhora da Providência")).toBeInTheDocument();
     expect(within(preview).getByText(/Obra de Assistência Educacional Católica/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Salvar modelo" }));
     await waitFor(() => expect(saveDonorEmailTemplate).toHaveBeenCalledWith({
@@ -43,6 +47,7 @@ describe("DonorEmailClient", () => {
     render(<DonorEmailClient
       initialTemplate={{ assunto: "Boas-vindas", corpo: "Mensagem" }}
       initialPending={[{ id: "d1", nome: "Ana Silva", email: "ana@example.com", created_at: "2026-09-28" }]}
+      header={{ linha1: "Arca Nossa Senhora da Providência", linha2: "", linha3: "", mostrar_selo: false }}
       smtpConfigured
     />);
 
