@@ -3,7 +3,7 @@
  *
  * Cria o admin inicial a partir de ADMIN_EMAIL/ADMIN_PASSWORD e insere os
  * registros que a aplicação espera encontrar já existindo (modelos de decisão,
- * modelo de contrato, cabeçalho dos documentos, ano letivo). Nada é
+ * contrato e e-mail, cabeçalho dos documentos, ano letivo). Nada é
  * sobrescrito: rodar de novo em um banco já populado não altera nada.
  */
 import { eq } from "drizzle-orm";
@@ -14,8 +14,13 @@ import {
   contractTemplates,
   decisionTemplates,
   documentHeader,
+  donorWelcomeTemplates,
   schoolYears,
 } from "../lib/db/schema";
+import {
+  DONOR_WELCOME_BODY,
+  DONOR_WELCOME_SUBJECT,
+} from "../lib/email/donor-welcome-template";
 
 function log(message: string) {
   console.log(`[bootstrap] ${message}`);
@@ -160,6 +165,17 @@ async function bootstrapDocumentHeader() {
   log("cabeçalho dos documentos criado.");
 }
 
+async function bootstrapDonorWelcomeTemplate() {
+  const existing = await db.query.donorWelcomeTemplates.findFirst();
+  if (existing) return;
+
+  await db.insert(donorWelcomeTemplates).values({
+    assunto: DONOR_WELCOME_SUBJECT,
+    corpo: DONOR_WELCOME_BODY,
+  });
+  log("modelo de e-mail para benfeitores criado.");
+}
+
 async function bootstrapSchoolYear() {
   const existing = await db.query.schoolYears.findFirst();
 
@@ -180,6 +196,7 @@ async function main() {
   await bootstrapDecisionTemplates();
   await bootstrapContractTemplate();
   await bootstrapDocumentHeader();
+  await bootstrapDonorWelcomeTemplate();
   await bootstrapSchoolYear();
   log("concluído.");
 }

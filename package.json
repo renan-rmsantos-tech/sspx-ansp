@@ -14,7 +14,7 @@
     "db:stop": "docker compose -f docker-compose.dev.yml down",
     "db:migrate": "drizzle-kit migrate",
     "db:generate": "drizzle-kit generate",
-    "db:bootstrap": "tsx scripts/bootstrap.ts",
+    "db:bootstrap": "node --env-file-if-exists=.env --import tsx scripts/bootstrap.ts",
     "storage:cleanup": "tsx scripts/cleanup-pending.ts"
   },
   "dependencies": {
@@ -27,6 +27,7 @@
     "iron-session": "^8.0.4",
     "lucide-react": "^1.20.0",
     "next": "^16.2.9",
+    "nodemailer": "^10.0.12",
     "postgres": "^3.4.9",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
@@ -42,6 +43,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^25.9.3",
+    "@types/nodemailer": "^8.0.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",

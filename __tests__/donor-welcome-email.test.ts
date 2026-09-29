@@ -1,0 +1,119 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const { requireAdmin, sendDonorWelcomeEmail, revalidatePath } = vi.hoisted(() => ({
+  requireAdmin: vi.fn(),
+  sendDonorWelcomeEmail: vi.fn(),
+  revalidatePath: vi.fn(),
+}));
+
+vi.mock("@/lib/db", async () => ({ db: (await import("./helpers/fake-db")).fakeDb }));
+vi.mock("@/lib/auth/authorization", () => ({ requireAdmin }));
+vi.mock("@/lib/email/send-donor-welcome", () => ({ sendDonorWelcomeEmail }));
+vi.mock("next/cache", () => ({ revalidatePath }));
+vi.mock("@/lib/storage", () => ({ getStorage: () => ({ move: vi.fn() }) }));
+
+import { registerDonorPledge } from "@/app/benfeitor/_actions/donor-actions";
+import {
+  retryDonorWelcomeEmail,
+  saveDonorEmailTemplate,
+} from "@/app/admin/_actions/donor-email-actions";
+import { donorPledges, donorWelcomeTemplates } from "@/lib/db/schema";
+import { renderDonorWelcomeEmail } from "@/lib/email/donor-welcome-template";
+import { failWrites, inserted, queryFor, resetFakeDb, updated } from "./helpers/fake-db";
+
+const validDonor = {
+  nome: "Ana Silva",
+  cpf: "529.982.247-25",
+  email: "ana@example.com",
+  telefone: "11999999999",
+  endereco: "Rua das Flores, 1",
+  cep: "13250000",
+  priorado_capela: "nenhuma" as const,
+  frequencia: "mensal" as const,
+  duracao: "um_ano" as const,
+  valor: 80,
+};
+
+beforeEach(() => {
+  resetFakeDb();
+  vi.clearAllMocks();
+  requireAdmin.mockResolvedValue({ id: "admin", role: "admin" });
+  sendDonorWelcomeEmail.mockResolvedValue(undefined);
+});
+
+describe("e-mail de boas-vindas ao benfeitor", () => {
+  it("saves registration before sending and does not send for failed registrations", async () => {
+    const result = await registerDonorPledge(validDonor);
+    expect(result.success).toBe(true);
+    expect(inserted[0].table).toBe(donorPledges);
+    expect(sendDonorWelcomeEmail).toHaveBeenCalledWith({
+      id: expect.any(String), email: "ana@example.com",
+    });
+
+    sendDonorWelcomeEmail.mockClear();
+    failWrites();
+    const failed = await registerDonorPledge(validDonor);
+    expect(failed.success).toBe(false);
+    expect(sendDonorWelcomeEmail).not.toHaveBeenCalled();
+  });
+
+  it("keeps a saved registration when SMTP fails", async () => {
+    sendDonorWelcomeEmail.mockRejectedValue(new Error("SMTP unavailable"));
+    const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      expect((await registerDonorPledge(validDonor)).success).toBe(true);
+      expect(inserted).toHaveLength(1);
+      expect(errorLog).toHaveBeenCalledWith(
+        "[registerDonorPledge] e-mail de boas-vindas não enviado."
+      );
+    } finally {
+      errorLog.mockRestore();
+    }
+  });
+
+  it("escapes edited text in HTML and includes the institutional header and footer", () => {
+    const message = renderDonorWelcomeEmail("Olá <Ana> & família\n\nUma linha");
+    expect(message.html).toContain("Olá &lt;Ana&gt; &amp; família");
+    expect(message.html).not.toContain("Olá <Ana>");
+    expect(message.html).toContain("Obra de Assistência Educacional Católica");
+    expect(message.text).toContain("Arca Nossa Senhora da Providência\n\nOlá <Ana>");
+  });
+});
+
+describe("administração do modelo", () => {
+  it("validates subject and saves an edited template", async () => {
+    expect((await saveDonorEmailTemplate({ assunto: "Assunto\nextra", corpo: "Texto" })).success).toBe(false);
+    expect(inserted).toHaveLength(0);
+
+    queryFor("donorWelcomeTemplates").findFirst.mockResolvedValue({ id: "template-1" });
+    expect(await saveDonorEmailTemplate({ assunto: "  Boas-vindas  ", corpo: "  Obrigado!  " })).toEqual({ success: true });
+    expect(updated[0]).toMatchObject({
+      table: donorWelcomeTemplates,
+      values: { assunto: "Boas-vindas", corpo: "Obrigado!" },
+    });
+    expect(revalidatePath).toHaveBeenCalledWith("/admin/email-benfeitores");
+  });
+
+  it("allows retry only when no send has been confirmed", async () => {
+    queryFor("donorPledges").findFirst.mockResolvedValue({
+      id: "d1", email: "ana@example.com", welcome_email_sent_at: null,
+    });
+    expect(await retryDonorWelcomeEmail("d1")).toEqual({ success: true });
+    expect(sendDonorWelcomeEmail).toHaveBeenCalledWith({
+      id: "d1", email: "ana@example.com", welcome_email_sent_at: null,
+    });
+
+    sendDonorWelcomeEmail.mockClear();
+    queryFor("donorPledges").findFirst.mockResolvedValue({
+      id: "d1", email: "ana@example.com", welcome_email_sent_at: "2026-09-28",
+    });
+    expect((await retryDonorWelcomeEmail("d1")).success).toBe(false);
+    expect(sendDonorWelcomeEmail).not.toHaveBeenCalled();
+  });
+
+  it("requires admin rights before editing", async () => {
+    requireAdmin.mockRejectedValue(new Error("forbidden"));
+    await expect(saveDonorEmailTemplate({ assunto: "Oi", corpo: "Texto" })).rejects.toThrow("forbidden");
+    expect(inserted).toHaveLength(0);
+  });
+});

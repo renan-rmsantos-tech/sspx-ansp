@@ -306,6 +306,19 @@ export const documentHeader = pgTable(
   () => [uniqueIndex("document_header_singleton_idx").on(sql`(true)`)]
 );
 
+export const donorWelcomeTemplates = pgTable(
+  "donor_welcome_templates",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    assunto: text("assunto").notNull(),
+    corpo: text("corpo").notNull(),
+    updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  () => [uniqueIndex("donor_welcome_templates_singleton_idx").on(sql`(true)`)]
+);
+
 export const donorPledges = pgTable(
   "donor_pledges",
   {
@@ -331,6 +344,10 @@ export const donorPledges = pgTable(
     recibo_path: text("recibo_path"),
     recibo_nome: text("recibo_nome"),
     observacoes: text("observacoes"),
+    welcome_email_sent_at: timestamp("welcome_email_sent_at", {
+      withTimezone: true,
+      mode: "string",
+    }),
     created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
       .notNull()
       .defaultNow(),

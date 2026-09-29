@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { donorPledges } from "@/lib/db/schema";
 import { getStorage } from "@/lib/storage";
 import { formatCPF } from "@/lib/validations/cpf";
+import { sendDonorWelcomeEmail } from "@/lib/email/send-donor-welcome";
 import {
   donorPledgeSchema,
   type DonorPledge,
@@ -62,7 +63,7 @@ export async function registerDonorPledge(
       id: pledgeId,
       nome: data.nome,
       cpf: formatCPF(data.cpf),
-      email: data.email,
+      email: data.email.trim(),
       telefone: data.telefone || null,
       endereco: data.endereco,
       cep: data.cep,
@@ -98,6 +99,13 @@ export async function registerDonorPledge(
       success: false,
       errors: { _form: ["Erro ao registrar sua doação. Tente novamente."] },
     };
+  }
+
+  try {
+    await sendDonorWelcomeEmail({ id: pledgeId, email: data.email.trim() });
+  } catch {
+    // O cadastro já foi salvo. O admin poderá reenviar o e-mail pendente.
+    console.error("[registerDonorPledge] e-mail de boas-vindas não enviado.");
   }
 
   return { success: true };

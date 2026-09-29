@@ -87,6 +87,16 @@ const NAV_SECTIONS = [
           </svg>
         ),
       },
+      {
+        label: "E-mail para Benfeitores",
+        href: "/admin/email-benfeitores",
+        icon: (
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-[18px] shrink-0">
+            <rect x="2" y="5" width="20" height="14" rx="2" />
+            <path d="m3 7 9 7 9-7" />
+          </svg>
+        ),
+      },
     ],
   },
 ] as const;
