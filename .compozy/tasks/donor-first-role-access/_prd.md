@@ -34,6 +34,7 @@ The changes serve potential benefactors, applicant families, Administrators, and
 ### Scholarship Applicant
 
 - As a family seeking a scholarship, I want the scholarship path to remain clearly visible even when it is secondary so that I can find the application without confusion.
+- As a family visiting before applications open, I want to see that enrollment has not started and its scheduled dates so that I know when to return.
 - As an applicant, I want to upload the requested documents during the application so that I can submit a complete request.
 - As a returning applicant, I want an old scholarship-form link to continue taking me to the correct destination.
 
@@ -75,6 +76,8 @@ The landing page must consistently treat benefactor enrollment as its primary ac
 - Visitors using `/benfeitor` continue to reach benefactor enrollment.
 - Visitors using `/form` continue to reach the scholarship application.
 - All institution-owned public links use the new addresses.
+
+When a family follows any “Solicitar bolsa” action before the active school year's enrollment start date, `/solicitar-bolsa` shows that applications are not yet open and displays the configured start and end dates in Brazilian date format. The application form is shown only during the enrollment period. If no active school year or future enrollment period is configured, the page gives an unavailable message without inventing dates.
 
 ### 3. Scholarship Document Uploads
 
@@ -175,7 +178,8 @@ Secretariat users cannot see:
 2. The visitor can understand the institution’s mission and how becoming a benefactor supports it.
 3. The visitor can open “Seja um benfeitor” through the primary navigation, hero, benefactor section, or quick access.
 4. A family can still find “Solicitar bolsa” as the secondary action.
-5. Old saved links continue to lead visitors to the corresponding public flow.
+5. Before enrollment opens, the family sees when applications will be accepted; during the period, the family sees the form.
+6. Old saved links continue to lead visitors to the corresponding public flow.
 
 ### Secretariat Journey
 
@@ -293,6 +297,7 @@ Exit criteria:
 
 - 100% of primary landing-page actions lead to `/seja-um-benfeitor`.
 - 100% of scholarship actions remain visible as secondary actions and lead to `/solicitar-bolsa`.
+- Before the configured enrollment start date, every scholarship entry shows the upcoming start and end dates and does not display the application form.
 - 100% of owned public links use the new addresses.
 - Both old public addresses continue to reach the corresponding journey.
 - 100% of required scholarship document categories can be uploaded and validated.

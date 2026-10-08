@@ -31,7 +31,7 @@ export default function SejaUmBenfeitorPage() {
               <div className="rounded-md bg-bg px-4 py-3 sm:col-span-2"><dt className="text-xs font-semibold uppercase tracking-widest text-muted">Favorecido / Banco</dt><dd className="mt-1 font-medium text-fg">ACIPEC — Associação Civil Para a Educação Católica · Santander</dd></div>
               <div className="rounded-md bg-bg px-4 py-3"><dt className="text-xs font-semibold uppercase tracking-widest text-muted">Chave Pix</dt><dd className="mt-1 break-all font-medium text-fg">02862d22-6b43-45f8-9b58-265f3deeb5dd</dd></div>
               <div className="rounded-md bg-bg px-4 py-3"><dt className="text-xs font-semibold uppercase tracking-widest text-muted">Agência / Conta</dt><dd className="mt-1 font-medium text-fg">0197 · 13.008.003-2</dd></div>
-              <div className="rounded-md bg-bg px-4 py-3 sm:col-span-2"><dt className="text-xs font-semibold uppercase tracking-widest text-muted">CNPJ</dt><dd className="mt-1 font-medium text-fg">62.611.908/0001-99</dd></div>
+              <div className="rounded-md bg-bg px-4 py-3 sm:col-span-2"><dt className="text-xs font-semibold uppercase tracking-widest text-muted">CNPJ</dt><dd className="mt-1 font-medium text-fg">42.736.079/0001-63</dd></div>
             </dl>
             <figure className="mx-auto w-fit border border-border bg-white p-3 sm:mx-0"><Image src="/pix-acipec.png" alt="QR Code Pix para contribuição à ACIPEC" width={200} height={200} unoptimized /><figcaption className="mt-2 text-center text-xs text-muted">QR Code Pix · ACIPEC</figcaption></figure>
           </div>

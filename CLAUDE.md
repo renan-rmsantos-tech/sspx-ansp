@@ -92,7 +92,7 @@ Server actions are tested against `__tests__/helpers/fake-db.ts`, a stand-in for
 
 ## Domain Context
 
-- **ACIPEC**: Associação Civil Para a Educação Católica (CNPJ 62.611.908/0001-99)
+- **ACIPEC**: Associação Civil Para a Educação Católica (CNPJ 42.736.079/0001-63)
 - The scholarship form collects: parent info, student/grade/tuition data, sworn family income declaration, monthly expenses, vehicle ownership, volunteer availability, and legal terms
 - The data is sensitive (family income declarations, ID documents) — treat backups, document URLs, and log output accordingly
 - Language: all UI is Brazilian Portuguese (pt-BR)

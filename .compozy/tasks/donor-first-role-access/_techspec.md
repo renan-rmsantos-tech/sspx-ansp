@@ -114,6 +114,7 @@ Legacy routes contain only permanent redirects:
 - `/form` → `/solicitar-bolsa`
 
 The scholarship page preserves `force-dynamic` because it reads the active school year.
+It uses the active `school_years.data_inicio` and `data_fim` as the enrollment window, evaluated by calendar date in `America/Sao_Paulo`. Before `data_inicio`, render an accessible pt-BR notice that applications are not yet open and give both dates as `dd/mm/aaaa`; do not render the form. From `data_inicio` through `data_fim`, render the form. After `data_fim`, or when there is no active year, render the existing unavailable state without claiming an upcoming period. The public page must receive the active year's dates even when the period has not opened; the current `getActiveSchoolYear()` drops the year whenever `open` is false. Submission must continue to enforce the same enrollment window server-side.
 
 #### Scholarship Upload Flow
 
@@ -444,6 +445,7 @@ The document endpoint continues to validate only its signed, short-lived ticket.
 - The prominent navigation CTA becomes “Seja um benfeitor”.
 - The hero primary CTA becomes “Seja um benfeitor”.
 - The hero secondary path retains scholarship discoverability.
+- Every “Solicitar bolsa” link reaches the canonical page, where a future enrollment window is shown with its configured dates.
 - The benefactor band renders before the scholarship band.
 - Quick access lists benefactor before scholarship.
 - The administrative shortcut is removed.
@@ -572,6 +574,8 @@ Operational dependencies:
 #### Public Routes and Content
 
 - Canonical routes render the expected flows.
+- Before the active year's start date, the canonical scholarship page shows a not-yet-open message and both configured dates in pt-BR without a form; on the first and last days it renders the form, and after the end date it shows an unavailable message.
+- With no active school year, the page does not display a fabricated enrollment period; direct submission outside the window remains rejected.
 - Legacy routes return permanent redirects to exact destinations.
 - Owned landing links use canonical paths.
 - Benefactor CTA ordering and labels match the PRD.

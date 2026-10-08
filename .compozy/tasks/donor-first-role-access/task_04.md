@@ -38,6 +38,8 @@ Transform the public experience into a coherent donor-first journey while keepin
 15. `app/icon.svg` and `lib/pdf/seal-image.ts` MUST remain unchanged.
 16. Copy MUST remain pt-BR, dignified, welcoming, and institutional, without artificial urgency, guilt, gamification, or commercial language.
 17. Keyboard navigation, visible focus, text contrast, and reduced-motion behavior SHOULD preserve existing standards.
+18. Before the active school year's enrollment start date, following any “Solicitar bolsa” action MUST show that applications are not yet open and the configured start and end dates in pt-BR; the form MUST remain unavailable until the period begins.
+19. On the first and last enrollment dates the form MUST be available; after the end date, or with no active year, the page MUST show an unavailable state without inventing a future period. Server-side submission MUST still enforce the window.
 </requirements>
 
 ## Subtasks
@@ -48,11 +50,11 @@ Transform the public experience into a coherent donor-first journey while keepin
 - [ ] 4.4 Replace the institutional email and remove the public administrative shortcut.
 - [ ] 4.5 Publish the approved master seal and consolidate accessible web usage.
 - [ ] 4.6 Correct responsive FSSPX footer layout at every supported width.
-- [ ] 4.7 Cover routes, hierarchy, contact, footer, accessibility, and identity with automated and rendered verification.
+- [ ] 4.7 Cover routes, enrollment-window states, hierarchy, contact, footer, accessibility, and identity with automated and rendered verification.
 
 ## Implementation Details
 
-Follow the TechSpec sections “Public Route Layer,” “Landing and Public Content,” and “Logo Consolidation.” Validate donor-first hierarchy through real DOM order, not visual positioning alone. Preserve the scholarship page's dynamic declaration at its canonical route.
+Follow the TechSpec sections “Public Route Layer,” “Landing and Public Content,” and “Logo Consolidation.” Validate donor-first hierarchy through real DOM order, not visual positioning alone. Preserve the scholarship page's dynamic declaration at its canonical route. Use the active school year's configured dates for the pre-opening notice; the existing lookup currently discards the year when the period is closed.
 
 Use the approved `docs/design/opendesign/assets/seal-arca-master.svg` without redrawing its geometry. `SealLogo` must distinguish decorative and informative instances to avoid duplicate accessible names. The footer acceptance requires rendered evidence because class inspection alone cannot prove the absence of clipping.
 
@@ -100,7 +102,9 @@ The user-approved five-task limit makes this a broad public-experience task. Kee
 ## Tests
 
 - Unit tests — routes and landing:
-  - [ ] Canonical scholarship renders open and unavailable states and retains `force-dynamic`.
+  - [ ] Canonical scholarship renders pre-opening, open, and unavailable states and retains `force-dynamic`.
+  - [ ] Before the start date, the notice names both configured dates in pt-BR and the form is absent; on the start and end dates the form is present.
+  - [ ] After the end date or without an active year, the notice does not claim an upcoming period; direct submission remains blocked outside the window.
   - [ ] Canonical donor page renders institutional content and the donor form.
   - [ ] `/form` and `/benfeitor` return 308 with exact direct destinations and no loop.
   - [ ] Canonical metadata describes the correct flow.

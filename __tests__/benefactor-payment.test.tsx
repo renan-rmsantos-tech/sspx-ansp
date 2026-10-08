@@ -10,7 +10,7 @@ describe("SejaUmBenfeitorPage", () => {
     render(<SejaUmBenfeitorPage />);
     expect(screen.getByText("02862d22-6b43-45f8-9b58-265f3deeb5dd")).toBeInTheDocument();
     expect(screen.getByText("0197 · 13.008.003-2")).toBeInTheDocument();
-    expect(screen.getByText("62.611.908/0001-99")).toBeInTheDocument();
+    expect(screen.getByText("42.736.079/0001-63")).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "QR Code Pix para contribuição à ACIPEC" })).toHaveAttribute("src", "/pix-acipec.png");
   });
 });
