@@ -22,8 +22,9 @@ export function FormUnavailableMessage({ year }: FormUnavailableMessageProps) {
       {year ? (
         <p className="mx-auto mt-3 max-w-[42ch] text-[15px] text-fg">
           O formulário de solicitação de bolsa para o ano letivo {year.nome}{" "}
-          será aberto em{" "}
-          <time dateTime={year.data_inicio}>{formatDate(year.data_inicio)}</time>.
+          estará disponível de{" "}
+          <time dateTime={year.data_inicio}>{formatDate(year.data_inicio)}</time>{" "}
+          a <time dateTime={year.data_fim}>{formatDate(year.data_fim)}</time>.
         </p>
       ) : (
         <p className="mx-auto mt-3 max-w-[42ch] text-[15px] text-muted">

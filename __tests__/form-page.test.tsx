@@ -53,8 +53,9 @@ describe("SolicitarBolsaPage (enrollment check)", () => {
     } });
     render(await FormPage());
     expect(screen.getByText("Abertura das inscrições")).toBeInTheDocument();
-    expect(screen.getByText(/O formulário de solicitação de bolsa para o ano letivo 2027 será aberto em/)).toBeInTheDocument();
+    expect(screen.getByText(/O formulário de solicitação de bolsa para o ano letivo 2027 estará disponível de/)).toBeInTheDocument();
     expect(screen.getByText("01/11/2026")).toHaveAttribute("dateTime", "2026-11-01");
+    expect(screen.getByText("15/12/2026")).toHaveAttribute("dateTime", "2026-12-15");
     expect(screen.queryByText("Formulário indisponível")).not.toBeInTheDocument();
     expect(screen.queryByText(/Entre em contato com a secretaria/)).not.toBeInTheDocument();
     expect(screen.queryByTestId("scholarship-form")).not.toBeInTheDocument();
