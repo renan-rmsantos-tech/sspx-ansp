@@ -61,6 +61,11 @@ const NAV_SECTIONS = [
           </svg>
         ),
       },
+    ],
+  },
+  {
+    title: "Modelos",
+    items: [
       {
         label: "Cabeçalho",
         href: "/admin/cabecalho",
@@ -205,7 +210,7 @@ export function Sidebar({ role = "admin" }: { role?: StaffRole }) {
           <nav aria-label="Menu administrativo" className="flex flex-col gap-5">
             {NAV_SECTIONS.map((section) => {
               const items = section.items.filter((item) => !("adminOnly" in item && item.adminOnly && role !== "admin"));
-              if (!items.length || (section.title === "Configurações" && role !== "admin")) return null;
+              if (!items.length || ((section.title === "Configurações" || section.title === "Modelos") && role !== "admin")) return null;
               return (
               <div key={section.title}>
                 <div className="mb-2 px-3 text-xs font-medium uppercase tracking-wider text-muted">

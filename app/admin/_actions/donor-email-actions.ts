@@ -173,3 +173,32 @@ export async function markDonorWelcomeEmailSent(id: string): Promise<{ success: 
     return { success: false, error: "Não foi possível registrar o envio. Tente novamente." };
   }
 }
+
+export async function unmarkDonorWelcomeEmailSent(id: string): Promise<{ success: boolean; error?: string }> {
+  await requireAdmin();
+  if (!z.string().uuid().safeParse(id).success) return { success: false, error: "Benfeitor inválido." };
+  try {
+    const now = new Date().toISOString();
+    const rows = await db.update(donorPledges).set({
+      welcome_email_sent_at: null,
+      welcome_email_reservation_token: null,
+      welcome_email_reservation_expires_at: null,
+    }).where(and(
+      eq(donorPledges.id, id),
+      or(isNull(donorPledges.welcome_email_reservation_token), lte(donorPledges.welcome_email_reservation_expires_at, now))
+    )).returning({ id: donorPledges.id });
+    if (!rows.length) {
+      const current = await db.query.donorPledges.findFirst({
+        columns: { id: true }, where: eq(donorPledges.id, id),
+      });
+      return { success: false, error: current
+        ? "O envio deste e-mail está em andamento. Aguarde antes de desmarcar."
+        : "Benfeitor não encontrado." };
+    }
+    revalidatePath("/admin/benfeitores");
+    revalidatePath("/admin/email-benfeitores");
+    return { success: true };
+  } catch {
+    return { success: false, error: "Não foi possível desmarcar o envio. Tente novamente." };
+  }
+}

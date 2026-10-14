@@ -88,6 +88,7 @@ describe("Sidebar", () => {
     render(<Sidebar />);
     expect(screen.getByText("Dados")).toBeInTheDocument();
     expect(screen.getByText("Configurações")).toBeInTheDocument();
+    expect(screen.getByText("Modelos")).toBeInTheDocument();
   });
 
   it("renders hamburger button for mobile", () => {
@@ -105,4 +106,21 @@ describe("Sidebar", () => {
     fireEvent.click(btn);
     expect(btn).toHaveAttribute("aria-expanded", "false");
   });
+});
+
+it("agrupa os modelos e mantém configurações separadas", () => {
+  render(<Sidebar />);
+  const models = screen.getByText("Modelos").parentElement!;
+  expect(models).toHaveTextContent("Cabeçalho");
+  expect(models).toHaveTextContent("Textos de Decisão");
+  expect(models).toHaveTextContent("Modelo de Contrato");
+  expect(models).toHaveTextContent("E-mail para Benfeitores");
+  expect(models).not.toHaveTextContent("Ano Letivo");
+  cleanup();
+});
+it("oculta modelos para a secretaria", () => {
+  render(<Sidebar role="secretaria" />);
+  expect(screen.queryByText("Modelos")).not.toBeInTheDocument();
+  expect(screen.queryByText("E-mail para Benfeitores")).not.toBeInTheDocument();
+  cleanup();
 });

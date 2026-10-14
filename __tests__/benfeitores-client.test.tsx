@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 vi.mock("@/app/admin/_actions/admin-actions", () => ({ deleteDonorPledge: vi.fn() }));
-const { retryDonorWelcomeEmail, markDonorWelcomeEmailSent } = vi.hoisted(() => ({ retryDonorWelcomeEmail: vi.fn(), markDonorWelcomeEmailSent: vi.fn() }));
-vi.mock("@/app/admin/_actions/donor-email-actions", () => ({ retryDonorWelcomeEmail, markDonorWelcomeEmailSent }));
+const { retryDonorWelcomeEmail, markDonorWelcomeEmailSent, unmarkDonorWelcomeEmailSent } = vi.hoisted(() => ({ retryDonorWelcomeEmail: vi.fn(), markDonorWelcomeEmailSent: vi.fn(), unmarkDonorWelcomeEmailSent: vi.fn() }));
+vi.mock("@/app/admin/_actions/donor-email-actions", () => ({ retryDonorWelcomeEmail, markDonorWelcomeEmailSent, unmarkDonorWelcomeEmailSent }));
 
 import { BenfeitoresClient, SecretariatDonorsClient } from "@/app/admin/benfeitores/client";
 import type { DonorPledge } from "@/app/admin/_components/donor-card";
@@ -161,5 +161,26 @@ it("retira o benfeitor dos pendentes após marcar envio manual", async () => {
   await waitFor(() => expect(screen.queryByTestId("donor-card-d1")).not.toBeInTheDocument());
   expect(markDonorWelcomeEmailSent).toHaveBeenCalledWith("d1");
   fireEvent.click(screen.getByTestId("donor-welcome-filter-enviados"));
+  expect(screen.getByText(/Envio de boas-vindas registrado em/)).toBeInTheDocument();
+});
+
+it("devolve o benfeitor aos pendentes ao desmarcar envio", async () => {
+  unmarkDonorWelcomeEmailSent.mockResolvedValue({ success: true });
+  const donor: DonorPledge = { id: "d1", nome: "Ana", cpf: "111.111.111-11", email: "ana@example.com", frequencia: "mensal", valor: 100, created_at: "2026-10-01", welcome_email_sent_at: "2026-10-14T12:00:00.000Z" };
+  render(<BenfeitoresClient initialDonors={[donor]} />);
+  fireEvent.click(screen.getByTestId("donor-welcome-filter-enviados"));
+  fireEvent.click(screen.getByTestId("donor-welcome-unmark-sent"));
+  await waitFor(() => expect(screen.queryByTestId("donor-card-d1")).not.toBeInTheDocument());
+  expect(unmarkDonorWelcomeEmailSent).toHaveBeenCalledWith("d1");
+  fireEvent.click(screen.getByTestId("donor-welcome-filter-pendentes"));
+  expect(screen.getByTestId("donor-welcome-send")).toBeInTheDocument();
+  expect(screen.getByTestId("donor-welcome-mark-sent")).toBeInTheDocument();
+});
+it("mantém o status enviado quando desmarcar falha", async () => {
+  unmarkDonorWelcomeEmailSent.mockResolvedValue({ success: false, error: "Tente novamente." });
+  const donor: DonorPledge = { id: "d1", nome: "Ana", cpf: "111.111.111-11", email: "ana@example.com", frequencia: "mensal", valor: 100, created_at: "2026-10-01", welcome_email_sent_at: "2026-10-14T12:00:00.000Z" };
+  render(<BenfeitoresClient initialDonors={[donor]} />);
+  fireEvent.click(screen.getByTestId("donor-welcome-unmark-sent"));
+  expect(await screen.findByRole("alert")).toHaveTextContent("Tente novamente.");
   expect(screen.getByText(/Envio de boas-vindas registrado em/)).toBeInTheDocument();
 });

@@ -16,6 +16,7 @@ vi.mock("@/lib/storage", () => ({ getStorage: () => ({ move: vi.fn() }) }));
 import { registerDonorPledge } from "@/app/benfeitor/_actions/donor-actions";
 import {
   markDonorWelcomeEmailSent,
+  unmarkDonorWelcomeEmailSent,
   getDonorEmailSettings,
   retryDonorWelcomeEmail,
   saveDonorEmailTemplate,
@@ -211,6 +212,34 @@ describe("registro manual de boas-vindas", () => {
   it("exige permissão de administrador", async () => {
     requireAdmin.mockRejectedValue(new Error("Acesso negado"));
     await expect(markDonorWelcomeEmailSent(id)).rejects.toThrow("Acesso negado");
+    expect(updated).toHaveLength(0);
+  });
+});
+
+describe("desmarcar envio de boas-vindas", () => {
+  const id = "7d6a0ab4-bc5d-4fbc-a500-2fb6097bacda";
+  it("limpa o envio e atualiza ambas as páginas sem enviar e-mail", async () => {
+    setReturning(donorPledges, [{ id }]);
+    expect(await unmarkDonorWelcomeEmailSent(id)).toEqual({ success: true });
+    expect(updated[0].values).toEqual({ welcome_email_sent_at: null, welcome_email_reservation_token: null, welcome_email_reservation_expires_at: null });
+    expect(sendDonorWelcomeEmail).not.toHaveBeenCalled();
+    expect(revalidatePath).toHaveBeenCalledWith("/admin/benfeitores");
+    expect(revalidatePath).toHaveBeenCalledWith("/admin/email-benfeitores");
+  });
+  it("não desmarca durante um envio e informa cadastro inexistente", async () => {
+    queryFor("donorPledges").findFirst.mockResolvedValue({ id });
+    expect(await unmarkDonorWelcomeEmailSent(id)).toMatchObject({ success: false, error: expect.stringContaining("andamento") });
+    queryFor("donorPledges").findFirst.mockResolvedValue(undefined);
+    expect(await unmarkDonorWelcomeEmailSent(id)).toMatchObject({ success: false, error: "Benfeitor não encontrado." });
+  });
+  it("retorna erro ao falhar a gravação", async () => {
+    failWrites();
+    expect(await unmarkDonorWelcomeEmailSent(id)).toMatchObject({ success: false, error: expect.stringContaining("Tente novamente") });
+  });
+  it("exige administrador e UUID válido", async () => {
+    expect(await unmarkDonorWelcomeEmailSent("invalid")).toMatchObject({ success: false });
+    requireAdmin.mockRejectedValue(new Error("Acesso negado"));
+    await expect(unmarkDonorWelcomeEmailSent(id)).rejects.toThrow("Acesso negado");
     expect(updated).toHaveLength(0);
   });
 });

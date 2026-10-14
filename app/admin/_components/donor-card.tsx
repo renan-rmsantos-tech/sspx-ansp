@@ -9,7 +9,7 @@ import {
 import { PdfPreviewModal } from "./pdf-preview-modal";
 import { prioradoCapelaLabel } from "@/lib/data/priorados-capelas";
 import { formatDonorDate } from "@/lib/donor-date";
-import { markDonorWelcomeEmailSent, retryDonorWelcomeEmail } from "@/app/admin/_actions/donor-email-actions";
+import { markDonorWelcomeEmailSent, unmarkDonorWelcomeEmailSent, retryDonorWelcomeEmail } from "@/app/admin/_actions/donor-email-actions";
 
 export interface DonorPledge {
   id: string;
@@ -67,7 +67,7 @@ function formatDateBR(isoDate: string): string {
 interface DonorCardProps {
   donor: DonorPledge;
   onDelete: (id: string) => void;
-  onWelcomeSent?: (id: string, sentAt: string) => void;
+  onWelcomeSent?: (id: string, sentAt: string | null) => void;
 }
 
 export function DonorCard({ donor, onDelete, onWelcomeSent }: DonorCardProps) {
@@ -122,6 +122,23 @@ export function DonorCard({ donor, onDelete, onWelcomeSent }: DonorCardProps) {
       } else setWelcomeError(result.error ?? "Não foi possível registrar o envio.");
     } catch {
       setWelcomeError("Não foi possível registrar o envio. Tente novamente.");
+    } finally {
+      setMarkingWelcome(false);
+    }
+  };
+
+  const handleUnmarkWelcome = async () => {
+    if (markingWelcome || sendingWelcome || !welcomeSentAt || welcomeInProgress) return;
+    setMarkingWelcome(true);
+    setWelcomeError(null);
+    try {
+      const result = await unmarkDonorWelcomeEmailSent(donor.id);
+      if (result.success) {
+        setWelcomeSentAt(null);
+        onWelcomeSent?.(donor.id, null);
+      } else setWelcomeError(result.error ?? "Não foi possível desmarcar o envio.");
+    } catch {
+      setWelcomeError("Não foi possível desmarcar o envio. Tente novamente.");
     } finally {
       setMarkingWelcome(false);
     }
@@ -242,7 +259,14 @@ export function DonorCard({ donor, onDelete, onWelcomeSent }: DonorCardProps) {
 
           <div className="mt-3 flex flex-wrap items-center gap-2 text-sm" data-testid="donor-welcome-status" aria-live="polite">
             {welcomeSentAt ? (
-              <span className="text-success">Envio de boas-vindas registrado em {formatDonorDate(welcomeSentAt)}.</span>
+              <>
+                <span className="text-success">Envio de boas-vindas registrado em {formatDonorDate(welcomeSentAt)}.</span>
+                <button type="button" onClick={() => void handleUnmarkWelcome()} disabled={markingWelcome || sendingWelcome}
+                  className="rounded-md border border-border px-3 py-1.5 text-sm font-medium text-accent hover:bg-bg disabled:opacity-50"
+                  data-testid="donor-welcome-unmark-sent">
+                  {markingWelcome ? "Desmarcando…" : "Desmarcar envio"}
+                </button>
+              </>
             ) : welcomeInProgress || sendingWelcome ? (
               <span className="text-muted" aria-live="polite">Envio em andamento…</span>
             ) : (
