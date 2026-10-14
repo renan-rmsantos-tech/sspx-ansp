@@ -47,17 +47,24 @@ describe("SolicitarBolsaPage (enrollment check)", () => {
       screen.queryByText("Formulário indisponível")
     ).not.toBeInTheDocument();
   });
-  it.each([
-    ["2027", "2027-02-01", "2027-03-15", "01/02/2027", "15/03/2027"],
-    ["2025", "2025-01-01", "2025-12-31", "01/01/2025", "31/12/2025"],
-  ])("shows the configured dates for the closed school year %s", async (nome, start, end, startLabel, endLabel) => {
-    mockGetActiveSchoolYear.mockResolvedValue({ open: false, year: {
-      id: "year-1", nome, data_inicio: start, data_fim: end, ativo: true,
+  it("shows opening date of the upcoming inactive year", async () => {
+    mockGetActiveSchoolYear.mockResolvedValue({ open: false, upcomingYear: {
+      id: "next-year", nome: "2027", data_inicio: "2026-11-01", data_fim: "2026-12-15", ativo: false,
     } });
     render(await FormPage());
-    expect(screen.getByText(new RegExp(`Período de inscrição para o ano letivo ${nome}`))).toBeInTheDocument();
-    expect(screen.getByText(startLabel)).toHaveAttribute("dateTime", start);
-    expect(screen.getByText(endLabel)).toHaveAttribute("dateTime", end);
+    expect(screen.getByText("Abertura das inscrições")).toBeInTheDocument();
+    expect(screen.getByText(/O formulário de solicitação de bolsa para o ano letivo 2027 será aberto em/)).toBeInTheDocument();
+    expect(screen.getByText("01/11/2026")).toHaveAttribute("dateTime", "2026-11-01");
+    expect(screen.queryByText("Formulário indisponível")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Entre em contato com a secretaria/)).not.toBeInTheDocument();
     expect(screen.queryByTestId("scholarship-form")).not.toBeInTheDocument();
+  });
+  it("does not announce a past opening date when no future period exists", async () => {
+    mockGetActiveSchoolYear.mockResolvedValue({ open: false, year: {
+      id: "past-year", nome: "2025", data_inicio: "2025-01-01", data_fim: "2025-12-31", ativo: true,
+    } });
+    render(await FormPage());
+    expect(screen.getByText(/A data de abertura das próximas inscrições ainda não foi cadastrada/)).toBeInTheDocument();
+    expect(screen.queryByText("01/01/2025")).not.toBeInTheDocument();
   });
 });

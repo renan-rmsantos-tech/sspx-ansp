@@ -26,7 +26,7 @@ describe("getActiveSchoolYear", () => {
   });
 
   it("returns { open: false } when today falls outside the active window", async () => {
-    queryFor("schoolYears").findFirst.mockResolvedValue({
+    queryFor("schoolYears").findFirst.mockResolvedValueOnce({
       id: "year-1",
       nome: "2025",
       data_inicio: "2025-01-01",
@@ -58,6 +58,27 @@ describe("getActiveSchoolYear", () => {
     expect(result.open).toBe(true);
     expect(result.year).toEqual(year);
   });
+  it("announces the nearest future year even when inactive, without opening the form", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-14T12:00:00Z"));
+    try {
+      const upcomingYear = { id: "next", nome: "2027", data_inicio: "2026-11-01", data_fim: "2026-12-15", ativo: false };
+      const query = queryFor("schoolYears").findFirst;
+      query.mockResolvedValueOnce(undefined).mockResolvedValueOnce(upcomingYear);
+      expect(await getActiveSchoolYear()).toEqual({ open: false, upcomingYear });
+      const { gt, asc } = await import("drizzle-orm");
+      const { schoolYears } = await import("@/lib/db/schema");
+      expect(query.mock.calls[1][0]).toEqual({ where: gt(schoolYears.data_inicio, "2026-10-14"), orderBy: [asc(schoolYears.data_inicio), asc(schoolYears.id)] });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+  it("does not query upcoming years while the active form is open", async () => {
+    queryFor("schoolYears").findFirst.mockResolvedValueOnce({ id: "current", nome: "2026", data_inicio: "2020-01-01", data_fim: "2099-12-31", ativo: true });
+    expect((await getActiveSchoolYear()).open).toBe(true);
+    expect(queryFor("schoolYears").findFirst).toHaveBeenCalledTimes(1);
+  });
+
 });
 
 describe("createUploadUrl", () => {

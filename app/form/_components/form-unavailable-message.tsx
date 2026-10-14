@@ -17,21 +17,24 @@ export function FormUnavailableMessage({ year }: FormUnavailableMessageProps) {
         id="form-unavailable-title"
         className="font-display text-xl font-semibold text-fg"
       >
-        Formulário indisponível
+        {year ? "Abertura das inscrições" : "Formulário indisponível"}
       </h2>
-      <p className="mx-auto mt-3 max-w-[42ch] text-[15px] text-muted">
-        O período de inscrição para bolsas não está aberto no momento.
-      </p>
-      {year && (
+      {year ? (
         <p className="mx-auto mt-3 max-w-[42ch] text-[15px] text-fg">
-          Período de inscrição para o ano letivo {year.nome}: de{" "}
-          <time dateTime={year.data_inicio}>{formatDate(year.data_inicio)}</time>{" "}
-          a <time dateTime={year.data_fim}>{formatDate(year.data_fim)}</time>.
+          O formulário de solicitação de bolsa para o ano letivo {year.nome}{" "}
+          será aberto em{" "}
+          <time dateTime={year.data_inicio}>{formatDate(year.data_inicio)}</time>.
+        </p>
+      ) : (
+        <p className="mx-auto mt-3 max-w-[42ch] text-[15px] text-muted">
+          A data de abertura das próximas inscrições ainda não foi cadastrada.
         </p>
       )}
-      <p className="mx-auto mt-3 max-w-[42ch] text-[15px] text-muted">
-        Entre em contato com a secretaria da escola para mais informações.
-      </p>
+      {!year && (
+        <p className="mx-auto mt-3 max-w-[42ch] text-[15px] text-muted">
+          Entre em contato com a secretaria da escola para mais informações.
+        </p>
+      )}
     </section>
   );
 }

@@ -1,7 +1,7 @@
 "use server";
 
 import { randomUUID } from "crypto";
-import { eq } from "drizzle-orm";
+import { asc, eq, gt } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   applications,
@@ -75,16 +75,26 @@ function isWithinWindow(year: { data_inicio: string; data_fim: string }) {
 export async function getActiveSchoolYear(): Promise<{
   open: boolean;
   year?: SchoolYear;
+  upcomingYear?: SchoolYear;
 }> {
   const year = await db.query.schoolYears.findFirst({
     where: eq(schoolYears.ativo, true),
   });
 
-  if (!year) {
-    return { open: false };
+  if (year && isWithinWindow(year)) {
+    return { open: true, year };
   }
 
-  return { open: isWithinWindow(year), year };
+  const upcomingYear = await db.query.schoolYears.findFirst({
+    where: gt(schoolYears.data_inicio, todayInSaoPaulo()),
+    orderBy: [asc(schoolYears.data_inicio), asc(schoolYears.id)],
+  });
+
+  return {
+    open: false,
+    ...(year ? { year } : {}),
+    ...(upcomingYear ? { upcomingYear } : {}),
+  };
 }
 
 /**
