@@ -80,11 +80,11 @@ export async function getActiveSchoolYear(): Promise<{
     where: eq(schoolYears.ativo, true),
   });
 
-  if (!year || !isWithinWindow(year)) {
+  if (!year) {
     return { open: false };
   }
 
-  return { open: true, year };
+  return { open: isWithinWindow(year), year };
 }
 
 /**

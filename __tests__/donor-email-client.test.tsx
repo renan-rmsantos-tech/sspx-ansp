@@ -41,7 +41,7 @@ describe("DonorEmailClient", () => {
     await waitFor(() => expect(saveDonorEmailTemplate).toHaveBeenCalledWith({
       assunto: "Boas-vindas", corpo: "Novo texto",
     }));
-    expect(screen.getByText(/Modelo salvo/)).toBeInTheDocument();
+    expect(await screen.findByText(/Modelo salvo/)).toBeInTheDocument();
   });
 
   it("shows pending deliveries and removes one after a successful retry", async () => {

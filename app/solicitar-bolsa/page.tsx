@@ -12,5 +12,5 @@ export const dynamic = "force-dynamic";
 
 export default async function SolicitarBolsaPage() {
   const result = await getActiveSchoolYear();
-  return result.open ? <ScholarshipForm /> : <FormUnavailableMessage />;
+  return result.open ? <ScholarshipForm /> : <FormUnavailableMessage year={result.year} />;
 }

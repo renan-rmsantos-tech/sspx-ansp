@@ -34,7 +34,7 @@ describe("getActiveSchoolYear", () => {
       ativo: true,
     });
 
-    expect(await getActiveSchoolYear()).toEqual({ open: false });
+    expect(await getActiveSchoolYear()).toEqual({ open: false, year: { id: "year-1", nome: "2025", data_inicio: "2025-01-01", data_fim: "2025-12-31", ativo: true } });
   });
 
   it("returns { open: true, year } while the window is open", async () => {
