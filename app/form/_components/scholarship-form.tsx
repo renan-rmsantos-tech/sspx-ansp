@@ -172,6 +172,8 @@ export function ScholarshipForm() {
     ...INITIAL_FORM_DATA,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [contributionAccepted, setContributionAccepted] = useState(false);
+  const [confidentialityAccepted, setConfidentialityAccepted] = useState(false);
   const [accepted, setAccepted] = useState(false);
   const [acceptError, setAcceptError] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -228,7 +230,7 @@ export function ScholarshipForm() {
   }, [currentStep]);
 
   const handleSubmit = useCallback(async () => {
-    if (!accepted) {
+    if (!accepted || !contributionAccepted || !confidentialityAccepted) {
       setAcceptError(true);
       setTimeout(() => setAcceptError(false), 2000);
       return;
@@ -241,6 +243,8 @@ export function ScholarshipForm() {
     setSubmitError("");
 
     const payload: ApplicationSubmission = {
+      compromisso_contribuicao: contributionAccepted,
+      ciencia_confidencialidade: confidentialityAccepted,
       escola: formData.escola,
       declaracao_vaga: formData.declaracao_vaga
         .filter((f) => f.path)
@@ -354,7 +358,7 @@ export function ScholarshipForm() {
       submittingRef.current = false;
       setSubmitting(false);
     }
-  }, [accepted, formData]);
+  }, [accepted, contributionAccepted, confidentialityAccepted, formData]);
 
   if (submitted) {
     return <SuccessScreen />;
@@ -407,6 +411,10 @@ export function ScholarshipForm() {
         {currentStep === 6 && (
           <Step6Review
             data={formData}
+            contributionAccepted={contributionAccepted}
+            confidentialityAccepted={confidentialityAccepted}
+            onContributionChange={setContributionAccepted}
+            onConfidentialityChange={setConfidentialityAccepted}
             accepted={accepted}
             onAcceptedChange={(v) => {
               setAccepted(v);

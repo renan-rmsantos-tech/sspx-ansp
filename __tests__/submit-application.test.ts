@@ -42,6 +42,8 @@ import {
 
 function validInput() {
   return {
+    compromisso_contribuicao: true as const,
+    ciencia_confidencialidade: true as const,
     escola: "Colégio São José",
     declaracao_vaga: ["pending/uuid/declaracao_vaga/declaracao.pdf"],
     pai: {

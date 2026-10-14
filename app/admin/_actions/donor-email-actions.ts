@@ -1,6 +1,6 @@
 "use server";
 
-import { desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull, lte, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth/authorization";
@@ -143,5 +143,33 @@ export async function retryDonorWelcomeEmail(
       success: false,
       error: "Não foi possível enviar. Verifique a configuração do Resend e tente novamente.",
     };
+  }
+}
+
+export async function markDonorWelcomeEmailSent(id: string): Promise<{ success: boolean; sent_at?: string; error?: string }> {
+  await requireAdmin();
+  if (!z.string().uuid().safeParse(id).success) return { success: false, error: "Benfeitor inválido." };
+  const now = new Date().toISOString();
+  try {
+    const rows = await db.update(donorPledges).set({
+      welcome_email_sent_at: now,
+      welcome_email_reservation_token: null,
+      welcome_email_reservation_expires_at: null,
+    }).where(and(
+      eq(donorPledges.id, id),
+      isNull(donorPledges.welcome_email_sent_at),
+      or(isNull(donorPledges.welcome_email_reservation_token), lte(donorPledges.welcome_email_reservation_expires_at, now))
+    )).returning({ sent_at: donorPledges.welcome_email_sent_at });
+    if (!rows.length) {
+      const current = await db.query.donorPledges.findFirst({ where: eq(donorPledges.id, id) });
+      if (!current) return { success: false, error: "Benfeitor não encontrado." };
+      if (!current.welcome_email_sent_at) return { success: false, error: "O envio deste e-mail está em andamento. Aguarde antes de marcar." };
+      return { success: true, sent_at: current.welcome_email_sent_at };
+    }
+    revalidatePath("/admin/benfeitores");
+    revalidatePath("/admin/email-benfeitores");
+    return { success: true, sent_at: rows[0].sent_at! };
+  } catch {
+    return { success: false, error: "Não foi possível registrar o envio. Tente novamente." };
   }
 }

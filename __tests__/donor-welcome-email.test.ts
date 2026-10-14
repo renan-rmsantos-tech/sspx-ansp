@@ -15,6 +15,7 @@ vi.mock("@/lib/storage", () => ({ getStorage: () => ({ move: vi.fn() }) }));
 
 import { registerDonorPledge } from "@/app/benfeitor/_actions/donor-actions";
 import {
+  markDonorWelcomeEmailSent,
   getDonorEmailSettings,
   retryDonorWelcomeEmail,
   saveDonorEmailTemplate,
@@ -22,7 +23,7 @@ import {
 } from "@/app/admin/_actions/donor-email-actions";
 import { donorPledges, donorWelcomeTemplates } from "@/lib/db/schema";
 import { renderDonorWelcomeEmail } from "@/lib/email/donor-welcome-template";
-import { failWrites, inserted, queryFor, resetFakeDb, updated } from "./helpers/fake-db";
+import { failWrites, inserted, queryFor, resetFakeDb, setReturning, updated } from "./helpers/fake-db";
 
 const validDonor = {
   nome: "Ana Silva",
@@ -184,5 +185,32 @@ describe("administração do modelo", () => {
     requireAdmin.mockRejectedValue(new Error("forbidden"));
     await expect(sendDonorTestEmail({ email: "ana@example.com", assunto: "Oi", corpo: "Texto" })).rejects.toThrow("forbidden");
     expect(sendDonorWelcomeTestEmail).not.toHaveBeenCalled();
+  });
+});
+
+describe("registro manual de boas-vindas", () => {
+  const id = "7d6a0ab4-bc5d-4fbc-a500-2fb6097bacda";
+  it("registra o envio sem disparar um novo e-mail", async () => {
+    setReturning(donorPledges, [{ sent_at: "2026-10-14T12:00:00.000Z" }]);
+    expect(await markDonorWelcomeEmailSent(id)).toEqual({ success: true, sent_at: "2026-10-14T12:00:00.000Z" });
+    expect(requireAdmin).toHaveBeenCalled();
+    expect(updated[0].values).toMatchObject({ welcome_email_sent_at: expect.any(String), welcome_email_reservation_token: null });
+    expect(sendDonorWelcomeEmail).not.toHaveBeenCalled();
+    expect(revalidatePath).toHaveBeenCalledWith("/admin/benfeitores");
+  });
+  it("preserva um envio já registrado", async () => {
+    queryFor("donorPledges").findFirst.mockResolvedValue({ welcome_email_sent_at: "2026-10-01T12:00:00.000Z" });
+    expect(await markDonorWelcomeEmailSent(id)).toEqual({ success: true, sent_at: "2026-10-01T12:00:00.000Z" });
+  });
+  it("informa envio em andamento e benfeitor inexistente", async () => {
+    queryFor("donorPledges").findFirst.mockResolvedValue({ welcome_email_sent_at: null });
+    expect(await markDonorWelcomeEmailSent(id)).toMatchObject({ success: false, error: expect.stringContaining("andamento") });
+    queryFor("donorPledges").findFirst.mockResolvedValue(undefined);
+    expect(await markDonorWelcomeEmailSent(id)).toMatchObject({ success: false, error: "Benfeitor não encontrado." });
+  });
+  it("exige permissão de administrador", async () => {
+    requireAdmin.mockRejectedValue(new Error("Acesso negado"));
+    await expect(markDonorWelcomeEmailSent(id)).rejects.toThrow("Acesso negado");
+    expect(updated).toHaveLength(0);
   });
 });

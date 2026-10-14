@@ -289,6 +289,8 @@ describe("ScholarshipForm", () => {
     await navigateToStep(6);
 
     fireEvent.click(screen.getByTestId("aceite-checkbox"));
+    fireEvent.click(screen.getByTestId("contribution-checkbox"));
+    fireEvent.click(screen.getByTestId("confidentiality-checkbox"));
     fireEvent.click(screen.getByTestId("btn-submit"));
 
     await waitFor(() => {
@@ -451,5 +453,17 @@ describe("ScholarshipForm", () => {
     fireEvent.click(screen.getByTestId("btn-next"));
     expect(screen.getByTestId("step-6")).toBeInTheDocument();
   });
+
+
+it("bloqueia envio enquanto os dois novos checks não forem aceitos", async () => {
+  render(<ScholarshipForm />);
+  await navigateToStep(6);
+  fireEvent.click(screen.getByTestId("aceite-checkbox"));
+  fireEvent.click(screen.getByTestId("btn-submit"));
+  expect(mockSubmitApplication).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByTestId("contribution-checkbox"));
+  fireEvent.click(screen.getByTestId("btn-submit"));
+  expect(mockSubmitApplication).not.toHaveBeenCalled();
+});
 
 });

@@ -6,6 +6,8 @@ import {
 
 function validApplication(): ApplicationSubmission {
   return {
+    compromisso_contribuicao: true,
+    ciencia_confidencialidade: true,
     escola: "Colégio São José",
     declaracao_vaga: ["pending/uuid1/declaracao_vaga/declaracao.pdf"],
     pai: {
@@ -166,4 +168,9 @@ describe("applicationSubmissionSchema", () => {
       expect(applicationSubmissionSchema.safeParse(data).success).toBe(false);
     }
   });
+});
+
+it.each(["compromisso_contribuicao", "ciencia_confidencialidade"])("exige %s na submissão", (field) => {
+  expect(applicationSubmissionSchema.safeParse({ ...validApplication(), [field]: false }).success).toBe(false);
+  expect(applicationSubmissionSchema.safeParse({ ...validApplication(), [field]: undefined }).success).toBe(false);
 });

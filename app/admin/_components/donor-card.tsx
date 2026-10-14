@@ -9,7 +9,7 @@ import {
 import { PdfPreviewModal } from "./pdf-preview-modal";
 import { prioradoCapelaLabel } from "@/lib/data/priorados-capelas";
 import { formatDonorDate } from "@/lib/donor-date";
-import { retryDonorWelcomeEmail } from "@/app/admin/_actions/donor-email-actions";
+import { markDonorWelcomeEmailSent, retryDonorWelcomeEmail } from "@/app/admin/_actions/donor-email-actions";
 
 export interface DonorPledge {
   id: string;
@@ -67,9 +67,11 @@ function formatDateBR(isoDate: string): string {
 interface DonorCardProps {
   donor: DonorPledge;
   onDelete: (id: string) => void;
+  onWelcomeSent?: (id: string, sentAt: string) => void;
 }
 
-export function DonorCard({ donor, onDelete }: DonorCardProps) {
+export function DonorCard({ donor, onDelete, onWelcomeSent }: DonorCardProps) {
+  const [markingWelcome, setMarkingWelcome] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -86,13 +88,14 @@ export function DonorCard({ donor, onDelete }: DonorCardProps) {
   const [welcomeError, setWelcomeError] = useState<string | null>(null);
 
   const handleSendWelcome = useCallback(async () => {
-    if (sendingWelcome || welcomeSentAt || welcomeInProgress) return;
+    if (sendingWelcome || markingWelcome || welcomeSentAt || welcomeInProgress) return;
     setSendingWelcome(true);
     setWelcomeError(null);
     try {
       const result = await retryDonorWelcomeEmail(donor.id);
       if (result.status === "sent" || result.status === "already_sent") {
         setWelcomeSentAt(result.sent_at ?? new Date().toISOString());
+        onWelcomeSent?.(donor.id, result.sent_at ?? new Date().toISOString());
         setWelcomeInProgress(false);
       } else if (result.status === "in_progress") {
         setWelcomeInProgress(true);
@@ -105,7 +108,24 @@ export function DonorCard({ donor, onDelete }: DonorCardProps) {
     } finally {
       setSendingWelcome(false);
     }
-  }, [donor.id, sendingWelcome, welcomeInProgress, welcomeSentAt]);
+  }, [donor.id, sendingWelcome, markingWelcome, welcomeInProgress, welcomeSentAt, onWelcomeSent]);
+
+  const handleMarkWelcome = async () => {
+    if (markingWelcome || sendingWelcome || welcomeSentAt || welcomeInProgress) return;
+    setMarkingWelcome(true);
+    setWelcomeError(null);
+    try {
+      const result = await markDonorWelcomeEmailSent(donor.id);
+      if (result.success && result.sent_at) {
+        setWelcomeSentAt(result.sent_at);
+        onWelcomeSent?.(donor.id, result.sent_at);
+      } else setWelcomeError(result.error ?? "Não foi possível registrar o envio.");
+    } catch {
+      setWelcomeError("Não foi possível registrar o envio. Tente novamente.");
+    } finally {
+      setMarkingWelcome(false);
+    }
+  };
 
   const handleExport = useCallback(async () => {
     setExporting(true);
@@ -220,9 +240,9 @@ export function DonorCard({ donor, onDelete }: DonorCardProps) {
             )}
           </div>
 
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm" data-testid="donor-welcome-status">
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm" data-testid="donor-welcome-status" aria-live="polite">
             {welcomeSentAt ? (
-              <span className="text-success">Boas-vindas aceito para envio em {formatDonorDate(welcomeSentAt)}.</span>
+              <span className="text-success">Envio de boas-vindas registrado em {formatDonorDate(welcomeSentAt)}.</span>
             ) : welcomeInProgress || sendingWelcome ? (
               <span className="text-muted" aria-live="polite">Envio em andamento…</span>
             ) : (
@@ -231,11 +251,16 @@ export function DonorCard({ donor, onDelete }: DonorCardProps) {
                 <button
                   type="button"
                   onClick={() => void handleSendWelcome()}
-                  disabled={sendingWelcome}
+                  disabled={sendingWelcome || markingWelcome}
                   className="rounded-md border border-accent px-3 py-1.5 text-sm font-medium text-accent hover:bg-bg disabled:opacity-50"
                   data-testid="donor-welcome-send"
                 >
                   {sendingWelcome ? "Enviando…" : "Enviar e-mail"}
+                </button>
+                <button type="button" onClick={() => void handleMarkWelcome()} disabled={markingWelcome || sendingWelcome}
+                  className="rounded-md border border-border px-3 py-1.5 text-sm font-medium text-accent hover:bg-bg disabled:opacity-50"
+                  data-testid="donor-welcome-mark-sent">
+                  {markingWelcome ? "Registrando…" : "Marcar como enviado manualmente"}
                 </button>
               </>
             )}

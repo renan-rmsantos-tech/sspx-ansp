@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 vi.mock("@/app/admin/_actions/admin-actions", () => ({ deleteDonorPledge: vi.fn() }));
-const { retryDonorWelcomeEmail } = vi.hoisted(() => ({ retryDonorWelcomeEmail: vi.fn() }));
-vi.mock("@/app/admin/_actions/donor-email-actions", () => ({ retryDonorWelcomeEmail }));
+const { retryDonorWelcomeEmail, markDonorWelcomeEmailSent } = vi.hoisted(() => ({ retryDonorWelcomeEmail: vi.fn(), markDonorWelcomeEmailSent: vi.fn() }));
+vi.mock("@/app/admin/_actions/donor-email-actions", () => ({ retryDonorWelcomeEmail, markDonorWelcomeEmailSent }));
 
 import { BenfeitoresClient, SecretariatDonorsClient } from "@/app/admin/benfeitores/client";
 import type { DonorPledge } from "@/app/admin/_components/donor-card";
@@ -147,7 +147,19 @@ describe("BenfeitoresClient", () => {
 
     fireEvent.click(screen.getByTestId("donor-welcome-send"));
     await waitFor(() => expect(retryDonorWelcomeEmail).toHaveBeenCalledWith("d1"));
-    expect(await screen.findByText(/Boas-vindas aceito para envio em 13\/10\/2026/)).toBeInTheDocument();
+    expect(await screen.findByText(/Envio de boas-vindas registrado em 13\/10\/2026/)).toBeInTheDocument();
     expect(screen.queryByTestId("donor-welcome-send")).not.toBeInTheDocument();
   });
+});
+
+it("retira o benfeitor dos pendentes após marcar envio manual", async () => {
+  markDonorWelcomeEmailSent.mockResolvedValue({ success: true, sent_at: "2026-10-14T12:00:00.000Z" });
+  const donor: DonorPledge = { id: "d1", nome: "Ana", cpf: "111.111.111-11", email: "ana@example.com", frequencia: "mensal", valor: 100, created_at: "2026-10-01", welcome_email_sent_at: null };
+  render(<BenfeitoresClient initialDonors={[donor]} />);
+  fireEvent.click(screen.getByTestId("donor-welcome-filter-pendentes"));
+  fireEvent.click(screen.getByTestId("donor-welcome-mark-sent"));
+  await waitFor(() => expect(screen.queryByTestId("donor-card-d1")).not.toBeInTheDocument());
+  expect(markDonorWelcomeEmailSent).toHaveBeenCalledWith("d1");
+  fireEvent.click(screen.getByTestId("donor-welcome-filter-enviados"));
+  expect(screen.getByText(/Envio de boas-vindas registrado em/)).toBeInTheDocument();
 });

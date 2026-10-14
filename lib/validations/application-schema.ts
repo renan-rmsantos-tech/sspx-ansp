@@ -73,6 +73,8 @@ const collaborationSchema = z.object({
 });
 
 export const applicationSubmissionSchema = z.object({
+  compromisso_contribuicao: z.literal(true, { message: "Aceite o compromisso de contribuição." }),
+  ciencia_confidencialidade: z.literal(true, { message: "Confirme a ciência sobre o sigilo dos documentos." }),
   escola: z.string().min(1, "Nome da escola é obrigatório"),
   declaracao_vaga: requiredFileArray,
 

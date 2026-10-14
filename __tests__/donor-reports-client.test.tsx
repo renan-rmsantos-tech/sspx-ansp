@@ -34,10 +34,10 @@ describe("DonorReportsClient", () => {
     expect(screen.getByLabelText("Frequência")).toHaveValue("");
     expect(screen.getByText("População selecionada:").parentElement).toHaveTextContent("3 cadastros");
     expect(screen.getAllByRole("table")).toHaveLength(2);
-    expect(screen.getByRole("table", { name: /Residência/ })).toHaveTextContent("São Paulo2Local não identificado1");
-    expect(screen.getByRole("table", { name: /Priorado ou capela/ })).toHaveTextContent("Nenhuma1Capela A1Não informado1");
-    expect(screen.getByRole("img", { name: /Gráfico de barras: Residência/ })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /Gráfico de barras: Priorado ou capela/ })).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: /Estado de residência/ })).toHaveTextContent("São Paulo2Local não identificado1");
+    expect(screen.getByRole("table", { name: /Priorado ou capela/ })).toHaveTextContent("Capela A1Não informado1Nenhuma1");
+    expect(screen.getByRole("img", { name: /Gráfico de barras: Estado de residência/ })).toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: /Gráfico de barras: Priorado ou capela/ })).not.toBeInTheDocument();
   });
 
   it("submits filters by keyboard and updates the displayed population", async () => {

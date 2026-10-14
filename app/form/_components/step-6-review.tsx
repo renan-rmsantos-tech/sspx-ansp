@@ -9,6 +9,10 @@ interface Step6Props {
   accepted: boolean;
   onAcceptedChange: (v: boolean) => void;
   acceptError: boolean;
+  contributionAccepted: boolean;
+  confidentialityAccepted: boolean;
+  onContributionChange: (v: boolean) => void;
+  onConfidentialityChange: (v: boolean) => void;
 }
 
 export function Step6Review({
@@ -16,6 +20,8 @@ export function Step6Review({
   accepted,
   onAcceptedChange,
   acceptError,
+  contributionAccepted = false, confidentialityAccepted = false,
+  onContributionChange, onConfidentialityChange,
 }: Step6Props) {
   const totalRenda = useMemo(
     () =>
@@ -155,9 +161,21 @@ export function Step6Review({
             colaboração da bolsa. <span className="text-danger">*</span>
           </label>
         </div>
+        {[
+          { id: "contribution", checked: contributionAccepted, onChange: onContributionChange, text: "Declaro estar ciente de que sou beneficiário de uma ajuda gratuita e assumo o compromisso de contribuir, de hoje em diante, para este projeto conforme minhas possibilidades." },
+          { id: "confidentiality", checked: confidentialityAccepted, onChange: onConfidentialityChange, text: "Declaramos que todos os documentos serão mantidos sob sigilo e utilizados exclusivamente para fins de análise das bolsas de estudo." },
+        ].map(({ id, checked, onChange, text }) => (
+          <div key={id} className="mt-4 flex items-start gap-2.5">
+            <input type="checkbox" id={id} checked={checked} onChange={(e) => onChange(e.target.checked)}
+              aria-invalid={acceptError && !checked} className="mt-0.5 h-[18px] w-[18px] shrink-0 accent-accent" data-testid={`${id}-checkbox`} />
+            <label htmlFor={id} className={`cursor-pointer text-[13px] ${acceptError && !checked ? "text-danger" : "text-muted"}`}>
+              {text} <span className="text-danger">*</span>
+            </label>
+          </div>
+        ))}
         {acceptError && (
           <p className="mt-1 text-xs text-danger" data-testid="aceite-error">
-            Você deve aceitar a declaração para enviar.
+            Você deve aceitar todas as declarações para enviar.
           </p>
         )}
       </div>

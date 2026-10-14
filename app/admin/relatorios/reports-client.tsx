@@ -1,15 +1,16 @@
 "use client";
 
-import { useState, useTransition, type FormEvent } from "react";
+import { useId, useState, useTransition, type FormEvent } from "react";
 import { getDonorReports, type DonorReportCategory, type DonorReportFilters, type DonorReports } from "../_actions/donor-report-actions";
 import { DonorReportCharts } from "./reports-charts";
 
-function ReportSeries({ title, description, categories }: { title: string; description: string; categories: DonorReportCategory[] }) {
+function ReportSeries({ title, description, categories, chart = true }: { title: string; description: string; categories: DonorReportCategory[]; chart?: boolean }) {
+  const headingId = useId();
   return (
-    <section className="rounded-lg border border-border bg-surface p-4" aria-labelledby={`${title}-heading`}>
-      <h2 id={`${title}-heading`} className="font-heading text-lg font-semibold">{title}</h2>
+    <section className="rounded-lg border border-border bg-surface p-4" aria-labelledby={headingId}>
+      <h2 id={headingId} className="font-heading text-lg font-semibold">{title}</h2>
       <p className="mt-1 text-sm text-muted">{description}</p>
-      <div className="mt-4"><DonorReportCharts categories={categories} label={title} /></div>
+      {chart && <div className="mt-4"><DonorReportCharts categories={categories} label={title} /></div>}
       <div className="mt-4 overflow-x-auto">
         <table className="w-full min-w-[280px] border-collapse text-left text-sm">
           <caption className="sr-only">{title}: quantidade de cadastros por categoria</caption>
@@ -56,8 +57,8 @@ export function DonorReportsClient({ initialReports }: { initialReports: DonorRe
       {error && <p role="alert" className="text-sm text-danger">{error}</p>}
       <p aria-live="polite" className="rounded-md border border-border bg-surface px-4 py-3 text-sm">População selecionada: <strong>{reports.total} cadastros</strong></p>
       <div className="grid gap-5 xl:grid-cols-2">
-        <ReportSeries title="Residência" description="Local de residência informado no cadastro." categories={reports.residenceByState} />
-        <ReportSeries title="Priorado ou capela" description="Vínculo selecionado pelo benfeitor." categories={reports.prioryOrChapel} />
+        <ReportSeries title="Estado de residência" description="Local de residência informado no cadastro." categories={reports.residenceByState} />
+        <ReportSeries title="Priorado ou capela" description="Vínculo selecionado pelo benfeitor." chart={false} categories={[...reports.prioryOrChapel].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "pt-BR"))} />
       </div>
     </div>
   );
