@@ -1,8 +1,9 @@
-import { afterEach, describe, expect, it } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 vi.mock("@/app/admin/_actions/admin-actions", () => ({ deleteDonorPledge: vi.fn() }));
+const { retryDonorWelcomeEmail } = vi.hoisted(() => ({ retryDonorWelcomeEmail: vi.fn() }));
+vi.mock("@/app/admin/_actions/donor-email-actions", () => ({ retryDonorWelcomeEmail }));
 
 import { BenfeitoresClient, SecretariatDonorsClient } from "@/app/admin/benfeitores/client";
 import type { DonorPledge } from "@/app/admin/_components/donor-card";
@@ -13,6 +14,7 @@ describe("SecretariatDonorsClient", () => {
   it("filters the operational donor projection without rendering sensitive identifiers", () => {
     render(<SecretariatDonorsClient initialDonors={[{ id: "d1", nome: "Ana", email: "ana@example.com", telefone: "(11) 9", frequencia: "mensal", duracao: "um_ano", valor: 100, meio_pagamento: "pix", data_pagamento: "10", lembrete_canal: "email", priorado_capela: null, observacoes: null, created_at: "2026-01-01" }]} />);
     expect(screen.getByText("Ana")).toBeInTheDocument();
+    expect(screen.queryByTestId("donor-welcome-send")).not.toBeInTheDocument();
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "inexistente" } });
     expect(screen.getByText("Nenhum benfeitor corresponde aos filtros.")).toBeInTheDocument();
   });
@@ -99,5 +101,53 @@ describe("BenfeitoresClient", () => {
     });
     expect(screen.getByTestId("donor-card-d3")).toBeInTheDocument();
     expect(screen.queryByTestId("donor-card-d2")).not.toBeInTheDocument();
+  });
+
+  it("finds pending registration 51 and exposes per-record admin sending", () => {
+    const base: DonorPledge = {
+      id: "d1",
+      nome: "Benfeitor",
+      cpf: "111.111.111-11",
+      email: "ana@example.com",
+      frequencia: "mensal",
+      valor: 100,
+      created_at: "2026-09-28 17:51:39.639965+00",
+    };
+    const donors = Array.from({ length: 51 }, (_, index) => ({
+      ...base,
+      id: `d${index + 1}`,
+      nome: `Benfeitor ${index + 1}`,
+      welcome_email_sent_at: index < 50 ? "2026-10-01T10:00:00.000Z" : null,
+    }));
+
+    render(<BenfeitoresClient initialDonors={donors} />);
+    fireEvent.click(screen.getByTestId("donor-welcome-filter-pendentes"));
+    expect(screen.getByTestId("donor-card-d51")).toBeInTheDocument();
+    expect(screen.queryByTestId("donor-card-d1")).not.toBeInTheDocument();
+    expect(screen.getByTestId("donor-welcome-send")).toBeInTheDocument();
+  });
+
+  it("shows the accepted send date after an administrator sends a pending welcome email", async () => {
+    retryDonorWelcomeEmail.mockResolvedValue({
+      status: "sent",
+      success: true,
+      sent_at: "2026-10-13T12:00:00.000Z",
+    });
+    const donor: DonorPledge = {
+      id: "d1",
+      nome: "Ana",
+      cpf: "111.111.111-11",
+      email: "ana@example.com",
+      frequencia: "mensal",
+      valor: 100,
+      created_at: "2026-09-28 17:51:39.639965+00",
+      welcome_email_sent_at: null,
+    };
+    render(<BenfeitoresClient initialDonors={[donor]} />);
+
+    fireEvent.click(screen.getByTestId("donor-welcome-send"));
+    await waitFor(() => expect(retryDonorWelcomeEmail).toHaveBeenCalledWith("d1"));
+    expect(await screen.findByText(/Boas-vindas aceito para envio em 13\/10\/2026/)).toBeInTheDocument();
+    expect(screen.queryByTestId("donor-welcome-send")).not.toBeInTheDocument();
   });
 });

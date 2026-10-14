@@ -27,12 +27,12 @@ export function DonorEmailClient({
   initialTemplate,
   initialPending,
   header,
-  smtpConfigured,
+  resendConfigured,
 }: {
   initialTemplate: EmailTemplate;
   initialPending: PendingDonor[];
   header: DocumentHeaderData;
-  smtpConfigured: boolean;
+  resendConfigured: boolean;
 }) {
   const [template, setTemplate] = useState(initialTemplate);
   const [saved, setSaved] = useState(initialTemplate);
@@ -69,7 +69,7 @@ export function DonorEmailClient({
     setRetryError(null);
     try {
       const result = await retryDonorWelcomeEmail(id);
-      if (result.success) {
+      if (result.status === "sent" || result.status === "already_sent" || result.success) {
         setPending((current) => current.filter((donor) => donor.id !== id));
       } else {
         setRetryError({ id, text: result.error ?? "Não foi possível enviar." });
@@ -100,9 +100,9 @@ export function DonorEmailClient({
 
   return (
     <div className="space-y-8">
-      {!smtpConfigured && (
+      {!resendConfigured && (
         <div role="status" className="rounded-md border border-warn/50 bg-warn/10 px-4 py-3 text-sm text-fg">
-          O envio está indisponível. Configure SMTP_HOST e SMTP_FROM no servidor para enviar e-mails.
+          O envio está indisponível. Configure RESEND_API_KEY e RESEND_FROM no servidor para enviar e-mails.
         </div>
       )}
 
@@ -197,7 +197,7 @@ export function DonorEmailClient({
           </div>
           <button
             type="submit"
-            disabled={sendingTest || !smtpConfigured || !testEmail.trim()}
+            disabled={sendingTest || !resendConfigured || !testEmail.trim()}
             className="rounded-md border border-accent px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50"
           >
             {sendingTest ? "Enviando..." : "Enviar teste"}
@@ -211,7 +211,7 @@ export function DonorEmailClient({
       <section aria-labelledby="pending-emails-heading">
         <h2 id="pending-emails-heading" className="text-base font-semibold text-fg">Envios pendentes</h2>
         <p className="mt-1 text-sm text-muted">
-          Até 50 cadastros sem envio confirmado. Use o reenvio após resolver uma falha de SMTP.
+          Até 50 cadastros sem envio confirmado. Use o reenvio após resolver uma falha no Resend.
         </p>
         <div className="mt-4 overflow-hidden rounded-lg border border-border bg-surface">
           {pending.length === 0 ? (
@@ -228,7 +228,7 @@ export function DonorEmailClient({
                   <button
                     type="button"
                     onClick={() => void retry(donor.id)}
-                    disabled={sendingId !== null || !smtpConfigured}
+                    disabled={sendingId !== null || !resendConfigured}
                     className="shrink-0 rounded-md border border-accent px-3 py-2 text-sm font-medium text-accent transition-colors hover:bg-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50"
                     aria-label={`Enviar e-mail para ${donor.nome}`}
                   >

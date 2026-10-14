@@ -119,11 +119,41 @@ ADMIN_PASSWORD=<senha forte inicial>
 APP_HOST=ansp.apps.rmsantos.tech
 APP_HOST_WWW=www.ansp.apps.rmsantos.tech
 APP_HOST_LEGACY=ansp.apps.rmsantos.tech
+RESEND_API_KEY=<chave de envio restrita ao domínio>
+RESEND_FROM="Arca Nossa Senhora da Providência <contato@arcaprovidencia.com.br>"
 BACKUP_PASSPHRASE=<openssl rand -base64 32>
 # AUTH_BYPASS deve ficar FORA do .env de produção.
 ```
 
-### 3.4 Subir
+### 3.4 Configurar e-mail de boas-vindas (Resend)
+
+1. No painel do Resend, adicione o domínio que será usado no remetente e copie
+   para o provedor DNS os registros que o próprio painel indicar. Verifique o
+   domínio no Resend antes de tentar enviar. Se já houver um registro SPF,
+   incorpore a autorização indicada pelo Resend ao registro existente em vez de
+   criar um segundo SPF.
+2. Crie uma API key com permissão de envio e, se disponível, restrinja-a ao
+   domínio verificado. Guarde-a como segredo: não a envie por chat, não a
+   coloque no Git e não a inclua em logs.
+3. No `.env` de produção do droplet, defina `RESEND_API_KEY` e `RESEND_FROM`.
+   O endereço após o nome de exibição precisa pertencer ao domínio verificado.
+   O exemplo acima usa `contato@arcaprovidencia.com.br`; confirme que esse é o
+   domínio institucional que a equipe deseja autenticar antes de usar esse
+   endereço em produção.
+4. Recrie o serviço para carregar as variáveis e valide o envio pela ação de
+   teste de e-mail no painel administrativo:
+
+   ```bash
+   cd /opt/apps/projects/sspx-ansp
+   docker compose -f compose.traefik.yaml up -d --force-recreate ansp
+   docker compose -f compose.traefik.yaml logs --tail=100 ansp
+   ```
+
+O envio usa a API HTTPS do Resend (saída TCP 443); não é necessário instalar
+Nodemailer no droplet nem liberar uma porta SMTP. Não passe a chave como
+argumento de shell e não copie o conteúdo de `.env` para chamados ou logs.
+
+### 3.5 Subir
 
 ```bash
 docker compose -f compose.traefik.yaml up -d --build
@@ -134,7 +164,7 @@ O `npm start` do container aplica as migrations e roda o bootstrap antes de
 servir, então a primeira subida já cria as tabelas, o admin e os modelos de
 decisão/contrato.
 
-### 3.5 Verificar
+### 3.6 Verificar
 
 | Item | Comando / evidência esperada |
 |---|---|

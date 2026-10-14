@@ -68,6 +68,9 @@ export async function registerDonorPledge(
       endereco: data.endereco,
       cep: data.cep,
       priorado_capela: data.priorado_capela,
+      residence_city: data.residence_city,
+      residence_state: data.residence_state,
+      residence_source: "confirmed",
       frequencia: data.frequencia,
       duracao: data.frequencia === "mensal" ? data.duracao ?? null : null,
       valor: data.valor,
@@ -102,7 +105,10 @@ export async function registerDonorPledge(
   }
 
   try {
-    await sendDonorWelcomeEmail({ id: pledgeId, email: data.email.trim() });
+    const emailResult = await sendDonorWelcomeEmail({ id: pledgeId, email: data.email.trim() });
+    if (emailResult.status === "failed") {
+      console.error("[registerDonorPledge] e-mail de boas-vindas não enviado.");
+    }
   } catch {
     // O cadastro já foi salvo. O admin poderá reenviar o e-mail pendente.
     console.error("[registerDonorPledge] e-mail de boas-vindas não enviado.");

@@ -33,6 +33,12 @@ const NAV_SECTIONS = [
         ),
       },
       {
+        label: "Relatórios",
+        href: "/admin/relatorios",
+        adminOnly: true,
+        icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-[18px] shrink-0"><path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-5 5" /></svg>,
+      },
+      {
         label: "Usuários",
         href: "/admin/usuarios",
         adminOnly: true,

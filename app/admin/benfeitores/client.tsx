@@ -5,12 +5,19 @@ import { DonorCard, type DonorPledge } from "../_components/donor-card";
 import { prioradoCapelaLabel } from "@/lib/data/priorados-capelas";
 
 type FrequenciaFilter = "todos" | "mensal" | "unica";
+type WelcomeFilter = "todos" | "pendentes" | "enviados";
 type SortKey = "data_desc" | "data_asc" | "nome" | "valor_desc";
 
 const FILTER_OPTIONS: { value: FrequenciaFilter; label: string }[] = [
   { value: "todos", label: "Todos" },
   { value: "mensal", label: "Mensal" },
   { value: "unica", label: "Única" },
+];
+
+const WELCOME_FILTER_OPTIONS: { value: WelcomeFilter; label: string }[] = [
+  { value: "todos", label: "Todos os e-mails" },
+  { value: "pendentes", label: "Boas-vindas pendentes" },
+  { value: "enviados", label: "Boas-vindas aceitos" },
 ];
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
@@ -243,6 +250,7 @@ export function SecretariatDonorsClient({ initialDonors }: { initialDonors: Secr
 export function BenfeitoresClient({ initialDonors }: BenfeitoresClientProps) {
   const [donors, setDonors] = useState<DonorPledge[]>(initialDonors);
   const [filter, setFilter] = useState<FrequenciaFilter>("todos");
+  const [welcomeFilter, setWelcomeFilter] = useState<WelcomeFilter>("todos");
   const [priorado, setPriorado] = useState(ALL_PRIORADOS);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("data_desc");
@@ -261,12 +269,17 @@ export function BenfeitoresClient({ initialDonors }: BenfeitoresClientProps) {
   const filtered = useMemo(() => {
     const query = normalizeSearch(search);
     let list = donors.filter((d) => matchesSearch(d, query));
+    if (welcomeFilter === "pendentes") {
+      list = list.filter((donor) => !donor.welcome_email_sent_at);
+    } else if (welcomeFilter === "enviados") {
+      list = list.filter((donor) => Boolean(donor.welcome_email_sent_at));
+    }
     if (filter !== "todos") {
       list = list.filter((d) => d.frequencia === filter);
     }
     list = list.filter((d) => matchesPriorado(d, priorado));
     return sortDonors(list, sort);
-  }, [donors, filter, priorado, search, sort]);
+  }, [donors, filter, priorado, search, sort, welcomeFilter]);
 
   const handleDelete = useCallback((id: string) => {
     setDonors((prev) => prev.filter((d) => d.id !== id));
@@ -345,6 +358,32 @@ export function BenfeitoresClient({ initialDonors }: BenfeitoresClientProps) {
               aria-pressed={filter === opt.value}
             >
               {opt.label} ({count})
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2" data-testid="donor-welcome-filters">
+        {WELCOME_FILTER_OPTIONS.map((option) => {
+          const count = option.value === "todos"
+            ? donors.length
+            : donors.filter((donor) => option.value === "pendentes"
+              ? !donor.welcome_email_sent_at
+              : Boolean(donor.welcome_email_sent_at)).length;
+          return (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => setWelcomeFilter(option.value)}
+              className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+                welcomeFilter === option.value
+                  ? "bg-accent text-white"
+                  : "border border-border text-muted hover:bg-bg"
+              }`}
+              data-testid={`donor-welcome-filter-${option.value}`}
+              aria-pressed={welcomeFilter === option.value}
+            >
+              {option.label} ({count})
             </button>
           );
         })}

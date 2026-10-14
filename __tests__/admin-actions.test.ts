@@ -250,6 +250,26 @@ describe("Secretaria projection boundaries", () => {
   });
 });
 
+describe("administrator donor email projection", () => {
+  it("adds welcome state without exposing the reservation token", async () => {
+    queryFor("donorPledges").findMany.mockResolvedValue([{
+      id: "d1",
+      welcome_email_sent_at: null,
+      welcome_email_reservation_token: "secret-reservation-token",
+      welcome_email_reservation_expires_at: new Date(Date.now() + 30_000).toISOString(),
+    }]);
+
+    const result = await getDonorPledges();
+
+    expect(result.data?.[0]).toMatchObject({
+      id: "d1",
+      welcome_email_in_progress: true,
+    });
+    expect(result.data?.[0]).not.toHaveProperty("welcome_email_reservation_token");
+    expect(result.data?.[0]).not.toHaveProperty("welcome_email_reservation_expires_at");
+  });
+});
+
 // --- getApplicationDetail ---
 
 describe("getApplicationDetail", () => {

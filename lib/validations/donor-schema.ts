@@ -4,6 +4,12 @@ import { PRIORADO_CAPELA_VALUES } from "@/lib/data/priorados-capelas";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+export const BRAZILIAN_UFS = [
+  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS",
+  "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC",
+  "SP", "SE", "TO",
+] as const;
+
 export const donorPledgeSchema = z
   .object({
     nome: z.string().min(1, "Nome é obrigatório"),
@@ -18,6 +24,11 @@ export const donorPledgeSchema = z
     telefone: z.string().min(1, "Telefone é obrigatório"),
     endereco: z.string().min(1, "Endereço é obrigatório"),
     cep: z.string().min(1, "CEP é obrigatório"),
+    residence_city: z.string().trim().min(1, "Informe sua cidade."),
+    residence_state: z.enum(BRAZILIAN_UFS, { message: "Selecione uma UF válida." }),
+    residence_confirmed: z.boolean().refine((confirmed) => confirmed, {
+      message: "Confirme sua cidade e UF.",
+    }),
     priorado_capela: z.enum(PRIORADO_CAPELA_VALUES, {
       message: "Selecione o priorado ou capela",
     }),

@@ -7,7 +7,11 @@ import { requireAdmin } from "@/lib/auth/authorization";
 import { db } from "@/lib/db";
 import { documentHeader, donorPledges, donorWelcomeTemplates } from "@/lib/db/schema";
 import { resolveDocumentHeader } from "@/lib/documents/document-header";
-import { sendDonorWelcomeEmail, sendDonorWelcomeTestEmail } from "@/lib/email/send-donor-welcome";
+import {
+  sendDonorWelcomeEmail,
+  sendDonorWelcomeTestEmail,
+  type DonorWelcomeSendResult,
+} from "@/lib/email/send-donor-welcome";
 import {
   DONOR_WELCOME_BODY,
   DONOR_WELCOME_SUBJECT,
@@ -91,26 +95,53 @@ export async function sendDonorTestEmail(input: EmailContent & { email: string }
     await sendDonorWelcomeTestEmail({ email: recipient.data, ...content });
     return { success: true };
   } catch {
-    return { success: false, error: "Não foi possível enviar o teste. Verifique o SMTP e tente novamente." };
+    return { success: false, error: "Não foi possível enviar o teste. Verifique a configuração do Resend e tente novamente." };
   }
 }
 
-export async function retryDonorWelcomeEmail(id: string): Promise<{ success: boolean; error?: string }> {
+export async function retryDonorWelcomeEmail(
+  id: string
+): Promise<{
+  status: DonorWelcomeSendResult["status"];
+  success: boolean;
+  error?: string;
+  sent_at?: string;
+  expires_at?: string;
+}> {
   await requireAdmin();
   const donor = await db.query.donorPledges.findFirst({
     columns: { id: true, email: true, welcome_email_sent_at: true },
     where: eq(donorPledges.id, id),
   });
-  if (!donor) return { success: false, error: "Benfeitor não encontrado." };
+  if (!donor) return { status: "failed", success: false, error: "Benfeitor não encontrado." };
   if (donor.welcome_email_sent_at) {
-    return { success: false, error: "Este e-mail já foi enviado." };
+    return {
+      status: "already_sent",
+      success: false,
+      sent_at: donor.welcome_email_sent_at,
+      error: "Este e-mail já foi enviado.",
+    };
   }
 
   try {
-    await sendDonorWelcomeEmail(donor);
-    revalidatePath("/admin/email-benfeitores");
-    return { success: true };
+    const result = await sendDonorWelcomeEmail(donor);
+    if (result.status === "sent" || result.status === "already_sent") {
+      revalidatePath("/admin/email-benfeitores");
+    }
+    return {
+      ...result,
+      success: result.status === "sent",
+      ...(result.status === "already_sent"
+        ? { error: "Este e-mail já foi enviado." }
+        : result.status === "in_progress"
+          ? { error: "O envio deste e-mail já está em andamento." }
+          : {}),
+    };
   } catch {
-    return { success: false, error: "Não foi possível enviar. Verifique o SMTP e tente novamente." };
+    return {
+      status: "failed",
+      success: false,
+      error: "Não foi possível enviar. Verifique a configuração do Resend e tente novamente.",
+    };
   }
 }

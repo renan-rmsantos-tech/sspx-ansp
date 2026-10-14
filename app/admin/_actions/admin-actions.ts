@@ -150,8 +150,25 @@ export async function getDonorPledges() {
       return { data, error: null };
     }
 
-    const data = await db.query.donorPledges.findMany({
+    const rows = await db.query.donorPledges.findMany({
       orderBy: desc(donorPledges.created_at),
+    });
+
+    const now = Date.now();
+    const data = rows.map((row) => {
+      const {
+        welcome_email_reservation_token: reservationToken,
+        welcome_email_reservation_expires_at: reservationExpiresAt,
+        ...safeRow
+      } = row;
+      return {
+        ...safeRow,
+        welcome_email_in_progress: Boolean(
+          reservationToken &&
+            reservationExpiresAt &&
+            new Date(reservationExpiresAt).getTime() > now
+        ),
+      };
     });
 
     return { data, error: null };

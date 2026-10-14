@@ -341,6 +341,9 @@ export const donorPledges = pgTable(
     endereco: text("endereco"),
     cep: text("cep"),
     priorado_capela: text("priorado_capela"),
+    residence_city: text("residence_city"),
+    residence_state: text("residence_state"),
+    residence_source: text("residence_source").$type<"confirmed" | "cep_lookup">(),
     recibo_path: text("recibo_path"),
     recibo_nome: text("recibo_nome"),
     observacoes: text("observacoes"),
@@ -348,11 +351,26 @@ export const donorPledges = pgTable(
       withTimezone: true,
       mode: "string",
     }),
+    welcome_email_reservation_token: uuid("welcome_email_reservation_token"),
+    welcome_email_reservation_expires_at: timestamp("welcome_email_reservation_expires_at", {
+      withTimezone: true,
+      mode: "string",
+    }),
     created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
       .notNull()
       .defaultNow(),
   },
-  (t) => [index("donor_pledges_created_at_idx").on(t.created_at)]
+  (t) => [
+    index("donor_pledges_created_at_idx").on(t.created_at),
+    check(
+      "donor_pledges_residence_state_check",
+      sql`${t.residence_state} is null or ${t.residence_state} in ('AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO')`
+    ),
+    check(
+      "donor_pledges_residence_source_check",
+      sql`${t.residence_source} is null or ${t.residence_source} in ('confirmed', 'cep_lookup')`
+    ),
+  ]
 );
 
 /** Histórico operacional interno, apenas de inclusão. */

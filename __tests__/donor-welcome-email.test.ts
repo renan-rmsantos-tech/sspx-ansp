@@ -31,6 +31,9 @@ const validDonor = {
   telefone: "11999999999",
   endereco: "Rua das Flores, 1",
   cep: "13250000",
+  residence_city: "Campinas",
+  residence_state: "SP" as const,
+  residence_confirmed: true,
   priorado_capela: "nenhuma" as const,
   frequencia: "mensal" as const,
   duracao: "um_ano" as const,
@@ -41,7 +44,7 @@ beforeEach(() => {
   resetFakeDb();
   vi.clearAllMocks();
   requireAdmin.mockResolvedValue({ id: "admin", role: "admin" });
-  sendDonorWelcomeEmail.mockResolvedValue(undefined);
+  sendDonorWelcomeEmail.mockResolvedValue({ status: "sent" });
   sendDonorWelcomeTestEmail.mockResolvedValue(undefined);
 });
 
@@ -50,6 +53,11 @@ describe("e-mail de boas-vindas ao benfeitor", () => {
     const result = await registerDonorPledge(validDonor);
     expect(result.success).toBe(true);
     expect(inserted[0].table).toBe(donorPledges);
+    expect(inserted[0].values).toMatchObject({
+      residence_city: "Campinas",
+      residence_state: "SP",
+      residence_source: "confirmed",
+    });
     expect(sendDonorWelcomeEmail).toHaveBeenCalledWith({
       id: expect.any(String), email: "ana@example.com",
     });
@@ -61,8 +69,8 @@ describe("e-mail de boas-vindas ao benfeitor", () => {
     expect(sendDonorWelcomeEmail).not.toHaveBeenCalled();
   });
 
-  it("keeps a saved registration when SMTP fails", async () => {
-    sendDonorWelcomeEmail.mockRejectedValue(new Error("SMTP unavailable"));
+  it("keeps a saved registration when Resend fails", async () => {
+    sendDonorWelcomeEmail.mockRejectedValue(new Error("Resend unavailable"));
     const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
       expect((await registerDonorPledge(validDonor)).success).toBe(true);
@@ -73,6 +81,18 @@ describe("e-mail de boas-vindas ao benfeitor", () => {
     } finally {
       errorLog.mockRestore();
     }
+  });
+
+  it("rejects residence that is not explicitly confirmed or has an invalid UF", async () => {
+    expect(await registerDonorPledge({ ...validDonor, residence_confirmed: false })).toMatchObject({
+      success: false,
+      errors: { residence_confirmed: ["Confirme sua cidade e UF."] },
+    });
+    expect(await registerDonorPledge({ ...validDonor, residence_state: "XX" as never })).toMatchObject({
+      success: false,
+      errors: { residence_state: ["Selecione uma UF válida."] },
+    });
+    expect(inserted).toHaveLength(0);
   });
 
   it("escapes edited text in HTML and includes the institutional header and footer", () => {
@@ -116,7 +136,7 @@ describe("administração do modelo", () => {
     queryFor("donorPledges").findFirst.mockResolvedValue({
       id: "d1", email: "ana@example.com", welcome_email_sent_at: null,
     });
-    expect(await retryDonorWelcomeEmail("d1")).toEqual({ success: true });
+    expect(await retryDonorWelcomeEmail("d1")).toEqual({ success: true, status: "sent" });
     expect(sendDonorWelcomeEmail).toHaveBeenCalledWith({
       id: "d1", email: "ana@example.com", welcome_email_sent_at: null,
     });
@@ -127,6 +147,18 @@ describe("administração do modelo", () => {
     });
     expect((await retryDonorWelcomeEmail("d1")).success).toBe(false);
     expect(sendDonorWelcomeEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns an in-progress outcome when the shared reservation is active", async () => {
+    queryFor("donorPledges").findFirst.mockResolvedValue({
+      id: "d1", email: "ana@example.com", welcome_email_sent_at: null,
+    });
+    sendDonorWelcomeEmail.mockResolvedValue({ status: "in_progress" });
+    expect(await retryDonorWelcomeEmail("d1")).toEqual({
+      status: "in_progress",
+      success: false,
+      error: "O envio deste e-mail já está em andamento.",
+    });
   });
 
   it("requires admin rights before editing", async () => {

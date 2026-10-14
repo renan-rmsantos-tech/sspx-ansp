@@ -99,15 +99,17 @@ html:has(.ansp-landing) { scroll-behavior: smooth; }
 .ansp-landing .nav-cta:hover { filter: brightness(1.06); }
 .ansp-landing .nav-cta:active { transform: translateY(1px); }
 @media (max-width: 760px) {
-  .ansp-landing .nav-links { display: none; }
-  .ansp-landing .nav .shell { gap: 12px; height: 64px; }
+  .ansp-landing .nav .shell { gap: 10px 12px; height: auto; min-height: 64px; flex-wrap: wrap; padding-top: 8px; padding-bottom: 8px; }
   .ansp-landing .nav-brand { gap: 10px; }
   .ansp-landing .nav-brand .seal { width: 34px; height: 34px; }
   .ansp-landing .nav-brand .nb-name { font-size: 13px; }
   .ansp-landing .nav-brand .nb-sub { font-size: 9px; }
   .ansp-landing .nav-cta { padding: 9px 14px; font-size: 12px; white-space: nowrap; flex-shrink: 0; }
+  .ansp-landing .nav-links { order: 3; display: flex; flex: 1 0 100%; gap: 22px; overflow-x: auto; padding: 4px 0 2px; scrollbar-width: none; }
+  .ansp-landing .nav-links::-webkit-scrollbar { display: none; }
+  .ansp-landing .nav-links a { flex: 0 0 auto; font-size: 13px; }
   .ansp-landing .nav:has(.nav-brand:hover) .shell,
-  .ansp-landing .nav:has(.nav-brand:focus-visible) .shell { height: 64px; }
+  .ansp-landing .nav:has(.nav-brand:focus-visible) .shell { height: auto; }
   .ansp-landing .nav:has(.nav-brand:hover) .seal,
   .ansp-landing .nav:has(.nav-brand:focus-visible) .seal { width: 34px; height: 34px; filter: none; }
   .ansp-landing .nav:has(.nav-brand:hover) .nb-name,
@@ -185,6 +187,18 @@ html:has(.ansp-landing) { scroll-behavior: smooth; }
   font: 600 clamp(28px, 4vw, 40px)/1.12 var(--font-display);
   letter-spacing: -0.015em; color: var(--accent); text-wrap: balance;
 }
+
+/* ── Como funciona ── */
+.ansp-landing .como-funciona { background: var(--bg); border-bottom: 1px solid var(--border); }
+.ansp-landing .como-funciona .shell { padding-top: 88px; padding-bottom: 88px; }
+.ansp-landing .como-funciona .section-head { max-width: 720px; }
+.ansp-landing .como-funciona .section-intro { color: var(--muted); font-size: 18px; max-width: 62ch; }
+.ansp-landing .como-funciona-flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 32px 0; }
+.ansp-landing .como-funciona-card { padding: 26px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+.ansp-landing .como-funciona-card h3 { color: var(--accent); font: 600 22px/1.2 var(--font-display); margin-bottom: 10px; }
+.ansp-landing .como-funciona-card p { color: var(--muted); }
+.ansp-landing .como-funciona-cta { margin-top: 28px; }
+@media (max-width: 760px) { .ansp-landing .como-funciona-flow { grid-template-columns: 1fr; } .ansp-landing .como-funciona .shell { padding-top: 64px; padding-bottom: 64px; } }
 
 /* ── Missão (Quem somos) ── */
 .ansp-landing .missao { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
@@ -343,6 +357,7 @@ export default function LandingPage() {
           </a>
           <nav className="nav-links" aria-label="Navegação principal">
             <a href="#missao">Quem somos</a>
+            <a href="#como-funciona">Como funciona</a>
             <a href="/seja-um-benfeitor">Seja um benfeitor</a>
             <a href="/solicitar-bolsa">Solicitar bolsa</a>
             <a href="#contato">Contato</a>
@@ -378,6 +393,44 @@ export default function LandingPage() {
           </div>
           <div className="hero-seal">
             <SealLogo size={220} className="seal" decorative />
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════ COMO FUNCIONA ══════════ */}
+      <section className="section como-funciona" id="como-funciona" aria-labelledby="como-funciona-title">
+        <div className="shell">
+          <div className="section-head">
+            <span className="kicker on-light">Como funciona</span>
+            <hr className="gold-divider" />
+            <h2 id="como-funciona-title">Uma estrutura comum para dar estabilidade às bolsas</h2>
+          </div>
+          <p className="section-intro">
+            A Arca organiza recursos e processos para apoiar as escolas e ampliar o acesso de crianças à formação católica.
+            As contribuições dos benfeitores ajudam a dar mais previsibilidade ao planejamento das bolsas.
+          </p>
+          <div className="como-funciona-flow">
+            <article className="como-funciona-card">
+              <h3>Benfeitores</h3>
+              <p>Contribuem com recursos e confiança para sustentar o trabalho da Associação.</p>
+            </article>
+            <article className="como-funciona-card">
+              <h3>Associação</h3>
+              <p>Organiza e direciona os recursos, os critérios e os processos, prestando contas da sua atuação.</p>
+            </article>
+            <article className="como-funciona-card">
+              <h3>Escolas, alunos e famílias</h3>
+              <p>As escolas identificam necessidades e acompanham os alunos; as famílias recebem o apoio e cumprem os compromissos da parceria.</p>
+            </article>
+          </div>
+          <p className="section-intro">
+            A escola mantém sua responsabilidade educativa e de gestão. A Associação oferece uma estrutura de apoio para que as bolsas sejam mais estáveis e organizadas.
+          </p>
+          <div className="como-funciona-cta">
+            <a href="/seja-um-benfeitor" className="btn btn-gold">
+              Seja um benfeitor
+              {arrowIcon}
+            </a>
           </div>
         </div>
       </section>
@@ -564,6 +617,7 @@ export default function LandingPage() {
               <h4>Navegação</h4>
               <ul>
                 <li><a href="#missao">Quem somos</a></li>
+                <li><a href="#como-funciona">Como funciona</a></li>
                 <li><a href="/solicitar-bolsa">Solicitar bolsa</a></li>
                 <li><a href="#contato">Contato</a></li>
               </ul>

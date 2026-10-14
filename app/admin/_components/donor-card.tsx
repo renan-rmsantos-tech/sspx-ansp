@@ -9,6 +9,7 @@ import {
 import { PdfPreviewModal } from "./pdf-preview-modal";
 import { prioradoCapelaLabel } from "@/lib/data/priorados-capelas";
 import { formatDonorDate } from "@/lib/donor-date";
+import { retryDonorWelcomeEmail } from "@/app/admin/_actions/donor-email-actions";
 
 export interface DonorPledge {
   id: string;
@@ -19,6 +20,8 @@ export interface DonorPledge {
   endereco?: string | null;
   cep?: string | null;
   priorado_capela?: string | null;
+  welcome_email_sent_at?: string | null;
+  welcome_email_in_progress?: boolean;
   frequencia: "unica" | "mensal";
   duracao?: "um_ano" | "indeterminado" | null;
   valor: number;
@@ -77,6 +80,32 @@ export function DonorCard({ donor, onDelete }: DonorCardProps) {
   const [preview, setPreview] = useState<
     { pdfBase64: string; filename: string } | null
   >(null);
+  const [welcomeSentAt, setWelcomeSentAt] = useState(donor.welcome_email_sent_at ?? null);
+  const [welcomeInProgress, setWelcomeInProgress] = useState(donor.welcome_email_in_progress ?? false);
+  const [sendingWelcome, setSendingWelcome] = useState(false);
+  const [welcomeError, setWelcomeError] = useState<string | null>(null);
+
+  const handleSendWelcome = useCallback(async () => {
+    if (sendingWelcome || welcomeSentAt || welcomeInProgress) return;
+    setSendingWelcome(true);
+    setWelcomeError(null);
+    try {
+      const result = await retryDonorWelcomeEmail(donor.id);
+      if (result.status === "sent" || result.status === "already_sent") {
+        setWelcomeSentAt(result.sent_at ?? new Date().toISOString());
+        setWelcomeInProgress(false);
+      } else if (result.status === "in_progress") {
+        setWelcomeInProgress(true);
+        setWelcomeError(result.error ?? "O envio deste e-mail já está em andamento.");
+      } else {
+        setWelcomeError(result.error ?? "Não foi possível enviar. Tente novamente.");
+      }
+    } catch {
+      setWelcomeError("Não foi possível enviar. Tente novamente.");
+    } finally {
+      setSendingWelcome(false);
+    }
+  }, [donor.id, sendingWelcome, welcomeInProgress, welcomeSentAt]);
 
   const handleExport = useCallback(async () => {
     setExporting(true);
@@ -190,6 +219,32 @@ export function DonorCard({ donor, onDelete }: DonorCardProps) {
               </span>
             )}
           </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm" data-testid="donor-welcome-status">
+            {welcomeSentAt ? (
+              <span className="text-success">Boas-vindas aceito para envio em {formatDonorDate(welcomeSentAt)}.</span>
+            ) : welcomeInProgress || sendingWelcome ? (
+              <span className="text-muted" aria-live="polite">Envio em andamento…</span>
+            ) : (
+              <>
+                <span className="text-muted">E-mail de boas-vindas pendente.</span>
+                <button
+                  type="button"
+                  onClick={() => void handleSendWelcome()}
+                  disabled={sendingWelcome}
+                  className="rounded-md border border-accent px-3 py-1.5 text-sm font-medium text-accent hover:bg-bg disabled:opacity-50"
+                  data-testid="donor-welcome-send"
+                >
+                  {sendingWelcome ? "Enviando…" : "Enviar e-mail"}
+                </button>
+              </>
+            )}
+          </div>
+          {welcomeError && (
+            <p className="mt-2 text-sm text-danger" role="alert" data-testid="donor-welcome-error">
+              {welcomeError}
+            </p>
+          )}
 
           {donor.observacoes && (
             <p className="mt-2 text-sm text-muted">

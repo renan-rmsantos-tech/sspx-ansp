@@ -5,6 +5,7 @@ import Link from "next/link";
 import { registerDonorPledge } from "../_actions/donor-actions";
 import type { DonorPledge } from "@/lib/validations/donor-schema";
 import { isValidCPF } from "@/lib/validations/cpf";
+import { BRAZILIAN_UFS } from "@/lib/validations/donor-schema";
 import {
   FileUpload,
   type UploadedFile,
@@ -92,6 +93,11 @@ export function DonorForm() {
   const [cep, setCep] = useState("");
   const [cepLoading, setCepLoading] = useState(false);
   const [cepHint, setCepHint] = useState<string | null>(null);
+  const [residenceCity, setResidenceCity] = useState("");
+  const [residenceState, setResidenceState] = useState("");
+  const [residenceConfirmed, setResidenceConfirmed] = useState(false);
+  const residenceEditRevisionRef = useRef(0);
+  const cepLookupSequenceRef = useRef(0);
   const [prioradoCapela, setPrioradoCapela] = useState("");
   const [recibo, setRecibo] = useState<UploadedFile[]>([]);
   const [observacoes, setObservacoes] = useState("");
@@ -112,13 +118,18 @@ export function DonorForm() {
   const handleCepBlur = useCallback(async () => {
     const digits = cep.replace(/\D/g, "");
     if (digits.length !== 8) {
+      cepLookupSequenceRef.current += 1;
+      setCepLoading(false);
       setCepHint(null);
       return;
     }
 
+    const sequence = ++cepLookupSequenceRef.current;
+    const residenceEditRevision = residenceEditRevisionRef.current;
     setCepLoading(true);
     setCepHint(null);
     const result = await lookupCep(digits);
+    if (sequence !== cepLookupSequenceRef.current) return;
     setCepLoading(false);
 
     if (!result.ok) {
@@ -128,6 +139,15 @@ export function DonorForm() {
 
     setCep(formatCep(result.address.cep));
     const suggestion = formatAddressFromViaCep(result.address);
+    if (
+      residenceEditRevision === residenceEditRevisionRef.current &&
+      result.address.localidade.trim() &&
+      result.address.uf.trim()
+    ) {
+      setResidenceCity(result.address.localidade.trim());
+      setResidenceState(result.address.uf.trim().toUpperCase());
+      setResidenceConfirmed(false);
+    }
     if (suggestion) {
       setEndereco((prev) => (prev.trim() ? prev : suggestion));
       setCepHint("Endereço preenchido pelo CEP. Complete com o número, se necessário.");
@@ -143,6 +163,10 @@ export function DonorForm() {
     if (!telefone.trim()) localErrors.telefone = "Informe seu telefone.";
     if (!endereco.trim()) localErrors.endereco = "Informe seu endereço.";
     if (!cep.trim()) localErrors.cep = "Informe seu CEP.";
+    if (!residenceCity.trim()) localErrors.residence_city = "Informe sua cidade.";
+    if (!BRAZILIAN_UFS.includes(residenceState as (typeof BRAZILIAN_UFS)[number]))
+      localErrors.residence_state = "Selecione uma UF válida.";
+    if (!residenceConfirmed) localErrors.residence_confirmed = "Confirme sua cidade e UF.";
     if (!prioradoCapela) localErrors.priorado_capela = "Selecione o priorado ou capela.";
     if (valor <= 0) localErrors.valor = "Informe um valor maior que zero.";
     if (frequencia === "mensal" && !duracao)
@@ -172,6 +196,9 @@ export function DonorForm() {
       telefone: telefone.trim(),
       endereco: endereco.trim(),
       cep: cep.trim(),
+      residence_city: residenceCity.trim(),
+      residence_state: residenceState as (typeof BRAZILIAN_UFS)[number],
+      residence_confirmed: residenceConfirmed,
       priorado_capela: prioradoCapela,
       frequencia,
       duracao: frequencia === "mensal" ? duracao ?? undefined : undefined,
@@ -210,6 +237,9 @@ export function DonorForm() {
     telefone,
     endereco,
     cep,
+    residenceCity,
+    residenceState,
+    residenceConfirmed,
     prioradoCapela,
     frequencia,
     duracao,
@@ -457,6 +487,8 @@ export function DonorForm() {
               inputMode="numeric"
               value={cep}
               onChange={(e) => {
+                cepLookupSequenceRef.current += 1;
+                setCepLoading(false);
                 setCep(formatCep(e.target.value));
                 setCepHint(null);
               }}
@@ -469,9 +501,66 @@ export function DonorForm() {
               <p className="mt-1 text-xs text-muted">Consultando CEP…</p>
             )}
             {cepHint && !errors.cep && (
-              <p className="mt-1 text-xs text-muted">{cepHint}</p>
+              <p className="mt-1 text-xs text-muted" aria-live="polite">{cepHint}</p>
             )}
             <ErrorText msg={errors.cep} />
+          </div>
+          <div>
+            <label htmlFor="donor-residence-city" className="mb-2 block text-sm font-medium text-fg">
+              Cidade de residência
+            </label>
+            <input
+              id="donor-residence-city"
+              type="text"
+              value={residenceCity}
+              required
+              aria-invalid={Boolean(errors.residence_city)}
+              aria-describedby={errors.residence_city ? "donor-residence-city-error" : undefined}
+              onChange={(e) => {
+                residenceEditRevisionRef.current += 1;
+                setResidenceCity(e.target.value);
+                setResidenceConfirmed(false);
+              }}
+              className={inputClass}
+              autoComplete="address-level2"
+            />
+            {errors.residence_city && <p id="donor-residence-city-error" className="mt-1 text-xs text-danger">{errors.residence_city}</p>}
+          </div>
+          <div>
+            <label htmlFor="donor-residence-state" className="mb-2 block text-sm font-medium text-fg">
+              Estado (UF)
+            </label>
+            <select
+              id="donor-residence-state"
+              value={residenceState}
+              required
+              aria-invalid={Boolean(errors.residence_state)}
+              aria-describedby={errors.residence_state ? "donor-residence-state-error" : undefined}
+              onChange={(e) => {
+                residenceEditRevisionRef.current += 1;
+                setResidenceState(e.target.value);
+                setResidenceConfirmed(false);
+              }}
+              className={inputClass}
+              autoComplete="address-level1"
+            >
+              <option value="">Selecione…</option>
+              {BRAZILIAN_UFS.map((uf) => <option key={uf} value={uf}>{uf}</option>)}
+            </select>
+            {errors.residence_state && <p id="donor-residence-state-error" className="mt-1 text-xs text-danger">{errors.residence_state}</p>}
+          </div>
+          <div className="sm:col-span-2">
+            <label className="flex cursor-pointer items-start gap-2.5">
+              <input
+                type="checkbox"
+                checked={residenceConfirmed}
+                aria-invalid={Boolean(errors.residence_confirmed)}
+                onChange={(e) => setResidenceConfirmed(e.target.checked)}
+                className="mt-1"
+              />
+              <span className="text-sm text-fg">Confirmo que a cidade e o estado informados são meu local de residência.</span>
+            </label>
+            <ErrorText msg={errors.residence_confirmed} />
           </div>
           <div className="sm:col-span-2">
             <label htmlFor="donor-endereco" className="mb-2 block text-sm font-medium text-fg">

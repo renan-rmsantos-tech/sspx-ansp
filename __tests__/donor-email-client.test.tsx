@@ -27,7 +27,7 @@ describe("DonorEmailClient", () => {
       initialTemplate={{ assunto: "Boas-vindas", corpo: "Mensagem inicial" }}
       initialPending={[]}
       header={{ linha1: "Arca Nossa Senhora da Providência", linha2: "Mantenedora do Colégio São José", linha3: "Itatiba/SP", mostrar_selo: true }}
-      smtpConfigured
+      resendConfigured
     />);
 
     fireEvent.change(screen.getByLabelText("Mensagem"), { target: { value: "Novo texto" } });
@@ -50,7 +50,7 @@ describe("DonorEmailClient", () => {
       initialTemplate={{ assunto: "Boas-vindas", corpo: "Mensagem" }}
       initialPending={[{ id: "d1", nome: "Ana Silva", email: "ana@example.com", created_at: "2026-09-28" }]}
       header={{ linha1: "Arca Nossa Senhora da Providência", linha2: "", linha3: "", mostrar_selo: false }}
-      smtpConfigured
+      resendConfigured
     />);
 
     fireEvent.click(screen.getByRole("button", { name: "Enviar e-mail para Ana Silva" }));
@@ -64,7 +64,7 @@ describe("DonorEmailClient", () => {
       initialTemplate={{ assunto: "Boas-vindas", corpo: "Mensagem inicial" }}
       initialPending={[]}
       header={{ linha1: "Arca", linha2: "", linha3: "", mostrar_selo: false }}
-      smtpConfigured
+      resendConfigured
     />);
 
     const button = screen.getByRole("button", { name: "Enviar teste" });
