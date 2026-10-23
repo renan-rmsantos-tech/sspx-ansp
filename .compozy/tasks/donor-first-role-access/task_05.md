@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: Permanently enable scholarship uploads
 type: refactor
 complexity: high
@@ -44,12 +44,12 @@ Remove the provisional scholarship-upload-disabled mode and make required docume
 
 ## Subtasks
 
-- [ ] 5.1 Remove the flag, message, and every interface or validation branch tied to disabled uploads.
-- [ ] 5.2 Make document presentation, required markers, and validation permanent across all form steps.
-- [ ] 5.3 Align client payload and server schema with every required category, including two distinct documents per student.
-- [ ] 5.4 Issue tickets only for legitimate scholarship and donor-receipt categories while preserving path isolation.
-- [ ] 5.5 Preserve transactional persistence, metadata, post-commit movement, error, retry, and removal behavior.
-- [ ] 5.6 Remove provisional mocks and expand coverage for validation, upload, and complete submission.
+- [x] 5.1 Remove the flag, message, and every interface or validation branch tied to disabled uploads.
+- [x] 5.2 Make document presentation, required markers, and validation permanent across all form steps.
+- [x] 5.3 Align client payload and server schema with every required category, including two distinct documents per student.
+- [x] 5.4 Issue tickets only for legitimate scholarship and donor-receipt categories while preserving path isolation.
+- [x] 5.5 Preserve transactional persistence, metadata, post-commit movement, error, retry, and removal behavior.
+- [x] 5.6 Remove provisional mocks and expand coverage for validation, upload, and complete submission.
 
 ## Implementation Details
 

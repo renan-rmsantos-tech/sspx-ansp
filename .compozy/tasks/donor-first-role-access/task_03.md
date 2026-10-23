@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: Persist and expose issued final documents
 type: backend
 complexity: critical
@@ -37,13 +37,13 @@ Persist every Administrator-issued decision and contract as an immutable, versio
 
 ## Subtasks
 
-- [ ] 3.1 Replace generation-only decision and contract exports with Administrator-authorized issuance that persists the exact rendered artifact.
-- [ ] 3.2 Guarantee monotonic, concurrency-safe version allocation and immutable preservation of earlier versions.
-- [ ] 3.3 Add compensation across the non-transactional storage and PostgreSQL boundary.
-- [ ] 3.4 Provide Administrator history and role-aware current-document queries with outcome and kind eligibility.
-- [ ] 3.5 Provide ID-based issued-document download authorization without client-provided paths.
-- [ ] 3.6 Integrate issuance, current-document download, and Administrator history into application review.
-- [ ] 3.7 Extend test infrastructure and cover issuance, concurrency, compensation, visibility, and download authorization.
+- [x] 3.1 Replace generation-only decision and contract exports with Administrator-authorized issuance that persists the exact rendered artifact.
+- [x] 3.2 Guarantee monotonic, concurrency-safe version allocation and immutable preservation of earlier versions.
+- [x] 3.3 Add compensation across the non-transactional storage and PostgreSQL boundary.
+- [x] 3.4 Provide Administrator history and role-aware current-document queries with outcome and kind eligibility.
+- [x] 3.5 Provide ID-based issued-document download authorization without client-provided paths.
+- [x] 3.6 Integrate issuance, current-document download, and Administrator history into application review.
+- [x] 3.7 Extend test infrastructure and cover issuance, concurrency, compensation, visibility, and download authorization.
 
 ## Implementation Details
 

@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: Implement Administrator and Secretariat profiles
 type: refactor
 complexity: critical
@@ -38,13 +38,13 @@ Implement distinct administrative experiences for Administrators and Secretariat
 
 ## Subtasks
 
-- [ ] 2.1 Classify and protect every existing administrative page and Server Action with the approved capability matrix.
-- [ ] 2.2 Deliver `/admin/usuarios` for Secretariat account creation, listing, deactivation, reactivation, and password reset.
-- [ ] 2.3 Make the admin layout and navigation role-aware and deny direct access to unavailable areas.
-- [ ] 2.4 Create operational application list/detail projections and a Secretariat experience without sensitive fields or decision controls.
-- [ ] 2.5 Add immutable observation history with authorship, timestamps, and focused operational guidance.
-- [ ] 2.6 Add a read-only Secretariat donor projection while preserving the full Administrator donor experience.
-- [ ] 2.7 Cover the complete action, projection, route, and component matrix, including direct-access attempts.
+- [x] 2.1 Classify and protect every existing administrative page and Server Action with the approved capability matrix.
+- [x] 2.2 Deliver `/admin/usuarios` for Secretariat account creation, listing, deactivation, reactivation, and password reset.
+- [x] 2.3 Make the admin layout and navigation role-aware and deny direct access to unavailable areas.
+- [x] 2.4 Create operational application list/detail projections and a Secretariat experience without sensitive fields or decision controls.
+- [x] 2.5 Add immutable observation history with authorship, timestamps, and focused operational guidance.
+- [x] 2.6 Add a read-only Secretariat donor projection while preserving the full Administrator donor experience.
+- [x] 2.7 Cover the complete action, projection, route, and component matrix, including direct-access attempts.
 
 ## Implementation Details
 

@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: Apply the donor-first public experience
 type: frontend
 complexity: high
@@ -44,13 +44,13 @@ Transform the public experience into a coherent donor-first journey while keepin
 
 ## Subtasks
 
-- [ ] 4.1 Establish both canonical routes and exact permanent redirects from legacy URLs.
-- [ ] 4.2 Update owned public links and metadata to canonical addresses.
-- [ ] 4.3 Reorder navigation, hero, content bands, and quick access so benefactor is primary and scholarship secondary.
-- [ ] 4.4 Replace the institutional email and remove the public administrative shortcut.
-- [ ] 4.5 Publish the approved master seal and consolidate accessible web usage.
-- [ ] 4.6 Correct responsive FSSPX footer layout at every supported width.
-- [ ] 4.7 Cover routes, enrollment-window states, hierarchy, contact, footer, accessibility, and identity with automated and rendered verification.
+- [x] 4.1 Establish both canonical routes and exact permanent redirects from legacy URLs.
+- [x] 4.2 Update owned public links and metadata to canonical addresses.
+- [x] 4.3 Reorder navigation, hero, content bands, and quick access so benefactor is primary and scholarship secondary.
+- [x] 4.4 Replace the institutional email and remove the public administrative shortcut.
+- [x] 4.5 Publish the approved master seal and consolidate accessible web usage.
+- [x] 4.6 Correct responsive FSSPX footer layout at every supported width.
+- [x] 4.7 Cover routes, enrollment-window states, hierarchy, contact, footer, accessibility, and identity with automated and rendered verification.
 
 ## Implementation Details
 
