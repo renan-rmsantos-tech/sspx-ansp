@@ -332,4 +332,4 @@ Exit criteria:
 
 ## Open Questions
 
-- Confirm before release that `contato@arcaprovidencia.com.br` can receive institutional messages.
+None. Resolved on 2026-10-23: `contato@arcaprovidencia.com.br` was confirmed to receive institutional messages.
