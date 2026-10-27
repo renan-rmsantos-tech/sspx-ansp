@@ -27,8 +27,9 @@ describe("public project explanation", () => {
       "/seja-um-benfeitor"
     );
     expect(within(explanation).getByRole("heading", { name: "Benfeitores" })).toBeInTheDocument();
-    expect(within(explanation).getByRole("heading", { name: "Associação" })).toBeInTheDocument();
-    expect(within(explanation).getByRole("heading", { name: "Escolas, alunos e famílias" })).toBeInTheDocument();
+    expect(within(explanation).getByRole("heading", { name: "Arca N. S. da Providência" })).toBeInTheDocument();
+    expect(within(explanation).getByRole("heading", { name: "Escola" })).toBeInTheDocument();
+    expect(within(explanation).getByRole("heading", { name: "Família solicitante" })).toBeInTheDocument();
 
     // Source review: purpose (slides 2, 17), stability (4, 7–8), participant flow (10–11),
     // and responsibilities (12–14). Eligibility and affiliation claims are excluded.

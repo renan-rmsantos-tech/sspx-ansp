@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import { Reveal } from "./_landing/reveal";
+import { ArrowDown, ArrowUpDown, HandHeart, School, Users } from "lucide-react";
 import { SealLogo } from "@/components/ui/seal-logo";
 
 export const metadata: Metadata = {
@@ -193,12 +194,67 @@ html:has(.ansp-landing) { scroll-behavior: smooth; }
 .ansp-landing .como-funciona .shell { padding-top: 88px; padding-bottom: 88px; }
 .ansp-landing .como-funciona .section-head { max-width: 720px; }
 .ansp-landing .como-funciona .section-intro { color: var(--muted); font-size: 18px; max-width: 62ch; }
-.ansp-landing .como-funciona-flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 32px 0; }
-.ansp-landing .como-funciona-card { padding: 26px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
-.ansp-landing .como-funciona-card h3 { color: var(--accent); font: 600 22px/1.2 var(--font-display); margin-bottom: 10px; }
-.ansp-landing .como-funciona-card p { color: var(--muted); }
 .ansp-landing .como-funciona-cta { margin-top: 28px; }
-@media (max-width: 760px) { .ansp-landing .como-funciona-flow { grid-template-columns: 1fr; } .ansp-landing .como-funciona .shell { padding-top: 64px; padding-bottom: 64px; } }
+@media (max-width: 760px) { .ansp-landing .como-funciona .shell { padding-top: 64px; padding-bottom: 64px; } }
+
+/* Esquema: benfeitores → Arca → escola ↔ família (mesmo desenho do cartaz de divulgação) */
+.ansp-landing .cf-scheme {
+  --cf-line: oklch(62% 0.10 80); --cf-gold-text: oklch(50% 0.09 75); --cf-gap: 32px;
+  display: grid; grid-template-columns: 1fr minmax(0, 1.15fr) 1fr; column-gap: var(--cf-gap);
+  grid-template-areas: ". benf ." ". doa ." "rec arca sol" "escola acomp familia";
+  margin: 44px 0 40px;
+}
+.ansp-landing .cf-node {
+  display: grid; grid-template-columns: 52px 1fr; gap: 16px; align-items: center;
+  padding: 22px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+}
+.ansp-landing .cf-icon {
+  width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--cream); border: 1px solid color-mix(in oklch, var(--gold) 55%, transparent); color: var(--cf-gold-text);
+}
+.ansp-landing .cf-role { display: block; font: 600 11px/1 var(--font-body); letter-spacing: 0.14em; text-transform: uppercase; color: var(--cf-gold-text); }
+.ansp-landing .cf-node h3 { font: 600 21px/1.2 var(--font-display); color: var(--accent); margin: 7px 0 6px; }
+.ansp-landing .cf-node p { font-size: 15px; line-height: 1.5; color: var(--muted); }
+.ansp-landing .cf-benf { grid-area: benf; }
+.ansp-landing .cf-escola { grid-area: escola; }
+.ansp-landing .cf-familia { grid-area: familia; }
+.ansp-landing .cf-arca { grid-area: arca; grid-template-columns: 72px 1fr; background: var(--accent); border: 1.5px solid var(--gold); }
+.ansp-landing .cf-arca .cf-role { color: var(--gold); }
+.ansp-landing .cf-arca h3 { color: oklch(98% 0.008 85); }
+.ansp-landing .cf-arca p { color: oklch(86% 0.02 85); }
+
+.ansp-landing .cf-link { position: relative; font: 500 13.5px/1.35 var(--font-body); color: var(--fg); }
+.ansp-landing .cf-link .cf-m { display: none; }
+.ansp-landing .cf-line { position: absolute; border: 0 solid var(--cf-line); }
+.ansp-landing .cf-line::before, .ansp-landing .cf-line::after { content: ""; position: absolute; width: 0; height: 0; border: 0 solid transparent; }
+.ansp-landing .cf-doa { grid-area: doa; height: 64px; }
+.ansp-landing .cf-doa .cf-line { left: 50%; top: 6px; bottom: 10px; border-left-width: 1.5px; }
+.ansp-landing .cf-doa .cf-line::after { left: -5.75px; bottom: -7px; border-width: 7px 5px 0; border-top-color: var(--cf-line); }
+.ansp-landing .cf-doa .cf-text { position: absolute; left: calc(50% + 14px); top: 50%; transform: translateY(-50%); white-space: nowrap; }
+.ansp-landing .cf-rec { grid-area: rec; }
+.ansp-landing .cf-rec .cf-line { left: 50%; right: calc(-1 * var(--cf-gap)); top: 50%; bottom: 6px; border-top-width: 1.5px; border-left-width: 1.5px; border-top-left-radius: 28px; }
+.ansp-landing .cf-rec .cf-line::after { left: -6.25px; bottom: -7px; border-width: 7px 5px 0; border-top-color: var(--cf-line); }
+.ansp-landing .cf-rec .cf-text { position: absolute; right: 0; bottom: calc(50% + 10px); max-width: 190px; text-align: right; }
+.ansp-landing .cf-sol { grid-area: sol; }
+.ansp-landing .cf-sol .cf-line { right: 50%; left: calc(-1 * var(--cf-gap)); top: 50%; bottom: 6px; border-top-width: 1.5px; border-right-width: 1.5px; border-top-right-radius: 28px; }
+.ansp-landing .cf-sol .cf-line::before { left: -1px; top: -6.25px; border-width: 5px 7px 5px 0; border-right-color: var(--cf-line); }
+.ansp-landing .cf-sol .cf-line::after { right: -6.25px; bottom: -7px; border-width: 7px 5px 0; border-top-color: var(--cf-line); }
+.ansp-landing .cf-sol .cf-text { position: absolute; left: 0; bottom: calc(50% + 10px); max-width: 190px; }
+.ansp-landing .cf-acomp { grid-area: acomp; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; text-align: center; }
+.ansp-landing .cf-acomp .cf-line { position: relative; align-self: stretch; margin: 0 calc(-1 * var(--cf-gap) + 8px); border-top: 1.5px dashed var(--cf-line); }
+.ansp-landing .cf-acomp .cf-line::before { left: -1px; top: -6.25px; border-width: 5px 7px 5px 0; border-right-color: var(--cf-line); }
+.ansp-landing .cf-acomp .cf-line::after { right: -1px; top: -6.25px; border-width: 5px 0 5px 7px; border-left-color: var(--cf-line); }
+
+@media (max-width: 880px) {
+  .ansp-landing .cf-scheme { grid-template-columns: minmax(0, 1fr); grid-template-areas: "benf" "doa" "arca" "rec" "escola" "acomp" "familia" "sol"; margin: 36px 0 32px; }
+  .ansp-landing .cf-link { height: auto; display: flex; flex-direction: row; justify-content: center; align-items: center; gap: 10px; padding: 14px 0; text-align: left; }
+  .ansp-landing .cf-link .cf-line { display: none; }
+  .ansp-landing .cf-link .cf-m { display: inline-flex; color: var(--cf-gold-text); }
+  .ansp-landing .cf-link .cf-text { position: static; transform: none; max-width: none; text-align: left; white-space: normal; }
+}
+@media (max-width: 460px) {
+  .ansp-landing .cf-node, .ansp-landing .cf-arca { grid-template-columns: 1fr; gap: 12px; padding: 20px; }
+}
 
 /* ── Missão (Quem somos) ── */
 .ansp-landing .missao { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
@@ -409,18 +465,58 @@ export default function LandingPage() {
             A Arca organiza recursos e processos para apoiar as escolas e ampliar o acesso de crianças à formação católica.
             As contribuições dos benfeitores ajudam a dar mais previsibilidade ao planejamento das bolsas.
           </p>
-          <div className="como-funciona-flow">
-            <article className="como-funciona-card">
-              <h3>Benfeitores</h3>
-              <p>Contribuem com recursos e confiança para sustentar o trabalho da Associação.</p>
+          <div className="cf-scheme" role="group" aria-label="Esquema da relação entre benfeitores, Arca, escola e família solicitante">
+            <article className="cf-node cf-benf">
+              <span className="cf-icon" aria-hidden="true"><HandHeart size={26} strokeWidth={1.6} /></span>
+              <div>
+                <span className="cf-role">Quem sustenta</span>
+                <h3>Benfeitores</h3>
+                <p>Contribuem com recursos e confiança para sustentar o trabalho da Associação.</p>
+              </div>
             </article>
-            <article className="como-funciona-card">
-              <h3>Associação</h3>
-              <p>Organiza e direciona os recursos, os critérios e os processos, prestando contas da sua atuação.</p>
+            <div className="cf-link cf-doa">
+              <span className="cf-line" aria-hidden="true" />
+              <span className="cf-m" aria-hidden="true"><ArrowDown size={18} /></span>
+              <span className="cf-text">Doações regulares</span>
+            </div>
+            <article className="cf-node cf-arca">
+              <SealLogo size={72} decorative />
+              <div>
+                <span className="cf-role">Quem organiza</span>
+                <h3>Arca N. S. da Providência</h3>
+                <p>Organiza e direciona os recursos, os critérios e os processos, prestando contas da sua atuação.</p>
+              </div>
             </article>
-            <article className="como-funciona-card">
-              <h3>Escolas, alunos e famílias</h3>
-              <p>As escolas identificam necessidades e acompanham os alunos; as famílias recebem o apoio e cumprem os compromissos da parceria.</p>
+            <div className="cf-link cf-rec">
+              <span className="cf-line" aria-hidden="true" />
+              <span className="cf-m" aria-hidden="true"><ArrowDown size={18} /></span>
+              <span className="cf-text">Recursos para as bolsas</span>
+            </div>
+            <div className="cf-link cf-sol">
+              <span className="cf-line" aria-hidden="true" />
+              <span className="cf-m" aria-hidden="true"><ArrowUpDown size={18} /></span>
+              <span className="cf-text">Solicitação e análise da comissão</span>
+            </div>
+            <article className="cf-node cf-escola">
+              <span className="cf-icon" aria-hidden="true"><School size={26} strokeWidth={1.6} /></span>
+              <div>
+                <span className="cf-role">Quem educa</span>
+                <h3>Escola</h3>
+                <p>Identifica as necessidades e acompanha os alunos, mantendo sua responsabilidade educativa.</p>
+              </div>
+            </article>
+            <div className="cf-link cf-acomp">
+              <span className="cf-line" aria-hidden="true" />
+              <span className="cf-m" aria-hidden="true"><ArrowUpDown size={18} /></span>
+              <span className="cf-text">Acompanhamento do aluno</span>
+            </div>
+            <article className="cf-node cf-familia">
+              <span className="cf-icon" aria-hidden="true"><Users size={26} strokeWidth={1.6} /></span>
+              <div>
+                <span className="cf-role">Quem solicita</span>
+                <h3>Família solicitante</h3>
+                <p>Pede a bolsa pelo site, recebe o apoio e cumpre os compromissos da parceria.</p>
+              </div>
             </article>
           </div>
           <p className="section-intro">
