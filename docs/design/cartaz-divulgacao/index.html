@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cartaz A4 — Como funciona a Arca Nossa Senhora da Providência</title>
+<style>
+  @page { size: A4 portrait; margin: 0; }
+
+  :root {
+    --bg: oklch(97.5% 0.005 85);
+    --surface: oklch(100% 0 0);
+    --fg: oklch(22% 0.06 250);
+    --muted: oklch(42% 0.03 250);
+    --border: oklch(88% 0.012 85);
+    --accent: oklch(25% 0.06 250);
+    --gold: oklch(72% 0.10 80);
+    --gold-deep: oklch(52% 0.09 75);
+    --cream: oklch(92% 0.03 85);
+    --font-display: "Iowan Old Style", "Charter", "Palatino", Georgia, serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: oklch(86% 0.006 85); }
+  body {
+    color: var(--fg);
+    font-family: var(--font-body);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    padding: 12mm 0;
+  }
+
+  .poster {
+    width: 210mm;
+    height: 297mm;
+    margin: 0 auto;
+    background: var(--bg);
+    padding: 13mm 16mm 10mm;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+  .poster::before {
+    content: "";
+    z-index: 2;
+    position: absolute;
+    inset: 5mm;
+    border: 0.35mm solid var(--gold);
+    pointer-events: none;
+  }
+
+  /* ── Cabeçalho ── */
+  .hero {
+    margin: -13mm -16mm 0;
+    padding: 13mm 18mm 11mm;
+    background: radial-gradient(120% 150% at 12% 0%, #1e2a4a 0%, #0f1729 72%);
+    color: oklch(96% 0.01 85);
+  }
+  .hero-main { display: grid; grid-template-columns: 28mm 1fr auto; gap: 6mm; align-items: center; }
+  .hero-fsspx { padding-left: 5mm; border-left: 0.3mm solid oklch(72% 0.10 80 / 0.45); }
+  .hero-fsspx img { width: 18mm; height: 18mm; display: block; }
+  .hero-seal { width: 28mm; height: 28mm; }
+  .hero-seal img { width: 100%; height: 100%; display: block; }
+  .hero .org { font: 600 8pt/1 var(--font-body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin-bottom: 3mm; }
+  .hero h1 {
+    font: 600 22pt/1.1 var(--font-display);
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    color: oklch(98% 0.008 85);
+  }
+  .hero h1 em { font-style: italic; color: var(--gold); }
+  .kicker {
+    font: 600 8.5pt/1 var(--font-body);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold-deep);
+  }
+  .rule { width: 22mm; height: 0.6mm; background: var(--gold); border: 0; }
+
+  .title { margin-top: 8mm; }
+  .title p { font: 400 10.5pt/1.5 var(--font-body); color: var(--muted); max-width: 160mm; }
+
+  /* ── Esquema ── */
+  .scheme {
+    position: relative;
+    width: 178mm;
+    height: 104mm;
+    margin: 9mm 0 6mm;
+  }
+  .scheme svg.arrows { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .node {
+    position: absolute;
+    background: var(--surface);
+    border: 0.3mm solid var(--border);
+    border-radius: 2mm;
+    padding: 3mm 3.5mm;
+    display: grid; grid-template-columns: 11mm 1fr; gap: 3mm; align-items: center;
+  }
+  .icon {
+    width: 11mm; height: 11mm; border-radius: 50%;
+    background: var(--cream);
+    border: 0.3mm solid oklch(72% 0.10 80 / 0.55);
+    display: grid; place-items: center;
+  }
+  .icon svg { width: 6mm; height: 6mm; fill: none; stroke: var(--gold-deep); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .node .role {
+    font: 600 7pt/1 var(--font-body);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold-deep);
+  }
+  .node h2 { font: 600 13pt/1.15 var(--font-display); margin-top: 1.5mm; }
+  .node p { font: 400 8.2pt/1.4 var(--font-body); color: var(--muted); margin-top: 1.5mm; }
+
+  .n-benfeitor { left: 49mm; top: 0; width: 80mm; }
+  .n-arca {
+    left: 49mm; top: 36mm; width: 80mm;
+    background: var(--accent);
+    border-color: var(--gold);
+    border-width: 0.5mm;
+    grid-template-columns: 15mm 1fr;
+    padding: 3.5mm 4mm;
+  }
+  .n-arca img { width: 15mm; height: 15mm; display: block; }
+  .n-arca .role { color: var(--gold); }
+  .n-arca h2 { color: oklch(98% 0.01 85); font-size: 12.5pt; }
+  .n-arca p { color: oklch(86% 0.02 85); }
+  .n-escola { left: 0; top: 76mm; width: 70mm; }
+  .n-familia { left: 108mm; top: 76mm; width: 70mm; }
+
+  .label {
+    position: absolute;
+    font: 500 7.8pt/1.3 var(--font-body);
+    color: var(--fg);
+    background: var(--bg);
+    padding: 0.6mm 1.2mm;
+  }
+  .l-doa { left: 92mm; top: 27.5mm; }
+  .l-recursos { left: 4mm; top: 49mm; width: 40mm; text-align: right; }
+  .l-solicita { left: 138mm; top: 49mm; width: 40mm; }
+  .l-escola-familia { left: 70mm; top: 92mm; width: 38mm; text-align: center; background: transparent; }
+
+  /* ── Divulgação ── */
+  .share {
+    margin-top: auto;
+    display: grid;
+    grid-template-columns: 1fr 50mm;
+    gap: 8mm;
+    align-items: center;
+    background: var(--cream);
+    border-top: 0.5mm solid var(--gold);
+    padding: 5mm 7mm;
+  }
+  .share h2 { font: 600 17pt/1.15 var(--font-display); text-wrap: balance; }
+  .share .lead { font: 400 9.5pt/1.5 var(--font-body); color: var(--muted); margin-top: 2.5mm; }
+  .share ul { list-style: none; margin-top: 3mm; display: grid; gap: 1.5mm; }
+  .share li { font: 400 9pt/1.4 var(--font-body); display: grid; grid-template-columns: 4mm 1fr; }
+  .share li::before { content: ""; width: 1.6mm; height: 1.6mm; background: var(--gold); margin-top: 1.6mm; transform: rotate(45deg); }
+  .share li b { font-weight: 600; }
+
+  .qr { text-align: center; }
+  .qr .frame { background: var(--surface); border: 0.3mm solid var(--border); border-radius: 2mm; padding: 3.5mm; }
+  .qr img { width: 100%; height: auto; display: block; image-rendering: pixelated; }
+  .qr .scan { font: 600 7.5pt/1 var(--font-body); letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold-deep); margin-top: 2.5mm; }
+  .qr .url { font: 600 8.6pt/1.2 var(--font-body); margin-top: 1.4mm; word-break: break-all; }
+
+  .foot {
+    margin-top: 4.5mm;
+    display: flex; justify-content: space-between; align-items: baseline; gap: 6mm;
+    font: 400 8pt/1.3 var(--font-body); color: var(--muted);
+  }
+  .foot q { font: italic 400 9.5pt/1.3 var(--font-display); color: var(--fg); quotes: "“" "”"; }
+
+  @media print {
+    html { background: none; }
+    body { padding: 0; }
+    .poster { margin: 0; }
+  }
+</style>
+</head>
+<body>
+<main class="poster" data-od-id="poster">
+
+  <header class="hero" data-od-id="header">
+    <div class="hero-main">
+      <div class="hero-seal"><img src="seal-arca.svg" alt="Selo da Arca Nossa Senhora da Providência"></div>
+      <div>
+        <p class="org">Arca Nossa Senhora da Providência</p>
+        <h1>Uma estrutura comum para dar estabilidade às <em>bolsas</em></h1>
+      </div>
+      <div class="hero-fsspx"><img src="fsspx-logo.png" alt="Fraternidade Sacerdotal São Pio X (FSSPX)"></div>
+    </div>
+  </header>
+
+  <section class="title" data-od-id="title">
+    <p>A Arca organiza recursos e processos para apoiar as escolas e ampliar o acesso de crianças à formação católica. Veja como cada parte contribui.</p>
+  </section>
+
+  <section class="scheme" data-od-id="scheme" aria-label="Esquema: como funciona a relação entre benfeitores, Arca, escola e família solicitante">
+    <svg class="arrows" viewBox="0 0 178 104" aria-hidden="true">
+      <defs>
+        <marker id="head" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#b08a2e"/>
+        </marker>
+      </defs>
+      <g fill="none" stroke="#b08a2e" stroke-width="0.6" stroke-linecap="round">
+        <!-- Benfeitores → Arca -->
+        <path d="M89 25.5 L89 35" marker-end="url(#head)"/>
+        <!-- Arca → Escola -->
+        <path d="M47.5 56 C 38 57, 33 64, 32 74.5" marker-end="url(#head)"/>
+        <!-- Família ↔ Arca -->
+        <path d="M131.5 56 C 140 57, 145 64, 146 74.5" marker-start="url(#head)" marker-end="url(#head)"/>
+        <!-- Escola ↔ Família -->
+        <path d="M71.5 90 L106.5 90" stroke-dasharray="1.6 1.4" marker-start="url(#head)" marker-end="url(#head)"/>
+      </g>
+    </svg>
+
+    <article class="node n-benfeitor" data-od-id="node-benfeitor">
+      <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M11 14h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 16"/><path d="m7 20 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/><path d="m2 15 6 6"/><path d="M19.5 8.5c.7-.7 1.5-1.6 1.5-2.7A2.73 2.73 0 0 0 16 4a2.78 2.78 0 0 0-5 1.8c0 1.2.8 2 1.5 2.8L16 12Z"/></svg></span>
+      <div>
+        <span class="role">Quem sustenta</span>
+        <h2>Benfeitores</h2>
+        <p>Contribuem com recursos e confiança para sustentar o trabalho da Associação.</p>
+      </div>
+    </article>
+
+    <article class="node n-arca" data-od-id="node-arca">
+      <img src="seal-arca.svg" alt="">
+      <div>
+        <span class="role">Quem organiza</span>
+        <h2>Arca N. S. da Providência</h2>
+        <p>Organiza e direciona os recursos, os critérios e os processos, prestando contas da sua atuação.</p>
+      </div>
+    </article>
+
+    <article class="node n-escola" data-od-id="node-escola">
+      <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 22v-4a2 2 0 1 0-4 0v4"/><path d="m18 10 3.447 1.724a1 1 0 0 1 .553.894V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-7.382a1 1 0 0 1 .553-.894L6 10"/><path d="M18 5v17"/><path d="m4 6 7.106-3.553a2 2 0 0 1 1.788 0L20 6"/><path d="M6 5v17"/><circle cx="12" cy="9" r="2"/></svg></span>
+      <div>
+        <span class="role">Quem educa</span>
+        <h2>Escola</h2>
+        <p>Identifica as necessidades e acompanha os alunos, mantendo sua responsabilidade educativa.</p>
+      </div>
+    </article>
+
+    <article class="node n-familia" data-od-id="node-familia">
+      <span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+      <div>
+        <span class="role">Quem solicita</span>
+        <h2>Família solicitante</h2>
+        <p>Pede a bolsa pelo site, recebe o apoio e cumpre os compromissos da parceria.</p>
+      </div>
+    </article>
+
+    <span class="label l-doa">Doações regulares</span>
+    <span class="label l-recursos">Recursos para as bolsas</span>
+    <span class="label l-solicita">Solicitação e análise da comissão</span>
+    <span class="label l-escola-familia">Acompanhamento do aluno</span>
+  </section>
+
+  <section class="share" data-od-id="share">
+    <div>
+      <span class="kicker">Ajude a divulgar</span>
+      <h2 style="margin-top:2mm">Esta obra cresce quando todos a fazem conhecida</h2>
+      <p class="lead">Compartilhe este cartaz com sua família, seus amigos e conhecidos. Alguém perto de você pode querer ajudar.</p>
+      <ul>
+        <li><span><b>Quer ajudar?</b> A cada 15 pessoas que doam R$ 80,00 por mês, um aluno tem acesso a uma formação integralmente católica.</span></li>
+        <li><span><b>Todos os meses</b>, uma missa é rezada por todos os nossos benfeitores.</span></li>
+      </ul>
+    </div>
+    <div class="qr" data-od-id="qrcode">
+      <div class="frame"><img src="qrcode.svg" alt="QR Code para www.arcaprovidencia.com.br"></div>
+      <p class="scan">Aponte a câmera</p>
+      <p class="url">www.arcaprovidencia.com.br</p>
+    </div>
+  </section>
+
+  <footer class="foot" data-od-id="footer">
+    <q>Ajudar a formar as almas de hoje é garantir os santos de amanhã.</q>
+    <span>contato@arcaprovidencia.com.br</span>
+  </footer>
+
+</main>
+</body>
+</html>
