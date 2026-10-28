@@ -2,13 +2,13 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { DocumentHeaderPreview } from "../_components/document-header-preview";
+import { InstitutionalEmailPreview } from "../_components/institutional-email-preview";
 import {
   retryDonorWelcomeEmail,
   saveDonorEmailTemplate,
   sendDonorTestEmail,
 } from "../_actions/donor-email-actions";
-import { DONOR_EMAIL_FOOTER } from "@/lib/email/donor-welcome-template";
+import { renderDonorWelcomeEmail } from "@/lib/email/donor-welcome-template";
 import type { DocumentHeaderData } from "@/lib/documents/document-header";
 
 interface EmailTemplate {
@@ -160,17 +160,7 @@ export function DonorEmailClient({
             <div className="border-b border-border px-5 py-3 text-xs text-muted">
               <span className="font-medium text-fg">Assunto:</span> {template.assunto || "—"}
             </div>
-            <div className="px-6 pt-5"><DocumentHeaderPreview header={header} /></div>
-            <div className="space-y-4 px-6 py-7 text-sm leading-relaxed text-fg">
-              {template.corpo.trim()
-                ? template.corpo.trim().split(/\n\s*\n/).map((paragraph, index) => (
-                    <p key={index} className="whitespace-pre-line">{paragraph}</p>
-                  ))
-                : <p className="text-muted">A mensagem aparecerá aqui.</p>}
-            </div>
-            <div className="whitespace-pre-line border-t border-border px-6 py-5 text-xs leading-relaxed text-muted">
-              {DONOR_EMAIL_FOOTER}
-            </div>
+            <InstitutionalEmailPreview bodyHtml={renderDonorWelcomeEmail(template.corpo).bodyHtml} header={header} />
           </div>
         </section>
       </div>

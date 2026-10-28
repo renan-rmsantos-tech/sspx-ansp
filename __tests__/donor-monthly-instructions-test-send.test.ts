@@ -46,6 +46,19 @@ describe("monthly instructions test sender", () => {
     expect(inserted).toHaveLength(0);
   });
 
+  it.each([true, false])("embeds the real QR independently of seal visibility (%s)", async (seal) => {
+    queryFor("documentHeader").findFirst.mockResolvedValue({ linha1: "Arca", linha2: "", linha3: "", mostrar_selo: seal });
+    await sendDonorMonthlyInstructionsTestEmail("qa@example.test", template);
+    const message = sendEmail.mock.calls[0][0];
+    const ids = message.attachments.map((attachment: { contentId: string }) => attachment.contentId);
+    expect(ids).toEqual(seal ? ["ansp-document-seal", "ansp-pix-acipec-v1"] : ["ansp-pix-acipec-v1"]);
+    for (const id of ids) expect(message.html).toContain(`src="cid:${id}"`);
+    expect(message.text).toContain("Banco: Santander");
+    expect(message.text).toContain("Agência: 0197");
+    expect(message.text).toContain("Conta: 13.008.003-2");
+    expect(message.text).toContain("42.736.079/0001-63");
+  });
+
   it("does not call Resend without configuration", async () => {
     vi.stubEnv("RESEND_API_KEY", "");
     expect(await sendDonorMonthlyInstructionsTestEmail("qa@example.test", template))

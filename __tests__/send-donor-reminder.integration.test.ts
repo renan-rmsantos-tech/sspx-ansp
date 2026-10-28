@@ -92,6 +92,44 @@ integration("reserved donor reminder delivery with PostgreSQL", () => {
     );
   }
 
+  it.each([true, false])("sends the actual QR independently of seal (%s)", async (seal) => {
+    const id = await pledge();
+    await occurrence(id);
+    const renderingDatabase = Object.assign(Object.create(database!), {
+      query: { ...database!.query, documentHeader: { findFirst: async () => ({ mostrar_selo: seal }) } },
+    }) as typeof database;
+    expect(await sender.sendDonorReminder(id, month, "10d", {
+      now: localDate(`${month}-10`), database: renderingDatabase!,
+    })).toMatchObject({ status: "sent" });
+    const message = sendEmail.mock.calls[0][0];
+    expect(message.attachments.map((entry: { contentId: string }) => entry.contentId))
+      .toEqual(seal ? ["ansp-document-seal", "ansp-pix-acipec-v1"] : ["ansp-pix-acipec-v1"]);
+    expect(message.html).toContain('src="cid:ansp-pix-acipec-v1"');
+    expect(message.text).toContain("Agência: 0197");
+    expect(message.text).toContain("Conta: 13.008.003-2");
+    const [frozen] = await sql!`SELECT frozen_html, frozen_text FROM donor_reminder_sends WHERE pledge_id = ${id}`;
+    expect(frozen).toMatchObject({ frozen_html: message.html, frozen_text: message.text });
+  });
+
+  it.each([true, false])("retries legacy frozen content without adding QR or new content (seal %s)", async (seal) => {
+    const id = await pledge();
+    await occurrence(id);
+    const html = `<div>Original before QR${seal ? '<img src="cid:ansp-document-seal">' : ""}</div>`;
+    await sql!`INSERT INTO donor_reminder_sends
+      (pledge_id, competencia, kind, due_date, status, error_code, provider_idempotency_key,
+       frozen_recipient, frozen_sender, frozen_subject, frozen_text, frozen_html, frozen_include_seal)
+      VALUES (${id}, ${month}, '10d', ${`${month}-20`}, 'failed', 'provider_rejected', ${reminderProviderKey(id, month, "10d")},
+       'original@example.test', 'Original <old@example.test>', 'Original subject', 'Original text', ${html}, ${seal})`;
+    expect(await sender.sendDonorReminder(id, month, "10d", {
+      now: localDate(`${month}-10`), database: database!, mode: "retry",
+    })).toMatchObject({ status: "sent" });
+    const message = sendEmail.mock.calls[0][0];
+    expect(message).toMatchObject({ from: "Original <old@example.test>", to: ["original@example.test"], subject: "Original subject", text: "Original text", html });
+    expect(message.attachments?.map((entry: { contentId: string }) => entry.contentId))
+      .toEqual(seal ? ["ansp-document-seal"] : undefined);
+    expect(sendEmail.mock.calls[0][1].idempotencyKey).toBe(reminderProviderKey(id, month, "10d"));
+  });
+
   it("skips both offsets after first-link upload while the next competence remains eligible", async () => {
     const id = await pledge();
     await occurrence(id);

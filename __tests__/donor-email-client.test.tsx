@@ -35,7 +35,7 @@ describe("DonorEmailClient", () => {
     expect(within(preview).getByText("Novo texto")).toBeInTheDocument();
     expect(within(preview).getByText("Mantenedora do Colégio São José")).toBeInTheDocument();
     expect(within(preview).getByText("Itatiba/SP")).toBeInTheDocument();
-    expect(within(preview).getByAltText("Logo Arca Nossa Senhora da Providência")).toBeInTheDocument();
+    expect(within(preview).getByAltText("Selo da Arca Nossa Senhora da Providência")).toBeInTheDocument();
     expect(within(preview).getByText(/Obra de Assistência Educacional Católica/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Salvar modelo" }));
     await waitFor(() => expect(saveDonorEmailTemplate).toHaveBeenCalledWith({

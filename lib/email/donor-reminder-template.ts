@@ -1,4 +1,5 @@
 import type { DocumentHeaderData } from "@/lib/documents/document-header";
+import { renderDonorPaymentDetails } from "./donor-payment-details";
 import { PIX_DETAILS } from "@/lib/data/pix-details";
 import {
   escapeEmailHtml,
@@ -155,8 +156,14 @@ export function renderDonorReminder(input: {
   const assunto = template.assunto.replace(TOKEN, (_, key: string) =>
     values[key as keyof typeof values].replace(/[\r\n\u2028\u2029]+/g, " ")
   );
-  const bodyText = `${replaceText(template.corpo)}\n\n${REQUIRED_RECEIPT_NOTE}`;
-  const htmlBody = template.corpo.split(/\n\s*\n/).map((paragraph) => {
+  const payment = renderDonorPaymentDetails();
+  const sampleNote = input.link_comprovante === DONOR_REMINDER_SAMPLE_LINK
+    ? "Link ilustrativo sem validade: não permite enviar comprovantes." : "";
+  const corpo = template.corpo === DONOR_REMINDER_BODY
+    ? template.corpo.replace("\n\nChave Pix: {chave_pix}", "")
+    : template.corpo;
+  const bodyText = `${replaceText(corpo)}\n\n${payment.text}\n\n${REQUIRED_RECEIPT_NOTE}${sampleNote ? `\n\n${sampleNote}` : ""}`;
+  const htmlBody = corpo.split(/\n\s*\n/).map((paragraph) => {
     let html = "";
     let last = 0;
     for (const match of paragraph.matchAll(TOKEN)) {
@@ -164,7 +171,7 @@ export function renderDonorReminder(input: {
       const key = match[1] as keyof typeof values;
       if (key === "link_comprovante") {
         const url = escapeEmailHtml(values.link_comprovante);
-        html += `<a href="${url}" rel="noopener noreferrer">Enviar comprovante</a>`;
+        html += `<a href="${url}" rel="noopener noreferrer" style="color:#1a2744;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere;word-break:break-word">Enviar comprovante</a>`;
       } else {
         html += escapeEmailHtml(values[key]);
       }
@@ -172,7 +179,8 @@ export function renderDonorReminder(input: {
     }
     html += escapeEmailHtml(paragraph.slice(last)).replace(/\n/g, "<br>");
     return `<p style="margin:0 0 20px;line-height:1.65">${html}</p>`;
-  }).join("") + `<p style="margin:0 0 20px;line-height:1.65">${escapeEmailHtml(REQUIRED_RECEIPT_NOTE)}</p>`;
+  }).join("") + payment.html + `<p style="margin:0 0 20px;line-height:1.65">${escapeEmailHtml(REQUIRED_RECEIPT_NOTE)}</p>`
+    + (sampleNote ? `<p style="margin:0 0 20px;line-height:1.65">${escapeEmailHtml(sampleNote)}</p>` : "");
   return { assunto, bodyHtml: htmlBody, ...renderInstitutionalEmail(bodyText, htmlBody, input.header) };
 }
 

@@ -1,4 +1,5 @@
 import type { DocumentHeaderData } from "@/lib/documents/document-header";
+import { renderDonorPaymentDetails } from "./donor-payment-details";
 import { PIX_DETAILS } from "@/lib/data/pix-details";
 import { escapeEmailHtml, renderInstitutionalEmail } from "./donor-welcome-template";
 
@@ -170,8 +171,14 @@ export function renderDonorMonthlyInstructions(input: {
   const assunto = template.assunto.replace(TOKEN, (_, key: string) =>
     values[key as keyof typeof values].replace(/[\r\n\u2028\u2029]+/g, " ")
   );
-  const bodyText = `${replaceText(template.corpo)}\n\n${policy}`;
-  const htmlBody = template.corpo.split(/\n\s*\n/).map((paragraph) => {
+  const payment = renderDonorPaymentDetails();
+  // Consolidate only the unedited default's bank lines into the shared block.
+  // Custom saved copy remains intact; the block supplements it without a DB write.
+  const corpo = template.corpo === DONOR_MONTHLY_INSTRUCTIONS_BODY
+    ? template.corpo.replace("\nChave Pix: {chave_pix}\nBeneficiário: {beneficiario_pix}\nCNPJ: {cnpj_pix}", "")
+    : template.corpo;
+  const bodyText = `${replaceText(corpo)}\n\n${payment.text}\n\n${policy}`;
+  const htmlBody = corpo.split(/\n\s*\n/).map((paragraph) => {
     let html = "";
     let last = 0;
     for (const match of paragraph.matchAll(TOKEN)) {
@@ -180,7 +187,7 @@ export function renderDonorMonthlyInstructions(input: {
       if (key === "link_comprovante") {
         html += values.link_comprovante === DONOR_MONTHLY_INSTRUCTIONS_SAMPLE_LINK
           ? `${escapeEmailHtml(values.link_comprovante)} (link ilustrativo sem validade)`
-          : `<a href="${escapeEmailHtml(values.link_comprovante)}" rel="noopener noreferrer">Enviar comprovante de ${escapeEmailHtml(month)}</a>`;
+          : `<a href="${escapeEmailHtml(values.link_comprovante)}" rel="noopener noreferrer" style="color:#1a2744;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere;word-break:break-word">Enviar comprovante de ${escapeEmailHtml(month)}</a>`;
       } else {
         html += escapeEmailHtml(values[key]);
       }
@@ -188,7 +195,7 @@ export function renderDonorMonthlyInstructions(input: {
     }
     html += escapeEmailHtml(paragraph.slice(last)).replace(/\n/g, "<br>");
     return `<p style="margin:0 0 20px;line-height:1.65">${html}</p>`;
-  }).join("") + policy.split(/\n\s*\n/).map((paragraph) =>
+  }).join("") + payment.html + policy.split(/\n\s*\n/).map((paragraph) =>
     `<p style="margin:0 0 20px;line-height:1.65">${escapeEmailHtml(paragraph)}</p>`
   ).join("");
   return { assunto, bodyHtml: htmlBody, ...renderInstitutionalEmail(bodyText, htmlBody, input.header) };

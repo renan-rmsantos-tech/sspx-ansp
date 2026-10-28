@@ -14,13 +14,12 @@ import { createDonorReceiptLink } from "@/lib/donor-receipts/tickets";
 import { resolveDocumentHeader } from "@/lib/documents/document-header";
 import { getDonorReminderTemplate } from "./donor-reminder-template-store";
 import { reminderProviderKey, renderDonorReminder, renderDonorReminderPreview, type DonorReminderTemplate } from "./donor-reminder-template";
-import { DOCUMENT_HEADER_SEAL_CID } from "./donor-welcome-template";
+import { institutionalEmailAttachments } from "./institutional-email-attachments";
 import {
   canRetryDonorReminder,
   classifyReminderProviderOutcome,
   selectScheduledDonorReminders,
 } from "./donor-reminder-policy";
-import { SEAL_DATA_URI } from "@/lib/pdf/seal-image";
 
 const LEASE_MS = 60_000;
 
@@ -311,12 +310,7 @@ export async function sendDonorReminder(
       from: reserved.frozen_sender!, to: [reserved.frozen_recipient!],
       subject: reserved.frozen_subject!, text: reserved.frozen_text!,
       html: reserved.frozen_html!,
-      attachments: reserved.frozen_include_seal ? [{
-        filename: "selo-ansp.png",
-        content: Buffer.from(SEAL_DATA_URI.slice(SEAL_DATA_URI.indexOf(",") + 1), "base64"),
-        contentId: DOCUMENT_HEADER_SEAL_CID,
-        contentType: "image/png",
-      }] : undefined,
+      attachments: institutionalEmailAttachments(reserved.frozen_html!, reserved.frozen_include_seal!),
     }, { signal: AbortSignal.timeout(15_000), idempotencyKey: reserved.provider_idempotency_key });
     outcome = classifyReminderProviderOutcome({
       type: "response", id: response.data?.id, error: response.error,
@@ -395,12 +389,7 @@ export async function sendDonorReminderTestEmail(
       subject: `[TESTE] ${rendered.assunto}`,
       text: rendered.text,
       html: rendered.html,
-      attachments: header.mostrar_selo ? [{
-        filename: "selo-ansp.png",
-        content: Buffer.from(SEAL_DATA_URI.slice(SEAL_DATA_URI.indexOf(",") + 1), "base64"),
-        contentId: DOCUMENT_HEADER_SEAL_CID,
-        contentType: "image/png",
-      }] : undefined,
+      attachments: institutionalEmailAttachments(rendered.html, header.mostrar_selo),
     }, { signal: AbortSignal.timeout(15_000) });
     return classifyReminderProviderOutcome({
       type: "response", id: response.data?.id, error: response.error,

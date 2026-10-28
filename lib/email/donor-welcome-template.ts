@@ -45,7 +45,7 @@ export function renderDonorWelcomeEmail(
       `<p style="margin:0 0 20px;line-height:1.65">${escapeEmailHtml(paragraph).replace(/\n/g, "<br>")}</p>`
     )
     .join("");
-  return renderInstitutionalEmail(corpo, htmlBody, header);
+  return { bodyHtml: htmlBody, ...renderInstitutionalEmail(corpo, htmlBody, header) };
 }
 
 export function renderInstitutionalEmail(
@@ -60,14 +60,14 @@ export function renderInstitutionalEmail(
     resolvedHeader.linha3,
   ].filter((line) => line.trim() !== "");
   const htmlHeader = `
-    <div style="text-align:center;padding:24px 32px 14px;border-bottom:1px solid #c9a84c">
-      ${resolvedHeader.mostrar_selo ? `<img src="cid:${DOCUMENT_HEADER_SEAL_CID}" width="92" height="92" alt="Selo da Arca Nossa Senhora da Providência" style="display:block;width:92px;height:92px;margin:0 auto 10px">` : ""}
-      <div style="font-family:'Times New Roman',Times,serif;font-size:19px;font-weight:bold;color:#1a1a1a">${escapeEmailHtml(resolvedHeader.linha1)}</div>
-      ${headerLines.slice(1).map((line) => `<div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.4;color:#444444">${escapeEmailHtml(line)}</div>`).join("")}
+    <div data-email-header style="text-align:center;padding:28px 20px 24px;border-top:3px solid #c9a84c;border-bottom:1px solid #e4e0d7">
+      ${resolvedHeader.mostrar_selo ? `<img src="cid:${DOCUMENT_HEADER_SEAL_CID}" width="80" height="80" alt="Selo da Arca Nossa Senhora da Providência" style="display:block;width:80px;height:80px;margin:0 auto 16px">` : ""}
+      <div style="font-family:Georgia,'Times New Roman',serif;font-size:23px;line-height:1.3;font-weight:bold;color:#1a2744">${escapeEmailHtml(resolvedHeader.linha1)}</div>
+      ${headerLines.slice(1).map((line) => `<div style="margin-top:6px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.5;color:#526174">${escapeEmailHtml(line)}</div>`).join("")}
     </div>`;
 
   return {
     text: `${headerLines.join("\n")}\n\n${bodyText.trim()}\n\n${DONOR_EMAIL_FOOTER}`,
-    html: `<div style="margin:0;padding:32px 16px;background:#f5f6f7;font-family:Arial,Helvetica,sans-serif;color:#243247"><div style="max-width:600px;margin:0 auto;background:#ffffff">${htmlHeader}<div style="padding:32px;font-size:15px">${bodyHtml}</div><div style="padding:20px 32px;border-top:1px solid #e3e5e8;color:#526174;font-size:12px;line-height:1.6">${DONOR_EMAIL_FOOTER.replace("\n", "<br>")}</div></div></div>`,
+    html: `<div lang="pt-BR" style="margin:0;padding:24px 8px;background:#f5f3ee;font-family:Arial,Helvetica,sans-serif;color:#243247;overflow-wrap:anywhere;word-wrap:break-word"><table role="presentation" style="width:100%;max-width:600px;table-layout:fixed;margin:0 auto;border-spacing:0;background:#ffffff"><tbody><tr><td style="padding:0">${htmlHeader}<div data-email-body style="padding:28px 20px 12px;font-size:16px;line-height:1.65">${bodyHtml}</div><div data-email-footer style="padding:24px 20px;text-align:center;border-top:1px solid #e4e0d7;background:#faf9f6"><div style="font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.5;color:#1a2744">${escapeEmailHtml(DONOR_EMAIL_FOOTER.split("\n")[0])}</div><div style="margin-top:6px;color:#526174;font-size:12px;line-height:1.6">${escapeEmailHtml(DONOR_EMAIL_FOOTER.split("\n")[1])}</div></div></td></tr></tbody></table></div>`,
   };
 }

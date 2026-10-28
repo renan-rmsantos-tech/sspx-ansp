@@ -90,6 +90,47 @@ integration("monthly instructions transaction and delivery with PostgreSQL", () 
     return { result, pledge };
   }
 
+  it.each([true, false])("sends the actual QR with the persisted payload independently of seal (%s)", async (seal) => {
+    const created = await fixture();
+    const first = firstMonthlyOccurrence({
+      id: created.id, created_at: created.createdAt, frequencia: "mensal", duracao: "indeterminado", dia_vencimento: created.day,
+    })!;
+    await ledger(created.id, first.competence, first.dueDate);
+    await attempt(created.id, first.competence);
+    const renderingDatabase = Object.assign(Object.create(database!), {
+      query: { ...database!.query, documentHeader: { findFirst: async () => ({ mostrar_selo: seal }) } },
+    }) as typeof database;
+    expect(await sender.sendDonorMonthlyInstructions(created.id, { database: renderingDatabase! })).toMatchObject({ status: "sent" });
+    const message = sendEmail.mock.calls[0][0];
+    expect(message.attachments.map((entry: { contentId: string }) => entry.contentId))
+      .toEqual(seal ? ["ansp-document-seal", "ansp-pix-acipec-v1"] : ["ansp-pix-acipec-v1"]);
+    expect(message.html).toContain('src="cid:ansp-pix-acipec-v1"');
+    expect(message.text).toContain("Agência: 0197");
+    expect(message.text).toContain("Conta: 13.008.003-2");
+    const [frozen] = await sql!`SELECT frozen_html, frozen_text FROM donor_monthly_instruction_sends WHERE pledge_id = ${created.id}`;
+    expect(frozen).toMatchObject({ frozen_html: message.html, frozen_text: message.text });
+  });
+
+  it.each([true, false])("retries a legacy frozen payload without adding QR or new content (seal %s)", async (seal) => {
+    const created = await fixture();
+    const first = firstMonthlyOccurrence({
+      id: created.id, created_at: created.createdAt, frequencia: "mensal", duracao: "indeterminado", dia_vencimento: created.day,
+    })!;
+    await ledger(created.id, first.competence, first.dueDate);
+    await attempt(created.id, first.competence);
+    const html = `<div>Original before QR${seal ? '<img src="cid:ansp-document-seal">' : ""}</div>`;
+    await sql!`UPDATE donor_monthly_instruction_sends SET status = 'failed', error_code = 'provider_rejected',
+      frozen_recipient = 'original@example.test', frozen_sender = 'Original <old@example.test>',
+      frozen_subject = 'Original subject', frozen_text = 'Original text', frozen_html = ${html}, frozen_include_seal = ${seal}
+      WHERE pledge_id = ${created.id}`;
+    expect(await sender.sendDonorMonthlyInstructions(created.id, { database: database!, retryFailed: true })).toMatchObject({ status: "sent" });
+    const message = sendEmail.mock.calls[0][0];
+    expect(message).toMatchObject({ from: "Original <old@example.test>", to: ["original@example.test"], subject: "Original subject", text: "Original text", html });
+    expect(message.attachments?.map((entry: { contentId: string }) => entry.contentId))
+      .toEqual(seal ? ["ansp-document-seal"] : undefined);
+    expect(sendEmail.mock.calls[0][1].idempotencyKey).toBe(monthlyInstructionsProviderKey(created.id, 1));
+  });
+
   it("records the first occurrence and send outcome for both opt-in and opt-out", async () => {
     for (const channel of ["email", null] as const) {
       const { result, pledge } = await registered(channel);

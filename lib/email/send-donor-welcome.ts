@@ -4,9 +4,8 @@ import { Resend } from "resend";
 import { db } from "@/lib/db";
 import { documentHeader, donorPledges, donorWelcomeTemplates } from "@/lib/db/schema";
 import { resolveDocumentHeader } from "@/lib/documents/document-header";
-import { SEAL_DATA_URI } from "@/lib/pdf/seal-image";
+import { institutionalEmailAttachments } from "./institutional-email-attachments";
 import {
-  DOCUMENT_HEADER_SEAL_CID,
   DONOR_WELCOME_BODY,
   DONOR_WELCOME_SUBJECT,
   renderDonorWelcomeEmail,
@@ -39,14 +38,7 @@ async function sendWelcomeMessage(input: {
     subject: input.subject,
     text,
     html,
-    attachments: header.mostrar_selo
-      ? [{
-          filename: "selo-ansp.png",
-          content: Buffer.from(SEAL_DATA_URI.slice(SEAL_DATA_URI.indexOf(",") + 1), "base64"),
-          contentId: DOCUMENT_HEADER_SEAL_CID,
-          contentType: "image/png",
-        }]
-      : undefined,
+    attachments: institutionalEmailAttachments(html, header.mostrar_selo),
   }, {
     signal: AbortSignal.timeout(15_000),
   });

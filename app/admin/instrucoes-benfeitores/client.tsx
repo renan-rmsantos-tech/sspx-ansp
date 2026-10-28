@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { DocumentHeaderPreview } from "../_components/document-header-preview";
+import { InstitutionalEmailPreview } from "../_components/institutional-email-preview";
 import {
   previewDonorMonthlyInstructionsTemplate,
   saveDonorMonthlyInstructionsTemplate,
@@ -13,7 +13,7 @@ import {
   DONOR_MONTHLY_INSTRUCTIONS_TOKENS,
   type DonorMonthlyInstructionsTemplate,
 } from "@/lib/email/donor-monthly-instructions-template";
-import { DONOR_EMAIL_FOOTER } from "@/lib/email/donor-welcome-template";
+
 import type { DocumentHeaderData } from "@/lib/documents/document-header";
 
 type Preview = { assunto: string; bodyHtml: string };
@@ -155,9 +155,7 @@ export function DonorMonthlyInstructionsClient({
           {previewDirty && <p role="status" className="mt-2 text-sm text-warn">O texto foi alterado. Atualize a prévia para ver esta versão.</p>}
           <div className="mt-5 overflow-hidden rounded-md border border-border bg-white">
             <div className="border-b border-border px-5 py-3 text-xs text-muted"><span className="font-medium text-fg">Assunto:</span> {preview.assunto}</div>
-            <div className="px-6 pt-5"><DocumentHeaderPreview header={previewHeader} /></div>
-            <div className="px-6 py-7 text-sm leading-relaxed text-fg [&_a]:text-accent [&_a]:underline" dangerouslySetInnerHTML={{ __html: preview.bodyHtml }} />
-            <div className="whitespace-pre-line border-t border-border px-6 py-5 text-xs leading-relaxed text-muted">{DONOR_EMAIL_FOOTER}</div>
+            <InstitutionalEmailPreview bodyHtml={preview.bodyHtml} header={previewHeader} />
           </div>
           <p className="mt-2 break-all text-xs text-muted">Link de exemplo sem validade: <code>{DONOR_MONTHLY_INSTRUCTIONS_SAMPLE_LINK}</code></p>
         </section>
