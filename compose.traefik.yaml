@@ -31,6 +31,8 @@ services:
       # quando não houver endereço anterior a preservar.
       - traefik.http.routers.ansp.rule=Host(`${APP_HOST}`) || Host(`${APP_HOST_WWW}`) || Host(`${APP_HOST_LEGACY}`)
       - traefik.http.routers.ansp.entrypoints=websecure
+      # Evita registrar links de comprovantes, que são credenciais de acesso.
+      - traefik.http.routers.ansp.observability.accesslogs=false
       - traefik.http.routers.ansp.tls=true
       - traefik.http.routers.ansp.tls.certresolver=letsencrypt
       # Solicita explicitamente um certificado único para o domínio principal

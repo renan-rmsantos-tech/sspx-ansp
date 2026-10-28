@@ -270,6 +270,12 @@ Antes de instalar a linha:
    comprovante e nome do arquivo** em logs de requisição/proxy, inclusive em
    erros e traces. Nunca registre corpo de upload. O link é uma credencial de
    acesso temporária; só o destinatário do e-mail deve recebê-lo.
+   O `compose.traefik.yaml` desativa os access logs somente do router ANSP com
+   `traefik.http.routers.ansp.observability.accesslogs=false`, preservando os
+   logs dos outros aplicativos. Após o deploy, confirme a label no container
+   ANSP e faça uma requisição com caminho de teste sem credenciais; verifique
+   que ela não aparece nos access logs do Traefik. As contagens do aplicativo
+   e o health check em `/api/health` continuam disponíveis para monitoramento.
 
 Após essas verificações, instale a linha exata acima e confira `crontab -l`.
 No dia seguinte, `tail -n 10 /home/renan/ansp-reminders.log` deve mostrar uma
