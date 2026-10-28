@@ -167,9 +167,19 @@ integration("monthly instructions transaction and delivery with PostgreSQL", () 
     try {
       const { result, pledge } = await registered(null);
       expect(result).toEqual({ success: true });
-      expect(await sql!`SELECT status, error_code FROM donor_monthly_instruction_sends WHERE pledge_id = ${pledge.id}`)
-        .toEqual([{ status: "failed", error_code: "provider_rejected" }]);
-      expect(await sql!`SELECT id FROM donor_payment_ledger WHERE pledge_id = ${pledge.id}`).toHaveLength(1);
+      const [persisted] = await sql!`SELECT id, created_at, frequencia, duracao, dia_vencimento
+        FROM donor_pledges WHERE id = ${pledge.id}`;
+      expect(persisted).toBeTruthy();
+      const first = firstMonthlyOccurrence(persisted as Parameters<typeof firstMonthlyOccurrence>[0])!;
+      expect(first).toBeTruthy();
+      expect(await sql!`SELECT status, error_code, generation, receipt_competencia
+        FROM donor_monthly_instruction_sends WHERE pledge_id = ${pledge.id}`)
+        .toEqual([{ status: "failed", error_code: "provider_rejected", generation: 1, receipt_competencia: first.competence }]);
+      // Other integration workers may legitimately materialize later months for
+      // every pledge. Registration must preserve its own first occurrence.
+      expect(await sql!`SELECT due_date::text AS due_date, expected_value::text AS expected_value
+        FROM donor_payment_ledger WHERE pledge_id = ${pledge.id} AND competencia = ${first.competence}`)
+        .toEqual([{ due_date: first.dueDate, expected_value: "80.00" }]);
       expect(sendWelcome).toHaveBeenCalledTimes(1);
       expect(log.mock.calls.flat().join(" ")).not.toContain("private rejection");
     } finally { log.mockRestore(); }

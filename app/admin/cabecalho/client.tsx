@@ -1,5 +1,7 @@
 "use client";
 
+import { DocumentFooterPreview } from "../_components/document-footer-preview";
+
 import { DEFAULT_INSTITUTIONAL_FOOTER, FOOTER_MAX_LENGTH, FOOTER_HELP, institutionalFooterError, resolveDocumentHeader, type DocumentHeaderData } from "@/lib/documents/document-header";
 import { useState, useCallback } from "react";
 import { DocumentHeaderPreview } from "../_components/document-header-preview";
@@ -152,7 +154,7 @@ export function CabecalhoClient({ initialHeader }: CabecalhoClientProps) {
         <h2 className="text-sm font-semibold text-fg">Pré-visualização</h2>
         <div className="mt-4 rounded-md border border-border bg-white p-6">
           <DocumentHeaderPreview header={form} />
-          {form.rodape_institucional?.trim() ? <div className="mt-8 whitespace-pre-wrap break-words border-t border-border pt-4 text-center text-xs leading-relaxed text-muted" data-testid="footer-preview">{form.rodape_institucional}</div> : <p className="mt-8 text-center text-xs text-muted">Rodapé institucional oculto.</p>}
+          <DocumentFooterPreview header={form} />
           <p className="mt-4 text-center text-xs text-muted">
             Usado nos novos e-mails e em todos os PDFs. Documentos já emitidos e reenvios reservados mantêm a configuração original.
           </p>

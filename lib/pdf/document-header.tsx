@@ -1,3 +1,4 @@
+import { COMMUNICATION_FONTS } from "@/lib/documents/communication-fonts";
 import { Image, Text, View, StyleSheet } from "@react-pdf/renderer";
 import { SEAL_DATA_URI } from "./seal-image";
 import type { DocumentHeaderData } from "@/lib/documents/document-header";
@@ -22,15 +23,17 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   linha1: {
-    fontFamily: "Times-Bold",
+    fontFamily: COMMUNICATION_FONTS.pdf.heading,
     fontSize: 14,
   },
   linha2: {
+    fontFamily: COMMUNICATION_FONTS.pdf.heading,
     fontSize: 10,
     color: "#444",
     marginTop: 2,
   },
   linha3: {
+    fontFamily: COMMUNICATION_FONTS.pdf.heading,
     fontSize: 10,
     color: "#444",
     marginTop: 1,

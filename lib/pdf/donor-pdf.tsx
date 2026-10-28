@@ -1,3 +1,4 @@
+import { COMMUNICATION_FONTS } from "@/lib/documents/communication-fonts";
 import { DocumentFooterView, institutionalFooterPageStyle } from "./document-footer";
 import {
   Document,
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
     paddingTop: 48,
     paddingBottom: 48,
     paddingHorizontal: 56,
-    fontFamily: "Helvetica",
+    fontFamily: COMMUNICATION_FONTS.pdf.body,
     fontSize: 10,
     lineHeight: 1.4,
     color: "#1a1a1a",
@@ -70,12 +71,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   title: {
-    fontFamily: "Helvetica-Bold",
+    fontFamily: COMMUNICATION_FONTS.pdf.heading,
     fontSize: 12,
     marginTop: 6,
   },
   sectionTitle: {
-    fontFamily: "Helvetica-Bold",
+    fontFamily: COMMUNICATION_FONTS.pdf.heading,
     fontSize: 11,
     marginTop: 16,
     marginBottom: 6,
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   fValue: {
-    fontFamily: "Helvetica-Bold",
+    fontFamily: COMMUNICATION_FONTS.pdf.bodyBold,
   },
   obs: {
     marginTop: 4,

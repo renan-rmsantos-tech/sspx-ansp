@@ -1,3 +1,4 @@
+import { COMMUNICATION_FONTS } from "@/lib/documents/communication-fonts";
 import {
   resolveDocumentHeader,
   DEFAULT_INSTITUTIONAL_FOOTER,
@@ -59,17 +60,13 @@ export function renderInstitutionalEmail(
     resolvedHeader.linha2,
     resolvedHeader.linha3,
   ].filter((line) => line.trim() !== "");
-  const htmlHeader = `
-    <div data-email-header style="text-align:center;padding:28px 20px 24px;border-top:3px solid #c9a84c;border-bottom:1px solid #e4e0d7">
-      ${resolvedHeader.mostrar_selo ? `<img src="cid:${DOCUMENT_HEADER_SEAL_CID}" width="80" height="80" alt="Selo da Arca Nossa Senhora da Providência" style="display:block;width:80px;height:80px;margin:0 auto 16px">` : ""}
-      <div style="font-family:Georgia,'Times New Roman',serif;font-size:23px;line-height:1.3;font-weight:bold;color:#1a2744">${escapeEmailHtml(resolvedHeader.linha1)}</div>
-      ${headerLines.slice(1).map((line) => `<div style="margin-top:6px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.5;color:#526174">${escapeEmailHtml(line)}</div>`).join("")}
-    </div>`;
+  // Native table alignment survives clients that discard CSS auto margins.
+  const htmlHeader = `<table data-email-header role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-spacing:0;border-top:3px solid #c9a84c;border-bottom:1px solid #e4e0d7"><tbody>${resolvedHeader.mostrar_selo ? `<tr><td align="center" style="text-align:center;padding:28px 20px 16px"><img src="cid:${DOCUMENT_HEADER_SEAL_CID}" width="80" height="80" alt="Selo da Arca Nossa Senhora da Providência" style="display:inline-block;width:80px;height:80px"></td></tr>` : ""}<tr><td align="center" style="text-align:center;padding:${resolvedHeader.mostrar_selo ? "0" : "28px"} 20px 24px">${headerLines.map((line, index) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tbody><tr><td align="center" style="text-align:center;padding-top:${index === 0 ? "0" : "6px"};font-family:${COMMUNICATION_FONTS.html.heading};font-size:${index === 0 ? "23px" : "13px"};line-height:${index === 0 ? "1.3" : "1.5"};${index === 0 ? "font-weight:bold;color:#1a2744" : "font-weight:bold;color:#526174"}">${escapeEmailHtml(line)}</td></tr></tbody></table>`).join("")}</td></tr></tbody></table>`;
 
   const footer = resolvedHeader.rodape_institucional ?? "";
-  const htmlFooter = footer.trim() ? `<div data-email-footer style="padding:24px 20px;text-align:center;border-top:1px solid #e4e0d7;background:#faf9f6">${footer.split("\n").map((line, index) => `<div style="white-space:pre-wrap;${index === 0 ? "font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.5;color:#1a2744" : "margin-top:6px;color:#526174;font-size:12px;line-height:1.6"}">${escapeEmailHtml(line) || "<br>"}</div>`).join("")}</div>` : "";
+  const htmlFooter = footer.trim() ? `<table data-email-footer role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-spacing:0;border-top:1px solid #e4e0d7;background:#faf9f6"><tbody><tr><td align="center" style="padding:24px 20px;text-align:center;font-family:${COMMUNICATION_FONTS.html.body}">${footer.split("\n").map((line, index) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tbody><tr><td align="center" style="text-align:center;white-space:pre-wrap;font-family:${COMMUNICATION_FONTS.html.body};${index === 0 ? "font-size:16px;line-height:1.5;color:#1a2744" : "padding-top:6px;color:#526174;font-size:12px;line-height:1.6"}">${escapeEmailHtml(line) || "<br>"}</td></tr></tbody></table>`).join("")}</td></tr></tbody></table>` : "";
   return {
     text: `${headerLines.join("\n")}\n\n${bodyText.trim()}${footer.trim() ? `\n\n${footer}` : ""}`,
-    html: `<div lang="pt-BR" style="margin:0;padding:24px 8px;background:#f5f3ee;font-family:Arial,Helvetica,sans-serif;color:#243247;overflow-wrap:anywhere;word-wrap:break-word"><table role="presentation" style="width:100%;max-width:600px;table-layout:fixed;margin:0 auto;border-spacing:0;background:#ffffff"><tbody><tr><td style="padding:0">${htmlHeader}<div data-email-body style="padding:28px 20px 12px;font-size:16px;line-height:1.65">${bodyHtml}</div>${htmlFooter}</td></tr></tbody></table></div>`,
+    html: `<div lang="pt-BR" style="margin:0;padding:24px 8px;background:#f5f3ee;font-family:${COMMUNICATION_FONTS.html.body};color:#243247;overflow-wrap:anywhere;word-wrap:break-word"><table role="presentation" align="center" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;table-layout:fixed;margin:0 auto;border-spacing:0;background:#ffffff"><tbody><tr><td style="padding:0">${htmlHeader}<div data-email-body style="padding:28px 20px 12px;font-size:16px;line-height:1.65">${bodyHtml}</div>${htmlFooter}</td></tr></tbody></table></div>`,
   };
 }

@@ -1,3 +1,4 @@
+import { COMMUNICATION_FONTS } from "@/lib/documents/communication-fonts";
 import { DocumentFooterView, institutionalFooterPageStyle } from "./document-footer";
 import {
   Document,
@@ -27,19 +28,19 @@ const styles = StyleSheet.create({
     paddingTop: 56,
     paddingBottom: 56,
     paddingHorizontal: 64,
-    fontFamily: "Times-Roman",
+    fontFamily: COMMUNICATION_FONTS.pdf.body,
     fontSize: 11,
     lineHeight: 1.5,
     color: "#1a1a1a",
   },
   cabecalho: {
-    fontFamily: "Times-Bold",
+    fontFamily: COMMUNICATION_FONTS.pdf.heading,
     fontSize: 13,
     textAlign: "center",
     marginBottom: 20,
   },
   cabecalhoLinha: {
-    fontFamily: "Times-Bold",
+    fontFamily: COMMUNICATION_FONTS.pdf.heading,
     fontSize: 13,
     textAlign: "center",
   },

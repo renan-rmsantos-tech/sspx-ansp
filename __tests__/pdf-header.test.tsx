@@ -63,3 +63,23 @@ it.each(["Rodapé & educação\nItatiba", ""])("renders/omits institutional foot
 
   }
 });
+
+it("uses explicit communication fonts in all PDF families, including optional header lines and footers", async () => {
+  const { COMMUNICATION_FONTS: fonts } = await import("@/lib/documents/communication-fonts");
+  const header = { ...DEFAULT_DOCUMENT_HEADER, linha1: "Instituição", linha2: "Educação", linha3: "Itatiba", rodape_institucional: "Contato institucional" };
+  for (const render of [
+    () => renderApplicationPdf({ ...application, header }),
+    () => renderDonorPdf({ ...donor, header }),
+    () => renderDecisionPdf({ titulo: "Decisão", cabecalho: "Decisão", corpo: "Corpo legal", rodape: "", header }),
+    () => renderContractPdf({ titulo: "Contrato", cabecalho: "Corpo legal", clausulas: [], rodape: "", header }),
+  ]) {
+    await render();
+    const nodes = flatten(capture.tree as ReactNode).filter((node): node is ReactElement<Record<string, unknown>> => typeof node !== "string");
+    const page = nodes.find(node => node.type === "Page")!;
+    expect((page.props.style as Array<{ fontFamily?: string }>)[0].fontFamily).toBe(fonts.pdf.body);
+    for (const line of [header.linha1, header.linha2, header.linha3, header.rodape_institucional]) {
+      const text = nodes.find(node => node.type === "Text" && node.props.children === line)!;
+      expect((text.props.style as { fontFamily: string }).fontFamily).toBe(line === header.rodape_institucional ? fonts.pdf.body : fonts.pdf.heading);
+    }
+  }
+});
