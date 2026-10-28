@@ -1,3 +1,4 @@
+import { DEFAULT_DOCUMENT_HEADER, resolveDocumentHeader } from "@/lib/documents/document-header";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.stubEnv("SESSION_SECRET", "x".repeat(48));
@@ -998,13 +999,13 @@ describe("institutional header at all PDF export boundaries", () => {
   it.each(exports)("passes current fields and seal to export %s, then observes an update", async (action, renderer) => {
     queryFor("documentHeader").findFirst.mockResolvedValue({ id: "header-1", ...header });
     expect(await action("app-1")).toHaveProperty("pdfBase64");
-    expect(renderer()).toHaveBeenLastCalledWith(expect.objectContaining({ header }));
+    expect(renderer()).toHaveBeenLastCalledWith(expect.objectContaining({ header: resolveDocumentHeader(header) }));
     const changed = { ...header, linha2: "", linha3: "", mostrar_selo: true };
     await saveDocumentHeader(changed);
     expect(extraPdfs.revalidate).toHaveBeenCalledWith("/admin", "layout");
     queryFor("documentHeader").findFirst.mockResolvedValue(changed);
     expect(await action("app-1")).toHaveProperty("pdfBase64");
-    expect(renderer()).toHaveBeenLastCalledWith(expect.objectContaining({ header: changed }));
+    expect(renderer()).toHaveBeenLastCalledWith(expect.objectContaining({ header: resolveDocumentHeader(changed) }));
   });
 
   it.each(exports)("blocks export %s on header DB failure before rendering or issuance", async (action, renderer) => {
@@ -1016,9 +1017,9 @@ describe("institutional header at all PDF export boundaries", () => {
   });
 
   it("distinguishes a missing settings row from a failed read", async () => {
-    expect(await getDocumentHeader()).toEqual({ data: { linha1: "Arca Nossa Senhora da Providência", linha2: "", linha3: "", mostrar_selo: true }, error: null });
+    expect(await getDocumentHeader()).toEqual({ data: DEFAULT_DOCUMENT_HEADER, error: null });
     queryFor("documentHeader").findFirst.mockRejectedValue(new Error("private"));
     expect(await getDocumentHeader()).toMatchObject({ data: null, error: expect.any(String) });
-    expect(await saveDocumentHeader(header)).toEqual({ success: false, error: "Não foi possível salvar o cabeçalho. Tente novamente." });
+    expect(await saveDocumentHeader(header)).toEqual({ success: false, error: "Não foi possível salvar o cabeçalho e rodapé. Tente novamente." });
   });
 });

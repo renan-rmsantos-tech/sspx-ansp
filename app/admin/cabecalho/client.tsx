@@ -1,15 +1,11 @@
 "use client";
 
+import { DEFAULT_INSTITUTIONAL_FOOTER, FOOTER_MAX_LENGTH, FOOTER_HELP, institutionalFooterError, resolveDocumentHeader, type DocumentHeaderData } from "@/lib/documents/document-header";
 import { useState, useCallback } from "react";
 import { DocumentHeaderPreview } from "../_components/document-header-preview";
 import { saveDocumentHeader } from "../_actions/admin-actions";
 
-interface HeaderForm {
-  linha1: string;
-  linha2: string;
-  linha3: string;
-  mostrar_selo: boolean;
-}
+type HeaderForm = DocumentHeaderData;
 
 const inputClass =
   "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg outline-none focus:border-accent";
@@ -19,7 +15,7 @@ interface CabecalhoClientProps {
 }
 
 export function CabecalhoClient({ initialHeader }: CabecalhoClientProps) {
-  const [form, setForm] = useState<HeaderForm>(initialHeader);
+  const [form, setForm] = useState<HeaderForm>(resolveDocumentHeader(initialHeader));
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<"idle" | "saved" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -36,14 +32,20 @@ export function CabecalhoClient({ initialHeader }: CabecalhoClientProps) {
     setSaving(true);
     setStatus("idle");
     setErrorMsg(null);
-    const result = await saveDocumentHeader(form);
-    setSaving(false);
-    if (result.success) {
-      setStatus("saved");
-    } else {
+    try {
+      const validationError = institutionalFooterError(form.rodape_institucional);
+      if (validationError) { setStatus("error"); setErrorMsg(validationError); return; }
+      const result = await saveDocumentHeader(form);
+      if (result.success) {
+        setStatus("saved");
+      } else {
+        setStatus("error");
+        setErrorMsg(result.error ?? "Erro ao salvar.");
+      }
+    } catch {
       setStatus("error");
-      setErrorMsg(result.error ?? "Erro ao salvar.");
-    }
+      setErrorMsg("Não foi possível salvar. Tente novamente.");
+    } finally { setSaving(false); }
   }, [form]);
 
   return (
@@ -114,7 +116,15 @@ export function CabecalhoClient({ initialHeader }: CabecalhoClientProps) {
           </div>
         </div>
 
-        <div className="mt-6 flex items-center gap-3">
+        <div className="mt-6">
+          <label htmlFor="institutional-footer" className="mb-1.5 block text-sm font-medium text-fg">Rodapé institucional</label>
+          <textarea id="institutional-footer" rows={4} maxLength={FOOTER_MAX_LENGTH}
+            aria-describedby="footer-help" value={form.rodape_institucional ?? ""}
+            onChange={e => update("rodape_institucional", e.target.value)} className={inputClass} />
+          <p id="footer-help" className="mt-1.5 text-xs text-muted">{FOOTER_HELP}</p>
+          <button type="button" className="mt-2 text-sm text-accent underline underline-offset-2" onClick={() => update("rodape_institucional", DEFAULT_INSTITUTIONAL_FOOTER)}>Restaurar rodapé padrão</button>
+        </div>
+        <div className="mt-6 flex flex-wrap items-center gap-3" role="status">
           <button
             type="button"
             onClick={handleSave}
@@ -126,7 +136,7 @@ export function CabecalhoClient({ initialHeader }: CabecalhoClientProps) {
           </button>
           {status === "saved" && (
             <span className="text-sm text-success" data-testid="header-saved">
-              Cabeçalho salvo.
+              Cabeçalho e rodapé salvos.
             </span>
           )}
           {status === "error" && (
@@ -142,8 +152,9 @@ export function CabecalhoClient({ initialHeader }: CabecalhoClientProps) {
         <h2 className="text-sm font-semibold text-fg">Pré-visualização</h2>
         <div className="mt-4 rounded-md border border-border bg-white p-6">
           <DocumentHeaderPreview header={form} />
+          {form.rodape_institucional?.trim() ? <div className="mt-8 whitespace-pre-wrap break-words border-t border-border pt-4 text-center text-xs leading-relaxed text-muted" data-testid="footer-preview">{form.rodape_institucional}</div> : <p className="mt-8 text-center text-xs text-muted">Rodapé institucional oculto.</p>}
           <p className="mt-4 text-center text-xs text-muted">
-            Usado nos novos e-mails e em todos os PDFs. Documentos já emitidos e reenvios reservados mantêm o cabeçalho original.
+            Usado nos novos e-mails e em todos os PDFs. Documentos já emitidos e reenvios reservados mantêm a configuração original.
           </p>
         </div>
       </div>

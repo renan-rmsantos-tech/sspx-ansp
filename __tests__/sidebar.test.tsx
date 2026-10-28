@@ -82,7 +82,7 @@ describe("Sidebar", () => {
         title: "Sistema",
         links: [
           { label: "Usuários", href: "/admin/usuarios" },
-          { label: "Cabeçalho institucional", href: "/admin/cabecalho" },
+          { label: "Cabeçalho e rodapé", href: "/admin/cabecalho" },
         ],
       },
     ]);

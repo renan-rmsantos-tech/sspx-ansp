@@ -25,6 +25,7 @@ export async function persistDocumentHeader(input: DocumentHeaderData, database:
   });
   const payload = {
     linha1: input.linha1, linha2: input.linha2, linha3: input.linha3,
+    ...(input.rodape_institucional != null ? { rodape_institucional: input.rodape_institucional } : {}),
     mostrar_selo: input.mostrar_selo, updated_at: new Date().toISOString(),
   };
   if (existing) {

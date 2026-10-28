@@ -1,3 +1,4 @@
+import { DocumentFooterView, institutionalFooterPageStyle } from "./document-footer";
 import {
   Document,
   Page,
@@ -184,7 +185,7 @@ function ApplicationDocument({ data }: { data: ApplicationPdfData }) {
 
   return (
     <Document title={`Solicitação - ${data.pai_nome}`}>
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={[styles.page, institutionalFooterPageStyle(data.header)]}>
         <DocumentHeaderView header={resolveDocumentHeader(data.header)} />
         <View style={styles.docTitleBlock}>
           <Text style={styles.subtitle}>
@@ -295,6 +296,7 @@ function ApplicationDocument({ data }: { data: ApplicationPdfData }) {
             ))}
           </>
         )}
+        <DocumentFooterView header={data.header} />
       </Page>
     </Document>
   );

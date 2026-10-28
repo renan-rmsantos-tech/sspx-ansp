@@ -299,6 +299,7 @@ export const documentHeader = pgTable(
     linha2: text("linha2").notNull().default(""),
     linha3: text("linha3").notNull().default(""),
     mostrar_selo: boolean("mostrar_selo").notNull().default(true),
+    rodape_institucional: text("rodape_institucional"),
     updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" })
       .notNull()
       .defaultNow(),

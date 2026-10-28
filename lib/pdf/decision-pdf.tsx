@@ -1,3 +1,4 @@
+import { DocumentFooterView, institutionalFooterPageStyle } from "./document-footer";
 import {
   Document,
   Page,
@@ -82,7 +83,7 @@ function Paragraphs({
 function DecisionDocument({ decision }: { decision: ResolvedDecision }) {
   return (
     <Document title={decision.titulo}>
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={[styles.page, institutionalFooterPageStyle(decision.header)]}>
         <DocumentHeaderView header={resolveDocumentHeader(decision.header)} />
         <View style={styles.cabecalho}>
           <Paragraphs text={decision.cabecalho} lineStyle={styles.cabecalhoLinha} />
@@ -93,6 +94,7 @@ function DecisionDocument({ decision }: { decision: ResolvedDecision }) {
         <View style={styles.rodape}>
           <Paragraphs text={decision.rodape} lineStyle={styles.rodapeLinha} />
         </View>
+        <DocumentFooterView header={decision.header} />
       </Page>
     </Document>
   );

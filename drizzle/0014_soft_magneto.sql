@@ -1,0 +1,1 @@
+ALTER TABLE "document_header" ADD COLUMN "rodape_institucional" text;

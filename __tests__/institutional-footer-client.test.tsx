@@ -1,0 +1,21 @@
+import { fireEvent, render, screen, waitFor, cleanup } from "@testing-library/react";
+import { afterEach, expect, it, vi } from "vitest";
+import { DEFAULT_DOCUMENT_HEADER, DEFAULT_INSTITUTIONAL_FOOTER } from "@/lib/documents/document-header";
+const save = vi.hoisted(() => vi.fn());
+vi.mock("@/app/admin/_actions/admin-actions", () => ({ saveDocumentHeader: save }));
+import { CabecalhoClient } from "@/app/admin/cabecalho/client";
+afterEach(() => { cleanup(); vi.clearAllMocks(); });
+it("previews edits/clear/reset and recovers the save button after a thrown error", async () => {
+  render(<CabecalhoClient initialHeader={DEFAULT_DOCUMENT_HEADER} />);
+  const footer = screen.getByLabelText("Rodapé institucional");
+  fireEvent.change(footer, { target: { value: "Novo & São José\nItatiba" } });
+  expect(screen.getByTestId("footer-preview").textContent).toBe("Novo & São José\nItatiba");
+  save.mockRejectedValueOnce(new Error("network"));
+  fireEvent.click(screen.getByRole("button", { name: /^Salvar$/ }));
+  await waitFor(() => expect(screen.getByTestId("header-error")).toHaveTextContent("Tente novamente"));
+  expect(screen.getByRole("button", { name: /^Salvar$/ })).toBeEnabled();
+  fireEvent.change(footer, { target: { value: "" } });
+  expect(screen.queryByTestId("footer-preview")).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Restaurar rodapé padrão" }));
+  expect(footer).toHaveValue(DEFAULT_INSTITUTIONAL_FOOTER);
+});

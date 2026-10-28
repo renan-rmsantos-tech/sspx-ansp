@@ -1,5 +1,6 @@
 import {
   resolveDocumentHeader,
+  DEFAULT_INSTITUTIONAL_FOOTER,
   type DocumentHeaderData,
 } from "@/lib/documents/document-header";
 
@@ -18,8 +19,7 @@ Lembramos ainda que, mensalmente, será celebrada uma Santa Missa na intenção 
 
 Que Nossa Senhora da Providência abençoe você e toda a sua família!`;
 
-export const DONOR_EMAIL_FOOTER =
-  "Arca Nossa Senhora da Providência\nObra de Assistência Educacional Católica";
+export const DONOR_EMAIL_FOOTER = DEFAULT_INSTITUTIONAL_FOOTER;
 export const DOCUMENT_HEADER_SEAL_CID = "ansp-document-seal";
 
 export function escapeEmailHtml(value: string): string {
@@ -66,8 +66,10 @@ export function renderInstitutionalEmail(
       ${headerLines.slice(1).map((line) => `<div style="margin-top:6px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.5;color:#526174">${escapeEmailHtml(line)}</div>`).join("")}
     </div>`;
 
+  const footer = resolvedHeader.rodape_institucional ?? "";
+  const htmlFooter = footer.trim() ? `<div data-email-footer style="padding:24px 20px;text-align:center;border-top:1px solid #e4e0d7;background:#faf9f6">${footer.split("\n").map((line, index) => `<div style="white-space:pre-wrap;${index === 0 ? "font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.5;color:#1a2744" : "margin-top:6px;color:#526174;font-size:12px;line-height:1.6"}">${escapeEmailHtml(line) || "<br>"}</div>`).join("")}</div>` : "";
   return {
-    text: `${headerLines.join("\n")}\n\n${bodyText.trim()}\n\n${DONOR_EMAIL_FOOTER}`,
-    html: `<div lang="pt-BR" style="margin:0;padding:24px 8px;background:#f5f3ee;font-family:Arial,Helvetica,sans-serif;color:#243247;overflow-wrap:anywhere;word-wrap:break-word"><table role="presentation" style="width:100%;max-width:600px;table-layout:fixed;margin:0 auto;border-spacing:0;background:#ffffff"><tbody><tr><td style="padding:0">${htmlHeader}<div data-email-body style="padding:28px 20px 12px;font-size:16px;line-height:1.65">${bodyHtml}</div><div data-email-footer style="padding:24px 20px;text-align:center;border-top:1px solid #e4e0d7;background:#faf9f6"><div style="font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.5;color:#1a2744">${escapeEmailHtml(DONOR_EMAIL_FOOTER.split("\n")[0])}</div><div style="margin-top:6px;color:#526174;font-size:12px;line-height:1.6">${escapeEmailHtml(DONOR_EMAIL_FOOTER.split("\n")[1])}</div></div></td></tr></tbody></table></div>`,
+    text: `${headerLines.join("\n")}\n\n${bodyText.trim()}${footer.trim() ? `\n\n${footer}` : ""}`,
+    html: `<div lang="pt-BR" style="margin:0;padding:24px 8px;background:#f5f3ee;font-family:Arial,Helvetica,sans-serif;color:#243247;overflow-wrap:anywhere;word-wrap:break-word"><table role="presentation" style="width:100%;max-width:600px;table-layout:fixed;margin:0 auto;border-spacing:0;background:#ffffff"><tbody><tr><td style="padding:0">${htmlHeader}<div data-email-body style="padding:28px 20px 12px;font-size:16px;line-height:1.65">${bodyHtml}</div>${htmlFooter}</td></tr></tbody></table></div>`,
   };
 }

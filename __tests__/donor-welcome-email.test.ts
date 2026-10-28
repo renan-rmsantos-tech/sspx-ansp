@@ -1,3 +1,4 @@
+import { DEFAULT_INSTITUTIONAL_FOOTER } from "@/lib/documents/document-header";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { requireAdmin, sendDonorWelcomeEmail, sendDonorWelcomeTestEmail, sendDonorMonthlyInstructions, revalidatePath } = vi.hoisted(() => ({
@@ -117,11 +118,11 @@ describe("e-mail de boas-vindas ao benfeitor", () => {
 describe("administração do modelo", () => {
   it("loads the same document header shown in the PDF settings", async () => {
     queryFor("documentHeader").findFirst.mockResolvedValue({
-      linha1: "Arca", linha2: "Colégio São José", linha3: "Itatiba/SP", mostrar_selo: false,
+      linha1: "Arca", linha2: "Colégio São José", linha3: "Itatiba/SP", mostrar_selo: false, rodape_institucional: DEFAULT_INSTITUTIONAL_FOOTER,
     });
     const settings = await getDonorEmailSettings();
     expect(settings.header).toEqual({
-      linha1: "Arca", linha2: "Colégio São José", linha3: "Itatiba/SP", mostrar_selo: false,
+      linha1: "Arca", linha2: "Colégio São José", linha3: "Itatiba/SP", mostrar_selo: false, rodape_institucional: DEFAULT_INSTITUTIONAL_FOOTER,
     });
   });
 

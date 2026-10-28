@@ -3,7 +3,7 @@
 import { and, asc, desc, eq, gte, inArray, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { loadDocumentHeader, persistDocumentHeader, HEADER_LOAD_ERROR } from "@/lib/documents/document-header-store";
-import type { DocumentHeaderData } from "@/lib/documents/document-header";
+import { institutionalFooterError, type DocumentHeaderData } from "@/lib/documents/document-header";
 import { z } from "zod";
 import {
   requireAdmin,
@@ -826,11 +826,20 @@ export async function getDocumentHeader() {
 }
 
 export async function saveDocumentHeader(input: DocumentHeaderData): Promise<ActionResult> {
-  await requireAuth();
+  await requireAdmin();
+  const parsed = z.object({
+    linha1: z.string().max(500), linha2: z.string().max(500), linha3: z.string().max(500),
+    mostrar_selo: z.boolean(), rodape_institucional: z.string().optional(),
+  }).safeParse(input);
+  if (!parsed.success) return { success: false, error: "Revise os campos do cabeçalho e rodapé." };
+  if (parsed.data.rodape_institucional !== undefined) {
+    const error = institutionalFooterError(parsed.data.rodape_institucional);
+    if (error) return { success: false, error };
+  }
   try {
-    await persistDocumentHeader(input);
+    await persistDocumentHeader(parsed.data);
   } catch {
-    return { success: false, error: "Não foi possível salvar o cabeçalho. Tente novamente." };
+    return { success: false, error: "Não foi possível salvar o cabeçalho e rodapé. Tente novamente." };
   }
   revalidatePath("/admin", "layout");
   return { success: true };

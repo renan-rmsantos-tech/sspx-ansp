@@ -1,3 +1,4 @@
+import { DocumentFooterView, institutionalFooterPageStyle } from "./document-footer";
 import {
   Document,
   Page,
@@ -87,15 +88,15 @@ function Paragraphs({
 function ContractDocument({ contract }: { contract: ResolvedContract }) {
   return (
     <Document title={contract.titulo}>
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={[styles.page, institutionalFooterPageStyle(contract.header)]}>
         <DocumentHeaderView header={resolveDocumentHeader(contract.header)} />
         <Text style={styles.titulo}>{contract.titulo}</Text>
 
         <Paragraphs text={contract.cabecalho} justify />
 
         {contract.clausulas.map((clausula, i) => (
-          <View key={i} wrap={false}>
-            <Text style={styles.clausulaTitulo}>{clausula.titulo}</Text>
+          <View key={i}>
+            <Text minPresenceAhead={24} style={styles.clausulaTitulo}>{clausula.titulo}</Text>
             <Paragraphs text={clausula.corpo} justify />
           </View>
         ))}
@@ -103,6 +104,7 @@ function ContractDocument({ contract }: { contract: ResolvedContract }) {
         <View style={styles.rodape}>
           <Paragraphs text={contract.rodape} justify={false} />
         </View>
+        <DocumentFooterView header={contract.header} />
       </Page>
     </Document>
   );

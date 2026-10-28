@@ -46,3 +46,20 @@ it("omits whitespace-only optional lines in the PDF header", async () => {
   await renderDecisionPdf({ titulo: "", cabecalho: "", corpo: "", rodape: "", header: { ...DEFAULT_DOCUMENT_HEADER, linha2: "   ", linha3: "", mostrar_selo: false } });
   expect(flatten(capture.tree as ReactNode)).not.toContain("   ");
 });
+
+it.each(["Rodapé & educação\nItatiba", ""])("renders/omits institutional footer independently of legal text in all four families (%s)", async (footer) => {
+  const header = { ...DEFAULT_DOCUMENT_HEADER, rodape_institucional: footer };
+  for (const render of [
+    () => renderApplicationPdf({ ...application, header }),
+    () => renderDonorPdf({ ...donor, header }),
+    () => renderDecisionPdf({ titulo: "Decisão", cabecalho: "", corpo: "", rodape: "Assinatura legal", header }),
+    () => renderContractPdf({ titulo: "Contrato", cabecalho: "", clausulas: [], rodape: "Assinatura legal", header }),
+  ]) {
+    await render();
+    const tree = flatten(capture.tree as ReactNode);
+    const fixed = tree.filter(node => typeof node !== "string" && node.props.fixed);
+    expect(fixed).toHaveLength(footer ? 1 : 0);
+    for (const line of footer.split("\n").filter(Boolean)) expect(tree).toContain(line);
+
+  }
+});

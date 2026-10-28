@@ -1,3 +1,4 @@
+import { DocumentFooterView, institutionalFooterPageStyle } from "./document-footer";
 import {
   Document,
   Page,
@@ -143,7 +144,7 @@ function DonorDocument({ data }: { data: DonorPdfData }) {
 
   return (
     <Document title={`Benfeitor - ${data.nome}`}>
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" style={[styles.page, institutionalFooterPageStyle(data.header)]}>
         <DocumentHeaderView header={resolveDocumentHeader(data.header)} />
         <View style={styles.docTitleBlock}>
           <Text style={styles.subtitle}>Cadastro de Benfeitor</Text>
@@ -200,6 +201,7 @@ function DonorDocument({ data }: { data: DonorPdfData }) {
             <Text style={styles.obs}>{data.observacoes}</Text>
           </>
         )}
+        <DocumentFooterView header={data.header} />
       </Page>
     </Document>
   );
