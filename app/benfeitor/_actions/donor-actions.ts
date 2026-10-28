@@ -2,10 +2,13 @@
 
 import { randomUUID } from "crypto";
 import { db } from "@/lib/db";
-import { donorPledges } from "@/lib/db/schema";
+import { donorMonthlyInstructionSends, donorPaymentLedger, donorPledges } from "@/lib/db/schema";
+import { firstMonthlyOccurrence } from "@/lib/donor-payment-ledger";
 import { getStorage } from "@/lib/storage";
 import { formatCPF } from "@/lib/validations/cpf";
 import { sendDonorWelcomeEmail } from "@/lib/email/send-donor-welcome";
+import { monthlyInstructionsProviderKey } from "@/lib/email/donor-monthly-instructions-template";
+import { sendDonorMonthlyInstructions } from "@/lib/email/send-donor-monthly-instructions";
 import {
   donorPledgeSchema,
   type DonorPledge,
@@ -59,7 +62,8 @@ export async function registerDonorPledge(
   }
 
   try {
-    await db.insert(donorPledges).values({
+    const registeredAt = new Date().toISOString();
+    const pledgeValues = {
       id: pledgeId,
       nome: data.nome,
       cpf: formatCPF(data.cpf),
@@ -73,6 +77,7 @@ export async function registerDonorPledge(
       residence_source: "confirmed",
       frequencia: data.frequencia,
       duracao: data.frequencia === "mensal" ? data.duracao ?? null : null,
+      dia_vencimento: isUnica ? null : data.dia_vencimento!,
       valor: data.valor,
       meio_pagamento: null,
       data_pagamento: isUnica ? data.data_pagamento || null : null,
@@ -83,12 +88,31 @@ export async function registerDonorPledge(
       recibo_path: finalReciboPath,
       recibo_nome: finalReciboNome,
       observacoes: data.observacoes || null,
+      created_at: registeredAt,
+    } satisfies typeof donorPledges.$inferInsert;
+
+    await db.transaction(async (tx) => {
+      await tx.insert(donorPledges).values(pledgeValues);
+      if (!isUnica) {
+        const occurrence = firstMonthlyOccurrence(pledgeValues);
+        if (!occurrence) throw new Error("Invalid monthly recurrence");
+        await tx.insert(donorPaymentLedger).values({
+          pledge_id: pledgeId,
+          competencia: occurrence.competence,
+          due_date: occurrence.dueDate,
+          expected_value: data.valor,
+        });
+        await tx.insert(donorMonthlyInstructionSends).values({
+          pledge_id: pledgeId,
+          generation: 1,
+          receipt_competencia: occurrence.competence,
+          status: "pending",
+          provider_idempotency_key: monthlyInstructionsProviderKey(pledgeId, 1),
+        });
+      }
     });
-  } catch (error) {
-    console.error(
-      "[registerDonorPledge] falha ao salvar:",
-      error instanceof Error ? error.message : error
-    );
+  } catch {
+    console.error("[registerDonorPledge] falha ao salvar cadastro.");
 
     if (finalReciboPath && pendingReciboPath) {
       try {
@@ -102,6 +126,18 @@ export async function registerDonorPledge(
       success: false,
       errors: { _form: ["Erro ao registrar sua doação. Tente novamente."] },
     };
+  }
+
+  if (!isUnica) {
+    try {
+      const instructions = await sendDonorMonthlyInstructions(pledgeId);
+      if (instructions.status === "failed" || instructions.status === "uncertain") {
+        console.error("[registerDonorPledge] instruções mensais não confirmadas.");
+      }
+    } catch {
+      // A tentativa pendente continua visível para recuperação administrativa.
+      console.error("[registerDonorPledge] instruções mensais não confirmadas.");
+    }
   }
 
   try {

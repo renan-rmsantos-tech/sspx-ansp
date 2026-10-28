@@ -73,6 +73,8 @@ npm run db:migrate && npm run db:bootstrap
 npm run dev
 ```
 
+`npm run dev` migra, inicializa e insere sete benfeitores fictícios locais (sem enviar e-mails); se o banco estiver indisponível, o Next inicia com aviso. `npm run db:seed` preserva dados existentes; `npm run db:seed -- --reset` recria somente esses sete registros e recibos, com datas relativas ao dia da execução. O seed nunca roda em produção. Datas existentes não são atualizadas; se o vencimento de 10 dias cair em 29–31, o exemplo usa lembrete de 5 dias.
+
 Key env vars: `DATABASE_URL`, `SESSION_SECRET` (≥32 chars), `STORAGE_DIR`, `ADMIN_EMAIL`/`ADMIN_PASSWORD`, `APP_HOST` (production routing only).
 
 Production start: `npm start` = migrate → bootstrap → `next start`.

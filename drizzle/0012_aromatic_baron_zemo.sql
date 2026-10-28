@@ -1,0 +1,4 @@
+ALTER TABLE "donor_payment_ledger" DROP CONSTRAINT "donor_payment_ledger_due_day_check";--> statement-breakpoint
+ALTER TABLE "donor_pledges" DROP CONSTRAINT "donor_pledges_dia_vencimento_check";--> statement-breakpoint
+ALTER TABLE "donor_payment_ledger" ADD CONSTRAINT "donor_payment_ledger_due_day_check" CHECK (extract(day from "donor_payment_ledger"."due_date") between 1 and 31);--> statement-breakpoint
+ALTER TABLE "donor_pledges" ADD CONSTRAINT "donor_pledges_dia_vencimento_check" CHECK (("donor_pledges"."frequencia" = 'mensal' and "donor_pledges"."dia_vencimento" is not null and "donor_pledges"."dia_vencimento" between 1 and 31) or ("donor_pledges"."frequencia" = 'unica' and "donor_pledges"."dia_vencimento" is null));

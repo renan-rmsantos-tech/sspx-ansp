@@ -6,6 +6,9 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: "jsdom",
+    // The jsdom form suites compete for CPU when Vitest uses every host core.
+    // Bound concurrency so the Docker release gate does not time out under load.
+    maxWorkers: 2,
     setupFiles: ["./__tests__/setup.ts"],
     include: ["__tests__/**/*.test.{ts,tsx}"],
     coverage: {

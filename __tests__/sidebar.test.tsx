@@ -33,31 +33,78 @@ vi.mock("@/lib/utils", () => ({
 
 import { Sidebar } from "@/app/admin/_components/sidebar";
 
+function menuSections() {
+  const nav = screen.getByRole("navigation", { name: "Menu administrativo" });
+  return Array.from(nav.children).map((group) => ({
+    title: group.firstElementChild?.textContent,
+    links: Array.from(group.querySelectorAll("a")).map((link) => ({
+      label: link.textContent?.trim(),
+      href: link.getAttribute("href"),
+    })),
+  }));
+}
+
 describe("Sidebar", () => {
   afterEach(() => {
     cleanup();
-  });
-  it("renders all three navigation links", () => {
-    render(<Sidebar />);
-    expect(screen.getByText("Solicitações")).toBeInTheDocument();
-    expect(screen.getByText("Ano Letivo")).toBeInTheDocument();
-    expect(screen.getByText("Textos de Decisão")).toBeInTheDocument();
+    mockPathname = "/admin/solicitacoes";
   });
 
-  it("renders correct hrefs", () => {
-    render(<Sidebar />);
-    expect(screen.getByText("Solicitações").closest("a")).toHaveAttribute(
-      "href",
-      "/admin/solicitacoes"
-    );
-    expect(screen.getByText("Ano Letivo").closest("a")).toHaveAttribute(
-      "href",
-      "/admin/ano-letivo"
-    );
-    expect(screen.getByText("Textos de Decisão").closest("a")).toHaveAttribute(
-      "href",
-      "/admin/textos"
-    );
+  it("shows every administrator link in the requested group and item order", () => {
+    render(<Sidebar role="admin" />);
+
+    expect(menuSections()).toEqual([
+      {
+        title: "Bolsas",
+        links: [
+          { label: "Solicitações", href: "/admin/solicitacoes" },
+          { label: "Ano letivo", href: "/admin/ano-letivo" },
+          { label: "Textos de decisão", href: "/admin/textos" },
+          { label: "Modelo de contrato", href: "/admin/contrato" },
+        ],
+      },
+      {
+        title: "Benfeitores",
+        links: [
+          { label: "Cadastros", href: "/admin/benfeitores" },
+          { label: "Relatórios", href: "/admin/relatorios" },
+        ],
+      },
+      {
+        title: "E-mails aos benfeitores",
+        links: [
+          { label: "Boas-vindas", href: "/admin/email-benfeitores" },
+          { label: "Instruções do pagamento mensal", href: "/admin/instrucoes-benfeitores" },
+          { label: "Lembretes de pagamento", href: "/admin/lembretes-benfeitores" },
+        ],
+      },
+      {
+        title: "Sistema",
+        links: [
+          { label: "Usuários", href: "/admin/usuarios" },
+          { label: "Cabeçalho dos documentos", href: "/admin/cabecalho" },
+        ],
+      },
+    ]);
+    expect(screen.queryByRole("link", { name: "Conferência de pagamentos" })).not.toBeInTheDocument();
+  });
+
+  it("keeps only the existing Secretaria destinations and omits empty groups", () => {
+    render(<Sidebar role="secretaria" />);
+
+    expect(menuSections()).toEqual([
+      {
+        title: "Bolsas",
+        links: [{ label: "Solicitações", href: "/admin/solicitacoes" }],
+      },
+      {
+        title: "Benfeitores",
+        links: [{ label: "Cadastros", href: "/admin/benfeitores" }],
+      },
+    ]);
+    expect(screen.queryByText("E-mails aos benfeitores")).not.toBeInTheDocument();
+    expect(screen.queryByText("Sistema")).not.toBeInTheDocument();
+    expect(menuSections().every((section) => section.links.length > 0)).toBe(true);
   });
 
   it("highlights the correct active link based on pathname", () => {
@@ -68,7 +115,7 @@ describe("Sidebar", () => {
     expect(solLink).toHaveAttribute("aria-current", "page");
     expect(solLink?.className).toContain("text-accent");
 
-    const anoLink = screen.getByText("Ano Letivo").closest("a");
+    const anoLink = screen.getByText("Ano letivo").closest("a");
     expect(anoLink).not.toHaveAttribute("aria-current");
 
     unmount();
@@ -76,19 +123,12 @@ describe("Sidebar", () => {
     mockPathname = "/admin/ano-letivo";
     render(<Sidebar />);
 
-    const anoLinkActive = screen.getByText("Ano Letivo").closest("a");
+    const anoLinkActive = screen.getByText("Ano letivo").closest("a");
     expect(anoLinkActive).toHaveAttribute("aria-current", "page");
     expect(anoLinkActive?.className).toContain("text-accent");
 
     const solLinkInactive = screen.getByText("Solicitações").closest("a");
     expect(solLinkInactive).not.toHaveAttribute("aria-current");
-  });
-
-  it("renders the Dados and Configurações section labels", () => {
-    render(<Sidebar />);
-    expect(screen.getByText("Dados")).toBeInTheDocument();
-    expect(screen.getByText("Configurações")).toBeInTheDocument();
-    expect(screen.getByText("Modelos")).toBeInTheDocument();
   });
 
   it("renders hamburger button for mobile", () => {
@@ -106,21 +146,4 @@ describe("Sidebar", () => {
     fireEvent.click(btn);
     expect(btn).toHaveAttribute("aria-expanded", "false");
   });
-});
-
-it("agrupa os modelos e mantém configurações separadas", () => {
-  render(<Sidebar />);
-  const models = screen.getByText("Modelos").parentElement!;
-  expect(models).toHaveTextContent("Cabeçalho");
-  expect(models).toHaveTextContent("Textos de Decisão");
-  expect(models).toHaveTextContent("Modelo de Contrato");
-  expect(models).toHaveTextContent("E-mail para Benfeitores");
-  expect(models).not.toHaveTextContent("Ano Letivo");
-  cleanup();
-});
-it("oculta modelos para a secretaria", () => {
-  render(<Sidebar role="secretaria" />);
-  expect(screen.queryByText("Modelos")).not.toBeInTheDocument();
-  expect(screen.queryByText("E-mail para Benfeitores")).not.toBeInTheDocument();
-  cleanup();
 });

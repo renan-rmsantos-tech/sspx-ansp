@@ -1,6 +1,7 @@
 "use server";
 
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNull } from "drizzle-orm";
+import { z } from "zod";
 import {
   requireAdmin,
   requireCapability,
@@ -8,13 +9,19 @@ import {
 } from "@/lib/auth/authorization";
 import { BYPASS_USER, isAuthBypass } from "@/lib/auth/bypass";
 import { db } from "@/lib/db";
+import { nextOccurrence, occurrenceForMonth } from "@/lib/donor-recurrence";
+import { dueSnapshotDecision, monthlyReceiptState } from "@/lib/donor-payment-ledger";
+import { saoPauloDate } from "@/lib/donor-recurrence";
 import {
   applications,
   adminUsers,
   contractTemplates,
   decisionTemplates,
   documentHeader,
+  donorPaymentLedger,
+  donorMonthlyInstructionSends,
   donorPledges,
+  donorReminderSends,
   schoolYears,
 } from "@/lib/db/schema";
 import { getStorage } from "@/lib/storage";
@@ -154,8 +161,80 @@ export async function getDonorPledges() {
       orderBy: desc(donorPledges.created_at),
     });
 
-    const now = Date.now();
+    const monthlyIds = rows
+      .filter((row) => row.frequencia === "mensal")
+      .map((row) => row.id);
+    const reminderRows = monthlyIds.length
+      ? await db.query.donorReminderSends.findMany({
+          columns: {
+            pledge_id: true,
+            kind: true,
+            competencia: true,
+            status: true,
+            sent_at: true,
+            error_code: true,
+          },
+          where: inArray(donorReminderSends.pledge_id, monthlyIds),
+          orderBy: [
+            desc(donorReminderSends.updated_at),
+            desc(donorReminderSends.created_at),
+          ],
+        })
+      : [];
+    const latestReminderByPledge = new Map<string, (typeof reminderRows)[number]>();
+    for (const reminder of reminderRows) {
+      if (!latestReminderByPledge.has(reminder.pledge_id)) {
+        latestReminderByPledge.set(reminder.pledge_id, reminder);
+      }
+    }
+
+    const [instructionRows, ledgerRows] = monthlyIds.length
+      ? await Promise.all([
+          db.query.donorMonthlyInstructionSends.findMany({
+            columns: {
+              pledge_id: true, generation: true, receipt_competencia: true,
+              status: true, sent_at: true, error_code: true,
+              reservation_expires_at: true, provider_call_started_at: true,
+            },
+            where: inArray(donorMonthlyInstructionSends.pledge_id, monthlyIds),
+            orderBy: desc(donorMonthlyInstructionSends.generation),
+          }),
+          db.query.donorPaymentLedger.findMany({
+            columns: {
+              pledge_id: true, competencia: true, due_date: true,
+              receipt_path: true, receipt_name: true, receipt_uploaded_at: true,
+            },
+            where: inArray(donorPaymentLedger.pledge_id, monthlyIds),
+            orderBy: asc(donorPaymentLedger.competencia),
+          }),
+        ])
+      : [[], []];
+    const latestInstructionsByPledge = new Map<string, (typeof instructionRows)[number]>();
+    for (const attempt of instructionRows) {
+      if (!latestInstructionsByPledge.has(attempt.pledge_id)) {
+        latestInstructionsByPledge.set(attempt.pledge_id, attempt);
+      }
+    }
+    const ledgerByPledge = new Map<string, (typeof ledgerRows)>();
+    for (const ledger of ledgerRows) {
+      const rows = ledgerByPledge.get(ledger.pledge_id) ?? [];
+      rows.push(ledger);
+      ledgerByPledge.set(ledger.pledge_id, rows);
+    }
+
+    const nowDate = new Date();
+    const now = nowDate.getTime();
+    const currentMonth = saoPauloDate(nowDate).slice(0, 7);
     const data = rows.map((row) => {
+      const latest = latestReminderByPledge.get(row.id);
+      const instructions = latestInstructionsByPledge.get(row.id);
+      const ledger = ledgerByPledge.get(row.id) ?? [];
+      const displayOccurrence = row.frequencia === "mensal"
+        ? occurrenceForMonth(row, currentMonth) ?? nextOccurrence(row, nowDate)
+        : null;
+      const currentLedger = displayOccurrence
+        ? ledger.find((item) => item.competencia === displayOccurrence.competence)
+        : undefined;
       const {
         welcome_email_reservation_token: reservationToken,
         welcome_email_reservation_expires_at: reservationExpiresAt,
@@ -163,6 +242,41 @@ export async function getDonorPledges() {
       } = row;
       return {
         ...safeRow,
+        next_due_date: row.frequencia === "mensal"
+          ? nextOccurrence(row, new Date(now))?.dueDate ?? null
+          : null,
+        latest_reminder: row.frequencia === "mensal" && latest
+          ? {
+              kind: latest.kind,
+              competencia: latest.competencia,
+              status: latest.status,
+              sent_at: latest.sent_at,
+              error_code: latest.error_code,
+            }
+          : null,
+        latest_instructions: row.frequencia === "mensal" && instructions
+          ? {
+              generation: instructions.generation,
+              receipt_competencia: instructions.receipt_competencia,
+              status: instructions.status === "sending" &&
+                  instructions.reservation_expires_at &&
+                  new Date(instructions.reservation_expires_at).getTime() <= now
+                ? instructions.provider_call_started_at ? "uncertain" as const : "pending" as const
+                : instructions.status,
+              sent_at: instructions.sent_at,
+              error_code: instructions.error_code,
+            }
+          : null,
+        current_receipt: row.frequencia === "mensal" && currentLedger
+          ? {
+              competencia: currentLedger.competencia,
+              status: monthlyReceiptState(currentLedger),
+            }
+          : null,
+        pending_occurrences: row.frequencia === "mensal"
+          ? ledger.filter((item) => !item.receipt_uploaded_at)
+              .map((item) => ({ competencia: item.competencia, due_date: item.due_date }))
+          : [],
         welcome_email_in_progress: Boolean(
           reservationToken &&
             reservationExpiresAt &&
@@ -174,6 +288,86 @@ export async function getDonorPledges() {
     return { data, error: null };
   } catch {
     return { data: null, error: "Erro ao buscar benfeitores." };
+  }
+}
+
+export async function updateDonorDueDay(
+  id: string,
+  day: number
+): Promise<
+  | { success: true; dia_vencimento: number; next_due_date: string | null }
+  | { success: false; error: string }
+> {
+  await requireAdmin();
+
+  if (!z.string().uuid().safeParse(id).success) {
+    return { success: false, error: "Benfeitor inválido." };
+  }
+  if (!z.number().int().min(1).max(31).safeParse(day).success) {
+    return { success: false, error: "Informe um dia inteiro entre 1 e 31." };
+  }
+
+  try {
+    const today = saoPauloDate(new Date());
+    const updated = await db.transaction(async (tx) => {
+      const [pledge] = await tx.update(donorPledges)
+        .set({ dia_vencimento: day })
+        .where(and(eq(donorPledges.id, id), eq(donorPledges.frequencia, "mensal")))
+        .returning({
+          id: donorPledges.id,
+          created_at: donorPledges.created_at,
+          frequencia: donorPledges.frequencia,
+          duracao: donorPledges.duracao,
+          dia_vencimento: donorPledges.dia_vencimento,
+        });
+      if (!pledge) return null;
+
+      const snapshots = await tx.query.donorPaymentLedger.findMany({
+        where: and(
+          eq(donorPaymentLedger.pledge_id, id),
+          gte(donorPaymentLedger.due_date, today)
+        ),
+      });
+      for (const snapshot of snapshots) {
+        const decision = dueSnapshotDecision(pledge, snapshot, today);
+        if (decision.kind === "keep") continue;
+        const eligible = and(
+          eq(donorPaymentLedger.id, snapshot.id),
+          gte(donorPaymentLedger.due_date, today),
+          isNull(donorPaymentLedger.receipt_path),
+          isNull(donorPaymentLedger.receipt_name),
+          isNull(donorPaymentLedger.receipt_uploaded_at)
+        );
+        if (decision.kind === "update") {
+          await tx.update(donorPaymentLedger)
+            .set({ due_date: decision.dueDate, updated_at: new Date().toISOString() })
+            .where(eligible);
+        } else {
+          // A sent reminder still points to this competence; retain its row.
+          const reminder = await tx.query.donorReminderSends.findFirst({
+            columns: { id: true },
+            where: and(
+              eq(donorReminderSends.pledge_id, id),
+              eq(donorReminderSends.competencia, snapshot.competencia)
+            ),
+          });
+          if (!reminder) await tx.delete(donorPaymentLedger).where(eligible);
+        }
+      }
+      return pledge;
+    });
+
+    if (!updated || updated.dia_vencimento === null) {
+      return { success: false, error: "Contribuição mensal não encontrada." };
+    }
+
+    return {
+      success: true,
+      dia_vencimento: updated.dia_vencimento,
+      next_due_date: nextOccurrence(updated, new Date())?.dueDate ?? null,
+    };
+  } catch {
+    return { success: false, error: "Não foi possível atualizar o dia. Tente novamente." };
   }
 }
 

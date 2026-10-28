@@ -33,6 +33,7 @@ integration("getDonorReports with PostgreSQL", () => {
     await db.insert(donorPledges).values({
       id, nome: "Cadastro sintético de teste", cpf: "000.000.000-00", email: `${id}@example.test`,
       frequencia: input.frequency, valor: 1, meio_pagamento: null,
+      dia_vencimento: input.frequency === "mensal" ? 28 : null,
       residence_state: input.state, priorado_capela: input.chapel, created_at: input.createdAt,
     });
   }

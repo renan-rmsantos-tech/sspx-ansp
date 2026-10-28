@@ -1,20 +1,27 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 
-vi.mock("@/app/admin/_actions/admin-actions", () => ({ deleteDonorPledge: vi.fn() }));
+const { updateDonorDueDay } = vi.hoisted(() => ({ updateDonorDueDay: vi.fn() }));
+vi.mock("@/app/admin/_actions/admin-actions", () => ({ deleteDonorPledge: vi.fn(), updateDonorDueDay }));
 const { retryDonorWelcomeEmail, markDonorWelcomeEmailSent, unmarkDonorWelcomeEmailSent } = vi.hoisted(() => ({ retryDonorWelcomeEmail: vi.fn(), markDonorWelcomeEmailSent: vi.fn(), unmarkDonorWelcomeEmailSent: vi.fn() }));
 vi.mock("@/app/admin/_actions/donor-email-actions", () => ({ retryDonorWelcomeEmail, markDonorWelcomeEmailSent, unmarkDonorWelcomeEmailSent }));
+vi.mock("@/app/admin/_actions/donor-monthly-instructions-actions", () => ({
+  sendManualDonorMonthlyInstructionsAction: vi.fn(),
+  resolveUncertainDonorMonthlyInstructionsAction: vi.fn(),
+}));
 
 import { BenfeitoresClient, SecretariatDonorsClient } from "@/app/admin/benfeitores/client";
 import type { DonorPledge } from "@/app/admin/_components/donor-card";
 
 afterEach(cleanup);
+beforeEach(() => updateDonorDueDay.mockReset());
 
 describe("SecretariatDonorsClient", () => {
   it("filters the operational donor projection without rendering sensitive identifiers", () => {
     render(<SecretariatDonorsClient initialDonors={[{ id: "d1", nome: "Ana", email: "ana@example.com", telefone: "(11) 9", frequencia: "mensal", duracao: "um_ano", valor: 100, meio_pagamento: "pix", data_pagamento: "10", lembrete_canal: "email", priorado_capela: null, observacoes: null, created_at: "2026-01-01" }]} />);
     expect(screen.getByText("Ana")).toBeInTheDocument();
     expect(screen.queryByTestId("donor-welcome-send")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("donor-reminder-status")).not.toBeInTheDocument();
     fireEvent.change(screen.getByRole("searchbox"), { target: { value: "inexistente" } });
     expect(screen.getByText("Nenhum benfeitor corresponde aos filtros.")).toBeInTheDocument();
   });
@@ -57,6 +64,148 @@ describe("SecretariatDonorsClient", () => {
 });
 
 describe("BenfeitoresClient", () => {
+  const monthlyDonor: DonorPledge = {
+    id: "48a283a7-4869-48ca-ac75-dc48bd30c9e8",
+    nome: "Ana",
+    cpf: "111.111.111-11",
+    email: "ana@example.com",
+    frequencia: "mensal",
+    duracao: "indeterminado",
+    valor: 100,
+    dia_vencimento: 5,
+    next_due_date: "2026-11-05",
+    created_at: "2026-10-26T12:00:00Z",
+  };
+
+  it("shows monthly instructions only for monthly donors", () => {
+    render(<BenfeitoresClient initialDonors={[
+      monthlyDonor,
+      { ...monthlyDonor, id: "one-time", nome: "Bruna", frequencia: "unica", duracao: null, dia_vencimento: null },
+    ]} />);
+    expect(screen.getByTestId(`donor-card-${monthlyDonor.id}`)).toHaveTextContent("não enviado");
+    expect(screen.getByTestId("donor-card-one-time")).not.toHaveTextContent("Instruções do pagamento mensal");
+    expect(screen.getAllByTestId("donor-instructions-send")).toHaveLength(1);
+  });
+
+  it("shows the due date and pending reminder distinctly from provider acceptance", () => {
+    render(<BenfeitoresClient initialDonors={[{
+      ...monthlyDonor,
+      latest_reminder: { kind: "10d", competencia: "2026-11", status: "sending", sent_at: null, error_code: null },
+    }]} />);
+    expect(screen.getByTestId("donor-due-day")).toHaveTextContent("Próximo vencimento: 05/11/2026");
+    expect(screen.getByTestId("donor-reminder-status")).toHaveTextContent("10 dias antes · competência 11/2026 · Envio em andamento; aceitação ainda não registrada.");
+    expect(screen.getByTestId("donor-reminder-status")).not.toHaveTextContent("Aceito pelo Resend");
+  });
+
+  it("shows the last accepted 5-day reminder time without claiming delivery", () => {
+    render(<BenfeitoresClient initialDonors={[{
+      ...monthlyDonor,
+      latest_reminder: { kind: "5d", competencia: "2026-11", status: "sent", sent_at: "2026-10-26T15:30:00Z", error_code: null },
+    }]} />);
+    expect(screen.getByTestId("donor-reminder-status")).toHaveTextContent("5 dias antes · competência 11/2026 · Aceito pelo Resend em 26/10/2026, 12:30. Entrega na caixa de entrada não confirmada.");
+  });
+
+  it("shows a failed outcome and a safe uncertain label", () => {
+    render(<BenfeitoresClient initialDonors={[{
+      ...monthlyDonor,
+      latest_reminder: { kind: "10d", competencia: "2026-11", status: "failed", sent_at: null, error_code: "provider_rejected" },
+    }]} />);
+    expect(screen.getByTestId("donor-reminder-status")).toHaveTextContent("Falha no envio: envio recusado pelo Resend.");
+    cleanup();
+    render(<BenfeitoresClient initialDonors={[{
+      ...monthlyDonor,
+      latest_reminder: { kind: "5d", competencia: "2026-11", status: "uncertain", sent_at: null, error_code: "unknown" },
+    }]} />);
+    expect(screen.getByTestId("donor-reminder-status")).toHaveTextContent("Resultado incerto; verificar no Resend antes de reenviar.");
+  });
+
+  it("does not render an unrecognized failure value from the server", () => {
+    render(<BenfeitoresClient initialDonors={[{
+      ...monthlyDonor,
+      latest_reminder: { kind: "10d", competencia: "2026-11", status: "failed", sent_at: null, error_code: "private provider response" },
+    }]} />);
+    expect(screen.getByTestId("donor-reminder-status")).toHaveTextContent("Falha no envio: motivo não informado.");
+    expect(screen.getByTestId("donor-reminder-status")).not.toHaveTextContent("private provider response");
+  });
+
+  it("labels an expired one-year plan as ended and shows no send when email is opted in", () => {
+    render(<BenfeitoresClient initialDonors={[{
+      ...monthlyDonor, duracao: "um_ano", next_due_date: null, lembrete_canal: "email",
+    }]} />);
+    expect(screen.getByTestId("donor-due-day")).toHaveTextContent("Próximo vencimento: Encerrado");
+    expect(screen.getByTestId("donor-reminder-status")).toHaveTextContent("Nenhum envio registrado.");
+  });
+
+  it("edits a monthly day from 5 to 12 and refreshes the displayed next due date", async () => {
+    updateDonorDueDay.mockResolvedValue({ success: true, dia_vencimento: 12, next_due_date: "2026-11-12" });
+    render(<BenfeitoresClient initialDonors={[monthlyDonor]} />);
+    expect(screen.getByTestId("donor-due-day")).toHaveTextContent("Dia de vencimento: 5 de cada mês");
+    expect(screen.getByTestId("donor-due-day")).toHaveTextContent("Próximo vencimento: 05/11/2026");
+
+    fireEvent.click(screen.getByRole("button", { name: "Alterar dia de vencimento" }));
+    fireEvent.change(screen.getByRole("spinbutton", { name: "Novo dia de vencimento" }), { target: { value: "12" } });
+    fireEvent.click(screen.getByRole("button", { name: "Salvar dia" }));
+
+    await waitFor(() => expect(updateDonorDueDay).toHaveBeenCalledWith(monthlyDonor.id, 12));
+    expect(await screen.findByRole("status")).toHaveTextContent("Dia de vencimento atualizado.");
+    expect(screen.getByTestId("donor-due-day")).toHaveTextContent("Dia de vencimento: 12 de cada mês");
+    expect(screen.getByTestId("donor-due-day")).toHaveTextContent("Próximo vencimento: 12/11/2026");
+  });
+
+  it("allows an administrator to choose day 31 and explains short months", async () => {
+    updateDonorDueDay.mockResolvedValue({ success: true, dia_vencimento: 31, next_due_date: "2026-10-31" });
+    render(<BenfeitoresClient initialDonors={[monthlyDonor]} />);
+    fireEvent.click(screen.getByRole("button", { name: "Alterar dia de vencimento" }));
+    expect(screen.getByRole("spinbutton", { name: "Novo dia de vencimento" })).toHaveAttribute("max", "31");
+    expect(screen.getByText("De 1 a 31. Em meses mais curtos, vale o último dia.")).toBeInTheDocument();
+    fireEvent.change(screen.getByRole("spinbutton", { name: "Novo dia de vencimento" }), { target: { value: "31" } });
+    fireEvent.click(screen.getByRole("button", { name: "Salvar dia" }));
+    await waitFor(() => expect(updateDonorDueDay).toHaveBeenCalledWith(monthlyDonor.id, 31));
+    expect(screen.getByTestId("donor-due-day")).toHaveTextContent("Dia de vencimento: 31 de cada mês");
+  });
+
+  it("shows a validation error for an invalid day without submitting", async () => {
+    render(<BenfeitoresClient initialDonors={[monthlyDonor]} />);
+    fireEvent.click(screen.getByRole("button", { name: "Alterar dia de vencimento" }));
+    fireEvent.change(screen.getByRole("spinbutton", { name: "Novo dia de vencimento" }), { target: { value: "32" } });
+    fireEvent.click(screen.getByRole("button", { name: "Salvar dia" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Informe um dia inteiro entre 1 e 31.");
+    expect(updateDonorDueDay).not.toHaveBeenCalled();
+  });
+
+  it("prevents duplicate submits while a day update is pending", async () => {
+    let finish!: (result: { success: true; dia_vencimento: number; next_due_date: string }) => void;
+    updateDonorDueDay.mockReturnValue(new Promise((resolve) => { finish = resolve; }));
+    render(<BenfeitoresClient initialDonors={[monthlyDonor]} />);
+    fireEvent.click(screen.getByRole("button", { name: "Alterar dia de vencimento" }));
+    fireEvent.change(screen.getByRole("spinbutton", { name: "Novo dia de vencimento" }), { target: { value: "12" } });
+    const form = screen.getByRole("button", { name: "Salvar dia" }).closest("form")!;
+    fireEvent.submit(form);
+    fireEvent.submit(form);
+    expect(updateDonorDueDay).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("button", { name: "Salvando…" })).toBeDisabled();
+    await act(async () => {
+      finish({ success: true, dia_vencimento: 12, next_due_date: "2026-11-12" });
+    });
+    expect(screen.getByRole("status")).toHaveTextContent("Dia de vencimento atualizado.");
+  });
+
+  it("shows server errors and leaves the edit available for retry", async () => {
+    updateDonorDueDay.mockResolvedValue({ success: false, error: "Contribuição mensal não encontrada." });
+    render(<BenfeitoresClient initialDonors={[monthlyDonor]} />);
+    fireEvent.click(screen.getByRole("button", { name: "Alterar dia de vencimento" }));
+    fireEvent.click(screen.getByRole("button", { name: "Salvar dia" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Contribuição mensal não encontrada.");
+    expect(screen.getByRole("button", { name: "Salvar dia" })).toBeEnabled();
+    expect(screen.getByTestId("donor-due-day")).toHaveTextContent("Dia de vencimento: 5 de cada mês");
+  });
+
+  it("does not show the due-day editor for one-time pledges", () => {
+    render(<BenfeitoresClient initialDonors={[{ ...monthlyDonor, frequencia: "unica", dia_vencimento: null, data_pagamento: "2026-10-25" }]} />);
+    expect(screen.queryByTestId("donor-due-day")).not.toBeInTheDocument();
+    expect(screen.getByText("25/10/2026")).toBeInTheDocument();
+  });
+
   it("combines priorado, search, and frequency filters, including missing priorado", () => {
     const base: DonorPledge = {
       id: "d1",

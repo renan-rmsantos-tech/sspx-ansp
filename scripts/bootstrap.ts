@@ -21,6 +21,8 @@ import {
   DONOR_WELCOME_BODY,
   DONOR_WELCOME_SUBJECT,
 } from "../lib/email/donor-welcome-template";
+import { ensureDonorReminderTemplate } from "../lib/email/donor-reminder-template-store";
+import { ensureDonorMonthlyInstructionsTemplate } from "../lib/email/donor-monthly-instructions-template-store";
 
 function log(message: string) {
   console.log(`[bootstrap] ${message}`);
@@ -197,6 +199,8 @@ async function main() {
   await bootstrapContractTemplate();
   await bootstrapDocumentHeader();
   await bootstrapDonorWelcomeTemplate();
+  await ensureDonorReminderTemplate();
+  await ensureDonorMonthlyInstructionsTemplate();
   await bootstrapSchoolYear();
   log("concluído.");
 }

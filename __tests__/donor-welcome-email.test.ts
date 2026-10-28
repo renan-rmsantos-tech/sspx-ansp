@@ -1,15 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { requireAdmin, sendDonorWelcomeEmail, sendDonorWelcomeTestEmail, revalidatePath } = vi.hoisted(() => ({
+const { requireAdmin, sendDonorWelcomeEmail, sendDonorWelcomeTestEmail, sendDonorMonthlyInstructions, revalidatePath } = vi.hoisted(() => ({
   requireAdmin: vi.fn(),
   sendDonorWelcomeEmail: vi.fn(),
   sendDonorWelcomeTestEmail: vi.fn(),
+  sendDonorMonthlyInstructions: vi.fn(),
   revalidatePath: vi.fn(),
 }));
 
 vi.mock("@/lib/db", async () => ({ db: (await import("./helpers/fake-db")).fakeDb }));
 vi.mock("@/lib/auth/authorization", () => ({ requireAdmin }));
 vi.mock("@/lib/email/send-donor-welcome", () => ({ sendDonorWelcomeEmail, sendDonorWelcomeTestEmail }));
+vi.mock("@/lib/email/send-donor-monthly-instructions", () => ({ sendDonorMonthlyInstructions }));
 vi.mock("next/cache", () => ({ revalidatePath }));
 vi.mock("@/lib/storage", () => ({ getStorage: () => ({ move: vi.fn() }) }));
 
@@ -22,7 +24,7 @@ import {
   saveDonorEmailTemplate,
   sendDonorTestEmail,
 } from "@/app/admin/_actions/donor-email-actions";
-import { donorPledges, donorWelcomeTemplates } from "@/lib/db/schema";
+import { donorMonthlyInstructionSends, donorPaymentLedger, donorPledges, donorWelcomeTemplates } from "@/lib/db/schema";
 import { renderDonorWelcomeEmail } from "@/lib/email/donor-welcome-template";
 import { failWrites, inserted, queryFor, resetFakeDb, setReturning, updated } from "./helpers/fake-db";
 
@@ -39,6 +41,7 @@ const validDonor = {
   priorado_capela: "nenhuma" as const,
   frequencia: "mensal" as const,
   duracao: "um_ano" as const,
+  dia_vencimento: 10,
   valor: 80,
 };
 
@@ -48,6 +51,7 @@ beforeEach(() => {
   requireAdmin.mockResolvedValue({ id: "admin", role: "admin" });
   sendDonorWelcomeEmail.mockResolvedValue({ status: "sent" });
   sendDonorWelcomeTestEmail.mockResolvedValue(undefined);
+  sendDonorMonthlyInstructions.mockResolvedValue({ status: "sent" });
 });
 
 describe("e-mail de boas-vindas ao benfeitor", () => {
@@ -76,7 +80,7 @@ describe("e-mail de boas-vindas ao benfeitor", () => {
     const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
       expect((await registerDonorPledge(validDonor)).success).toBe(true);
-      expect(inserted).toHaveLength(1);
+      expect(inserted.map((entry) => entry.table)).toEqual([donorPledges, donorPaymentLedger, donorMonthlyInstructionSends]);
       expect(errorLog).toHaveBeenCalledWith(
         "[registerDonorPledge] e-mail de boas-vindas não enviado."
       );

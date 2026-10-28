@@ -12,6 +12,8 @@ services:
       PORT: "3000"
       HOSTNAME: "0.0.0.0"
       STORAGE_DIR: /data/uploads
+      # Traefik is the only public ingress; use its appended client address for receipt throttling.
+      TRUST_TRAEFIK_FORWARDED_IP: "true"
     volumes:
       # Documentos das solicitações (RG, comprovantes, extratos). Precisa
       # sobreviver ao redeploy e entrar na rotina de backup.

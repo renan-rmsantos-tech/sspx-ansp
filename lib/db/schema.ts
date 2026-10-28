@@ -328,6 +328,7 @@ export const donorPledges = pgTable(
     email: text("email").notNull(),
     frequencia: text("frequencia").$type<"unica" | "mensal">().notNull(),
     duracao: text("duracao").$type<"um_ano" | "indeterminado">(),
+    dia_vencimento: integer("dia_vencimento"),
     valor: numeric("valor", {
       precision: 12,
       scale: 2,
@@ -370,6 +371,218 @@ export const donorPledges = pgTable(
       "donor_pledges_residence_source_check",
       sql`${t.residence_source} is null or ${t.residence_source} in ('confirmed', 'cep_lookup')`
     ),
+    check(
+      "donor_pledges_dia_vencimento_check",
+      sql`(${t.frequencia} = 'mensal' and ${t.dia_vencimento} is not null and ${t.dia_vencimento} between 1 and 31) or (${t.frequencia} = 'unica' and ${t.dia_vencimento} is null)`
+    ),
+  ]
+);
+
+/** Primeiro mês coberto pelo razão mensal; meses anteriores não viram dívida inferida. */
+export const donorLedgerSettings = pgTable(
+  "donor_ledger_settings",
+  {
+    id: integer("id").primaryKey().default(1),
+    launch_competencia: text("launch_competencia").notNull(),
+  },
+  (t) => [
+    check("donor_ledger_settings_singleton_check", sql`${t.id} = 1`),
+    check("donor_ledger_settings_competencia_check", sql`${t.launch_competencia} ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'`),
+  ]
+);
+
+/** Valor esperado e comprovante são snapshots; conferência bancária virá na fase 3. */
+export const donorPaymentLedger = pgTable(
+  "donor_payment_ledger",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    pledge_id: uuid("pledge_id")
+      .notNull()
+      .references(() => donorPledges.id, { onDelete: "cascade" }),
+    competencia: text("competencia").notNull(),
+    due_date: date("due_date", { mode: "string" }).notNull(),
+    expected_value: numeric("expected_value", {
+      precision: 12,
+      scale: 2,
+      mode: "number",
+    }).notNull(),
+    receipt_path: text("receipt_path"),
+    receipt_name: text("receipt_name"),
+    receipt_uploaded_at: timestamp("receipt_uploaded_at", {
+      withTimezone: true,
+      mode: "string",
+    }),
+    created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("donor_payment_ledger_pledge_competencia_idx").on(t.pledge_id, t.competencia),
+    index("donor_payment_ledger_competencia_idx").on(t.competencia),
+    check("donor_payment_ledger_competencia_check", sql`${t.competencia} ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'`),
+    check("donor_payment_ledger_due_month_check", sql`to_char(${t.due_date}, 'YYYY-MM') = ${t.competencia}`),
+    check("donor_payment_ledger_due_day_check", sql`extract(day from ${t.due_date}) between 1 and 31`),
+    check("donor_payment_ledger_expected_value_check", sql`${t.expected_value} > 0`),
+    check("donor_payment_ledger_receipt_check", sql`(${t.receipt_path} is null and ${t.receipt_name} is null and ${t.receipt_uploaded_at} is null) or (${t.receipt_path} is not null and ${t.receipt_name} is not null and ${t.receipt_uploaded_at} is not null)`),
+  ]
+);
+
+export const donorReminderTemplates = pgTable(
+  "donor_reminder_templates",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    assunto: text("assunto").notNull(),
+    corpo: text("corpo").notNull(),
+    updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  () => [uniqueIndex("donor_reminder_templates_singleton_idx").on(sql`(true)`)]
+);
+
+/** Modelo independente das boas-vindas e dos lembretes optativos. */
+export const donorMonthlyInstructionTemplates = pgTable(
+  "donor_monthly_instruction_templates",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    assunto: text("assunto").notNull(),
+    corpo: text("corpo").notNull(),
+    updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  () => [uniqueIndex("donor_monthly_instruction_templates_singleton_idx").on(sql`(true)`)]
+);
+
+/** Cada geração é uma tentativa auditável; o envio será implementado na task 21. */
+export const donorMonthlyInstructionSends = pgTable(
+  "donor_monthly_instruction_sends",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    pledge_id: uuid("pledge_id")
+      .notNull()
+      .references(() => donorPledges.id, { onDelete: "cascade" }),
+    generation: integer("generation").notNull(),
+    receipt_competencia: text("receipt_competencia"),
+    status: text("status")
+      .$type<"pending" | "sending" | "sent" | "failed" | "uncertain">()
+      .notNull()
+      .default("pending"),
+    sent_at: timestamp("sent_at", { withTimezone: true, mode: "string" }),
+    error_code: text("error_code").$type<
+      | "provider_rejected"
+      | "provider_timeout"
+      | "provider_unavailable"
+      | "configuration"
+      | "database"
+      | "invalid_recipient"
+      | "unknown"
+    >(),
+    attempt_count: integer("attempt_count").notNull().default(0),
+    reservation_token: uuid("reservation_token"),
+    reservation_expires_at: timestamp("reservation_expires_at", {
+      withTimezone: true, mode: "string",
+    }),
+    provider_call_started_at: timestamp("provider_call_started_at", {
+      withTimezone: true, mode: "string",
+    }),
+    provider_message_id: text("provider_message_id"),
+    provider_idempotency_key: text("provider_idempotency_key").notNull(),
+    frozen_recipient: text("frozen_recipient"),
+    frozen_sender: text("frozen_sender"),
+    frozen_subject: text("frozen_subject"),
+    frozen_text: text("frozen_text"),
+    frozen_html: text("frozen_html"),
+    frozen_include_seal: boolean("frozen_include_seal"),
+    created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("donor_monthly_instruction_sends_pledge_generation_idx").on(t.pledge_id, t.generation),
+    uniqueIndex("donor_monthly_instruction_sends_provider_key_idx").on(t.provider_idempotency_key),
+    index("donor_monthly_instruction_sends_status_lease_idx").on(t.status, t.reservation_expires_at),
+    check("donor_monthly_instruction_sends_generation_check", sql`${t.generation} > 0`),
+    check("donor_monthly_instruction_sends_competencia_check", sql`${t.receipt_competencia} is null or ${t.receipt_competencia} ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'`),
+    check("donor_monthly_instruction_sends_status_check", sql`${t.status} in ('pending', 'sending', 'sent', 'failed', 'uncertain')`),
+    check("donor_monthly_instruction_sends_attempt_count_check", sql`${t.attempt_count} >= 0`),
+    check("donor_monthly_instruction_sends_error_code_check", sql`${t.error_code} is null or ${t.error_code} in ('provider_rejected', 'provider_timeout', 'provider_unavailable', 'configuration', 'database', 'invalid_recipient', 'unknown')`),
+    check("donor_monthly_instruction_sends_sent_at_check", sql`(${t.status} = 'sent' and ${t.sent_at} is not null) or (${t.status} <> 'sent' and ${t.sent_at} is null)`),
+    check("donor_monthly_instruction_sends_reservation_check", sql`(${t.reservation_token} is null and ${t.reservation_expires_at} is null) or (${t.reservation_token} is not null and ${t.reservation_expires_at} is not null)`),
+    check("donor_monthly_instruction_sends_provider_key_check", sql`length(${t.provider_idempotency_key}) between 1 and 256`),
+    check("donor_monthly_instruction_sends_frozen_payload_check", sql`(${t.frozen_recipient} is null and ${t.frozen_sender} is null and ${t.frozen_subject} is null and ${t.frozen_text} is null and ${t.frozen_html} is null and ${t.frozen_include_seal} is null) or (${t.frozen_recipient} is not null and ${t.frozen_sender} is not null and ${t.frozen_subject} is not null and ${t.frozen_text} is not null and ${t.frozen_html} is not null and ${t.frozen_include_seal} is not null)`),
+  ]
+);
+
+export const donorReminderSends = pgTable(
+  "donor_reminder_sends",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    pledge_id: uuid("pledge_id")
+      .notNull()
+      .references(() => donorPledges.id, { onDelete: "cascade" }),
+    competencia: text("competencia").notNull(),
+    kind: text("kind").$type<"10d" | "5d">().notNull(),
+    due_date: date("due_date", { mode: "string" }).notNull(),
+    status: text("status")
+      .$type<"sending" | "sent" | "failed" | "uncertain">()
+      .notNull(),
+    sent_at: timestamp("sent_at", { withTimezone: true, mode: "string" }),
+    error_code: text("error_code").$type<
+      | "provider_rejected"
+      | "provider_timeout"
+      | "provider_unavailable"
+      | "configuration"
+      | "database"
+      | "invalid_recipient"
+      | "unknown"
+    >(),
+    attempt_count: integer("attempt_count").notNull().default(0),
+    reservation_token: uuid("reservation_token"),
+    reservation_expires_at: timestamp("reservation_expires_at", {
+      withTimezone: true,
+      mode: "string",
+    }),
+    provider_call_started_at: timestamp("provider_call_started_at", {
+      withTimezone: true,
+      mode: "string",
+    }),
+    provider_message_id: text("provider_message_id"),
+    provider_idempotency_key: text("provider_idempotency_key").notNull(),
+    frozen_recipient: text("frozen_recipient"),
+    frozen_sender: text("frozen_sender"),
+    frozen_subject: text("frozen_subject"),
+    frozen_text: text("frozen_text"),
+    frozen_html: text("frozen_html"),
+    frozen_include_seal: boolean("frozen_include_seal"),
+    created_at: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("donor_reminder_sends_pledge_competencia_kind_idx").on(
+      t.pledge_id,
+      t.competencia,
+      t.kind
+    ),
+    uniqueIndex("donor_reminder_sends_provider_key_idx").on(t.provider_idempotency_key),
+    index("donor_reminder_sends_status_lease_idx").on(t.status, t.reservation_expires_at),
+    check("donor_reminder_sends_competencia_check", sql`${t.competencia} ~ '^[0-9]{4}-(0[1-9]|1[0-2])$'`),
+    check("donor_reminder_sends_kind_check", sql`${t.kind} in ('10d', '5d')`),
+    check("donor_reminder_sends_status_check", sql`${t.status} in ('sending', 'sent', 'failed', 'uncertain')`),
+    check("donor_reminder_sends_attempt_count_check", sql`${t.attempt_count} >= 0`),
+    check("donor_reminder_sends_error_code_check", sql`${t.error_code} is null or ${t.error_code} in ('provider_rejected', 'provider_timeout', 'provider_unavailable', 'configuration', 'database', 'invalid_recipient', 'unknown')`),
+    check("donor_reminder_sends_sent_at_check", sql`${t.status} <> 'sent' or ${t.sent_at} is not null`),
+    check("donor_reminder_sends_frozen_payload_check", sql`(${t.frozen_recipient} is null and ${t.frozen_sender} is null and ${t.frozen_subject} is null and ${t.frozen_text} is null and ${t.frozen_html} is null and ${t.frozen_include_seal} is null) or (${t.frozen_recipient} is not null and ${t.frozen_sender} is not null and ${t.frozen_subject} is not null and ${t.frozen_text} is not null and ${t.frozen_html} is not null and ${t.frozen_include_seal} is not null)`),
   ]
 );
 

@@ -42,6 +42,7 @@ integration("sendDonorWelcomeEmail with PostgreSQL", () => {
       cpf: "000.000.000-00",
       email: `${id}@example.test`,
       frequencia: "mensal",
+      dia_vencimento: 28,
       valor: 1,
       meio_pagamento: null,
       welcome_email_reservation_token: reservation?.token ?? null,
@@ -51,17 +52,19 @@ integration("sendDonorWelcomeEmail with PostgreSQL", () => {
   }
 
   it("allows only one of two concurrent callers to send", async () => {
+    let release!: () => void;
+    const providerPending = new Promise<void>((resolve) => { release = resolve; });
     sendEmail.mockImplementation(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      await providerPending;
       return { data: { id: "accepted" }, error: null };
     });
     const donor = await createDonor();
-    const results = await Promise.all([
-      sendDonorWelcomeEmail(donor),
-      sendDonorWelcomeEmail(donor),
-    ]);
-
-    expect(results.map(({ status }) => status).sort()).toEqual(["in_progress", "sent"]);
+    const first = sendDonorWelcomeEmail(donor);
+    try {
+      await vi.waitFor(() => expect(sendEmail).toHaveBeenCalledTimes(1), { timeout: 10_000 });
+      expect(await sendDonorWelcomeEmail(donor)).toMatchObject({ status: "in_progress" });
+    } finally { release(); }
+    expect(await first).toMatchObject({ status: "sent" });
     expect(sendEmail).toHaveBeenCalledTimes(1);
   });
 

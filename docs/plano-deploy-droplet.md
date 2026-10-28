@@ -222,12 +222,80 @@ cd /opt/apps/projects/sspx-ansp
 ./scripts/backup.sh
 ```
 
-Crons instalados no droplet (usuário `renan`; logs em `~/ansp-*.log`):
+Crons existentes e linha proposta para a fase 2 (usuário `renan`; logs em
+`~/ansp-*.log`):
 
 ```cron
 30 3 * * * docker exec sspx-ansp-ansp-1 npm run storage:cleanup >> /home/renan/ansp-cleanup.log 2>&1
 0 4 * * 0 cd /opt/apps/projects/sspx-ansp && ./scripts/backup.sh >> /home/renan/ansp-backup.log 2>&1
+# Instalar a linha abaixo somente após a liberação e verificação da fase 2:
+0 12 * * * docker exec sspx-ansp-ansp-1 npm run donors:reminders >> /home/renan/ansp-reminders.log 2>&1
 ```
+
+### Lembretes diários dos benfeitores — ativação da fase 2
+
+A linha das 12:00 **UTC** acima ainda precisa ser instalada pelo operador com
+`crontab -e`, no crontab de `renan`, depois da publicação revisada da fase 2.
+O processo calcula a data de cada vencimento e a elegibilidade de 10/5 dias em
+`America/Sao_Paulo`, independentemente do fuso do host. O comando roda no
+container atual `sspx-ansp-ansp-1`, com as mesmas variáveis e o mesmo Postgres
+do aplicativo; não executa migrations nem bootstrap. Não habilite essa linha
+durante a publicação do código.
+
+Antes de instalar a linha:
+
+1. Publique a imagem revisada da fase 2 pelo fluxo de push-to-deploy acima;
+   confirme o `npm test` e `npm run build` do Dockerfile, o health check e as
+   migrations aplicadas. Verifique `docker compose -f compose.traefik.yaml ps`
+   no droplet. Se o build ou o health check falhar, mantenha o cron desativado.
+2. Confirme no container `RESEND_API_KEY`, `RESEND_FROM` com domínio verificado
+   no Resend, `APP_HOST` público em HTTPS e `SESSION_SECRET` válido. Verifique
+   os valores sem imprimir a chave ou o segredo em terminal, chamados ou logs.
+   No painel **Lembretes dos benfeitores**, confira o modelo e envie **Teste**
+   para uma caixa controlada. O assunto traz `[TESTE]` e o link de exemplo não
+   funciona; esse teste confirma apenas o envio e a apresentação do e-mail.
+3. Em ambiente de teste acessível por HTTPS, com a **mesma imagem e migrations**
+   da fase 2 e Resend configurado, use uma inscrição mensal de teste com opção
+   de e-mail e vencimento que gere um lembrete no dia local. Execute uma vez
+   `npm run donors:reminders` no container de teste, abra o link recebido na
+   caixa controlada e envie um PDF ou imagem de teste. Confira na página a
+   confirmação de envio **sem declaração de pagamento recebido** e, na base de
+   teste, que somente a ocorrência da competência do link ganhou comprovante;
+   o valor recebido continua sem confirmação bancária. Abra também um link
+   inválido para conferir a mensagem discreta. Repita o job no mesmo dia:
+   `sent` deve ser zero e `already_sent` deve contar o envio anterior. Não
+   copie o link, o ticket nem o nome do arquivo para chamados ou logs.
+4. Antes de expor o fluxo, confira a configuração de logs do app e do Traefik:
+   **oculte ou suprima URL completa, query string, bearer ticket, caminho do
+   comprovante e nome do arquivo** em logs de requisição/proxy, inclusive em
+   erros e traces. Nunca registre corpo de upload. O link é uma credencial de
+   acesso temporária; só o destinatário do e-mail deve recebê-lo.
+
+Após essas verificações, instale a linha exata acima e confira `crontab -l`.
+No dia seguinte, `tail -n 10 /home/renan/ansp-reminders.log` deve mostrar uma
+linha `[donors:reminders]` com `date` (data de São Paulo) e contagens
+`candidates`, `sent`, `already_sent`, `failed`, `uncertain`, `in_progress`,
+`expired` e `skipped_paid`. O npm também pode imprimir o nome do script; a
+linha do aplicativo contém apenas data, contagens e categoria de falha
+operacional. Nunca deve conter nome, e-mail, CPF, corpo da mensagem, URL,
+ticket, caminho ou nome de comprovante. A aceitação `sent` é da API do Resend,
+não comprova entrega na caixa de entrada. Monitore ausência da linha diária,
+saída não zero e crescimento de `failed`/`uncertain`; encaminhe isso ao
+responsável operacional no mesmo dia.
+
+Se a execução falhar, corrija primeiro configuração, banco ou disponibilidade
+do Resend. O job retorna código **não zero** se houver `failed`, `uncertain` ou
+falha operacional. Enquanto ainda for o **mesmo dia em São Paulo**, execute
+novamente `docker exec sspx-ansp-ansp-1 npm run donors:reminders` e confira
+`echo $?` e as contagens. Um registro `sent` não é reenviado nessa repetição.
+Depois da data programada não há envio retroativo automático. No painel
+**Lembretes dos benfeitores**, use **Reenviar** apenas em registros `failed`
+que ainda estejam no prazo e com opção de e-mail ativa. Para `uncertain`,
+verifique primeiro o resultado no painel do Resend e marque-o como aceito ou
+como falha definitiva antes de qualquer nova tentativa; não reenvie às cegas.
+Se a execução diária faltar por completo, registre o incidente e avalie os
+registros afetados no painel, pois a janela de 10/5 dias não é recuperada pelo
+cron do dia seguinte.
 
 **Restauração testada em 2026-08-06**: decifrado com a `BACKUP_PASSPHRASE` do
 `.env`, dump restaurado sem erros numa base descartável (`CREATE DATABASE`

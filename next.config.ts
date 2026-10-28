@@ -1,6 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async headers() {
+    return [{
+      source: "/benfeitor/comprovante",
+      headers: [
+        { key: "Cache-Control", value: "private, no-store" },
+        { key: "Referrer-Policy", value: "no-referrer" },
+        { key: "X-Robots-Tag", value: "noindex, nofollow" },
+      ],
+    }];
+  },
   // @react-pdf/renderer (e suas dependências de fonte/pdfkit) deve rodar no
   // Node das Server Actions sem ser empacotado pelo bundler.
   serverExternalPackages: ["@react-pdf/renderer"],

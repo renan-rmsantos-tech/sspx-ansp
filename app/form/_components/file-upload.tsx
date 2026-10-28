@@ -16,6 +16,8 @@ export interface UploadedFile {
 
 interface FileUploadProps {
   label: string;
+  labelId?: string;
+  descriptionId?: string;
   category: string;
   accept?: string;
   multiple?: boolean;
@@ -33,6 +35,8 @@ function nextUploadId() {
 
 export function FileUpload({
   label,
+  labelId,
+  descriptionId,
   category,
   accept = "image/*,.pdf",
   multiple = false,
@@ -43,6 +47,8 @@ export function FileUpload({
 }: FileUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const inputId = useId();
+  const errorId = useId();
+  const describedBy = [descriptionId, error && errorId].filter(Boolean).join(" ") || undefined;
   const [dragOver, setDragOver] = useState(false);
 
   // Uploads são assíncronos: cada conclusão atualiza a lista a partir do
@@ -158,6 +164,7 @@ export function FileUpload({
         role="button"
         tabIndex={0}
         aria-label={`Enviar arquivo: ${label}`}
+        aria-describedby={describedBy}
         className={`relative cursor-pointer rounded-md border-[1.5px] border-dashed p-4 text-center transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
           dragOver
             ? "border-gold bg-gold/10"
@@ -194,9 +201,14 @@ export function FileUpload({
           accept={accept}
           multiple={multiple}
           onChange={handleFileChange}
-          className="hidden"
+          className="sr-only"
           tabIndex={-1}
-          aria-hidden="true"
+          aria-label={labelId ? undefined : `Enviar arquivo: ${label}`}
+          aria-labelledby={labelId}
+          aria-describedby={describedBy}
+          aria-invalid={Boolean(error)}
+          aria-required={required}
+          required={required}
           data-testid="upload-input"
         />
         <p className="text-[13px] text-muted">
@@ -240,7 +252,7 @@ export function FileUpload({
       )}
 
       {error && (
-        <p className="mt-1 text-xs font-medium text-danger" role="alert">
+        <p id={errorId} className="mt-1 text-xs font-medium text-danger" role="alert">
           {error}
         </p>
       )}

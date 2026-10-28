@@ -97,6 +97,8 @@ export function guessMimeType(path: string): string {
       return "image/png";
     case "webp":
       return "image/webp";
+    case "gif":
+      return "image/gif";
     default:
       return "application/octet-stream";
   }

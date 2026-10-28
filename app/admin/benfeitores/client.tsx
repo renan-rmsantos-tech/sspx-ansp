@@ -405,6 +405,8 @@ export function BenfeitoresClient({ initialDonors }: BenfeitoresClientProps) {
         ) : (
           filtered.map((donor) => (
             <DonorCard key={donor.id} donor={donor} onDelete={handleDelete}
+              onDueDayUpdated={(id, day, nextDueDate) => setDonors((current) => current.map((item) => item.id === id ? { ...item, dia_vencimento: day, next_due_date: nextDueDate } : item))}
+              onInstructionsUpdated={(id, latest) => setDonors((current) => current.map((item) => item.id === id ? { ...item, latest_instructions: latest } : item))}
               onWelcomeSent={(id, sentAt) => setDonors((current) => current.map((item) => item.id === id ? { ...item, welcome_email_sent_at: sentAt, welcome_email_in_progress: false } : item))} />
           ))
         )}

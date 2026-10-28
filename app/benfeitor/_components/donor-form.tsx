@@ -5,11 +5,13 @@ import Link from "next/link";
 import { registerDonorPledge } from "../_actions/donor-actions";
 import type { DonorPledge } from "@/lib/validations/donor-schema";
 import { isValidCPF } from "@/lib/validations/cpf";
-import { BRAZILIAN_UFS } from "@/lib/validations/donor-schema";
+import { BRAZILIAN_UFS, PUBLIC_MONTHLY_DUE_DAYS } from "@/lib/validations/donor-schema";
+import { PixPaymentDetails } from "./pix-payment-details";
 import {
   FileUpload,
   type UploadedFile,
 } from "@/app/form/_components/file-upload";
+import { RequiredMark } from "@/app/form/_components/field-ui";
 import {
   PRIORADO_NENHUMA,
   PRIORADOS_CAPELAS_GROUPS,
@@ -69,8 +71,8 @@ function OptionButton({
   );
 }
 
-function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <span className="mb-2 block text-sm font-medium text-fg">{children}</span>;
+function FieldLabel({ children, id }: { children: React.ReactNode; id?: string }) {
+  return <span id={id} className="mb-2 block text-sm font-medium text-fg">{children}</span>;
 }
 
 function ErrorText({ msg }: { msg?: string }) {
@@ -84,6 +86,7 @@ export function DonorForm() {
   const [valorPreset, setValorPreset] = useState<ValorPreset>(80);
   const [valorOutro, setValorOutro] = useState("");
   const [dataPagamento, setDataPagamento] = useState("");
+  const [diaVencimento, setDiaVencimento] = useState("");
   const [lembreteEmail, setLembreteEmail] = useState(false);
   const [nome, setNome] = useState("");
   const [cpf, setCpf] = useState("");
@@ -171,6 +174,8 @@ export function DonorForm() {
     if (valor <= 0) localErrors.valor = "Informe um valor maior que zero.";
     if (frequencia === "mensal" && !duracao)
       localErrors.duracao = "Selecione a duração.";
+    if (frequencia === "mensal" && !PUBLIC_MONTHLY_DUE_DAYS.some((day) => String(day) === diaVencimento))
+      localErrors.dia_vencimento = "Selecione um dia de pagamento: 1, 10, 15, 20 ou 30.";
     if (frequencia === "unica" && !dataPagamento)
       localErrors.data_pagamento = "Informe a data do pagamento.";
 
@@ -202,6 +207,7 @@ export function DonorForm() {
       priorado_capela: prioradoCapela,
       frequencia,
       duracao: frequencia === "mensal" ? duracao ?? undefined : undefined,
+      dia_vencimento: frequencia === "mensal" ? Number(diaVencimento) : undefined,
       valor,
       data_pagamento: frequencia === "unica" ? dataPagamento : undefined,
       lembrete_canal:
@@ -243,6 +249,7 @@ export function DonorForm() {
     prioradoCapela,
     frequencia,
     duracao,
+    diaVencimento,
     valor,
     dataPagamento,
     lembreteEmail,
@@ -259,11 +266,19 @@ export function DonorForm() {
         <h2 className="font-display text-[22px] font-semibold text-accent">
           Que Deus o recompense!
         </h2>
-        <p className="mx-auto mt-3 max-w-[46ch] text-[15px] text-muted-foreground">
-          Recebemos seu cadastro de benfeitor. Em breve entraremos em contato para
-          combinar os detalhes da sua doação. Saiba que você já está incluído na missa
-          mensal rezada por nossos benfeitores.
-        </p>
+        {frequencia === "mensal" ? (
+          <p className="mx-auto mt-3 max-w-[46ch] text-[15px] text-muted-foreground">
+            Recebemos seu cadastro de benfeitor; confira seu e-mail para as instruções
+            de pagamento por Pix e o link para enviar o comprovante. Você já está
+            incluído na missa mensal rezada por nossos benfeitores.
+          </p>
+        ) : (
+          <p className="mx-auto mt-3 max-w-[46ch] text-[15px] text-muted-foreground">
+            Recebemos seu cadastro de benfeitor. Em breve entraremos em contato para
+            combinar os detalhes da sua doação. Saiba que você já está incluído na missa
+            mensal rezada por nossos benfeitores.
+          </p>
+        )}
         <Link
           href="/"
           className="mt-6 inline-block rounded-md border border-accent px-5 py-2.5 text-sm font-medium text-accent hover:bg-bg"
@@ -367,29 +382,74 @@ export function DonorForm() {
           <ErrorText msg={errors.valor} />
         </div>
 
+        {frequencia === "mensal" && (
+          <div>
+            <fieldset
+              aria-invalid={Boolean(errors.dia_vencimento)}
+              aria-describedby={`donor-dia-vencimento-help${errors.dia_vencimento ? " donor-dia-vencimento-error" : ""}`}
+            >
+              <legend className="mb-2 text-sm font-medium text-fg">Dia do pagamento mensal</legend>
+              <div className="flex flex-wrap gap-2">
+                {PUBLIC_MONTHLY_DUE_DAYS.map((day) => (
+                  <label key={day} className="flex cursor-pointer items-center gap-2 rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg has-checked:border-accent has-checked:bg-accent/5 focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent">
+                    <input
+                      type="radio"
+                      name="dia_vencimento"
+                      value={day}
+                      checked={diaVencimento === String(day)}
+                      onChange={() => {
+                        setDiaVencimento(String(day));
+                        setErrors((current) => ({ ...current, dia_vencimento: "" }));
+                      }}
+                      required
+                    />
+                    Dia {day}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            {errors.dia_vencimento && <p id="donor-dia-vencimento-error" className="mt-1 text-xs text-danger">{errors.dia_vencimento}</p>}
+            <p id="donor-dia-vencimento-help" className="mt-2 text-sm text-muted">
+              Se escolher o dia 30, em fevereiro o vencimento será no último dia do mês.
+            </p>
+            <p className="mt-2 text-sm text-muted">
+              Você receberá por e-mail as instruções para pagar por Pix. Não é preciso pagar agora. Cada pagamento mensal exige o envio do comprovante pelo link que enviaremos.
+            </p>
+          </div>
+        )}
+
         {frequencia === "unica" && (
           <>
+            <PixPaymentDetails />
+            <p className="text-sm text-muted">Faça o Pix e anexe o comprovante antes de enviar seu cadastro.</p>
             <div>
               <label htmlFor="donor-data" className="mb-2 block text-sm font-medium text-fg">
-                Data do pagamento
+                Data do pagamento<RequiredMark />{" "}<span className="sr-only">(obrigatório)</span>
               </label>
               <input
                 id="donor-data"
                 type="date"
                 value={dataPagamento}
                 onChange={(e) => setDataPagamento(e.target.value)}
+                required
+                aria-invalid={Boolean(errors.data_pagamento)}
+                aria-describedby={errors.data_pagamento ? "donor-data-error" : undefined}
                 className={`${inputClass} max-w-[220px]`}
               />
-              <ErrorText msg={errors.data_pagamento} />
+              {errors.data_pagamento && <p id="donor-data-error" className="mt-1 text-xs text-danger">{errors.data_pagamento}</p>}
             </div>
 
             <div>
-              <FieldLabel>Comprovante de pagamento</FieldLabel>
-              <p className="mb-2 text-sm text-muted">
-                Após realizar o Pix ou a transferência, envie o comprovante (imagem ou PDF).
+              <FieldLabel id="donor-receipt-label">
+                Comprovante de pagamento<RequiredMark />{" "}<span className="sr-only">(obrigatório)</span>
+              </FieldLabel>
+              <p id="donor-receipt-help" className="mb-2 text-sm text-muted">
+                Obrigatório para doação única. Após fazer o Pix, anexe o comprovante (imagem ou PDF, até 10 MB).
               </p>
               <FileUpload
                 label="para enviar o comprovante de pagamento"
+                labelId="donor-receipt-label"
+                descriptionId="donor-receipt-help"
                 category="recibo_pagamento"
                 files={recibo}
                 onChange={setRecibo}
@@ -409,11 +469,13 @@ export function DonorForm() {
                 onChange={(e) => setLembreteEmail(e.target.checked)}
                 className="mt-1"
                 data-testid="donor-lembrete-email"
+                aria-labelledby="donor-lembrete-email-label"
+                aria-describedby="donor-lembrete-email-help"
               />
               <span className="text-sm text-fg">
-                Receber lembrete mensal por e-mail
-                <span className="mt-0.5 block text-muted">
-                  Enviaremos um aviso próximo à data da contribuição. WhatsApp em breve.
+                <span id="donor-lembrete-email-label">Receber lembrete por e-mail</span>
+                <span id="donor-lembrete-email-help" className="mt-0.5 block text-muted">
+                  Avisaremos 10 e 5 dias antes de cada vencimento, com o link para enviar o comprovante.
                 </span>
               </span>
             </label>

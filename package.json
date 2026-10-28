@@ -4,6 +4,7 @@
   "description": "",
   "private": true,
   "scripts": {
+    "predev": "node --env-file-if-exists=.env --import tsx scripts/predev.ts",
     "dev": "next dev",
     "build": "next build",
     "start": "npm run db:migrate && npm run db:bootstrap && next start",
@@ -15,7 +16,9 @@
     "db:migrate": "drizzle-kit migrate",
     "db:generate": "drizzle-kit generate",
     "db:bootstrap": "node --env-file-if-exists=.env --import tsx scripts/bootstrap.ts",
+    "db:seed": "node --env-file-if-exists=.env --import tsx scripts/seed-dev.ts",
     "donors:enrich-residence": "node --env-file-if-exists=.env --import tsx scripts/enrich-donor-residences.ts",
+    "donors:reminders": "node --env-file-if-exists=.env --import tsx scripts/send-donor-reminders.ts",
     "storage:cleanup": "tsx scripts/cleanup-pending.ts"
   },
   "dependencies": {

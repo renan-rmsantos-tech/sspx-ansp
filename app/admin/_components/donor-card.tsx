@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, type FormEvent } from "react";
 import {
   deleteDonorPledge,
   exportDonorPledge,
   getDocumentUrl,
+  updateDonorDueDay,
 } from "../_actions/admin-actions";
 import { PdfPreviewModal } from "./pdf-preview-modal";
 import { prioradoCapelaLabel } from "@/lib/data/priorados-capelas";
 import { formatDonorDate } from "@/lib/donor-date";
 import { markDonorWelcomeEmailSent, unmarkDonorWelcomeEmailSent, retryDonorWelcomeEmail } from "@/app/admin/_actions/donor-email-actions";
+import { DonorMonthlyInstructions, type CurrentReceipt, type MonthlyInstructionsAttempt, type PendingOccurrence } from "./donor-monthly-instructions";
 
 export interface DonorPledge {
   id: string;
@@ -26,6 +28,18 @@ export interface DonorPledge {
   duracao?: "um_ano" | "indeterminado" | null;
   valor: number;
   data_pagamento?: string | null;
+  dia_vencimento?: number | null;
+  next_due_date?: string | null;
+  latest_reminder?: {
+    kind: "10d" | "5d";
+    competencia: string;
+    status: "sending" | "sent" | "failed" | "uncertain";
+    sent_at: string | null;
+    error_code: string | null;
+  } | null;
+  latest_instructions?: MonthlyInstructionsAttempt | null;
+  current_receipt?: CurrentReceipt | null;
+  pending_occurrences?: PendingOccurrence[];
   lembrete_canal?: "whatsapp" | "email" | null;
   recibo_path?: string | null;
   recibo_nome?: string | null;
@@ -64,13 +78,53 @@ function formatDateBR(isoDate: string): string {
   return d && m && y ? `${d}/${m}/${y}` : isoDate;
 }
 
+function formatAcceptedAt(value: string): string {
+  const normalized = value
+    .replace(/^(\d{4}-\d{2}-\d{2})\s+/, "$1T")
+    .replace(/([+-]\d{2})$/, "$1:00");
+  return new Date(normalized).toLocaleString("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    dateStyle: "short",
+    timeStyle: "short",
+  });
+}
+
+const REMINDER_FAILURE_LABELS: Record<string, string> = {
+  provider_rejected: "envio recusado pelo Resend",
+  provider_timeout: "tempo de resposta esgotado",
+  provider_unavailable: "Resend indisponível",
+  configuration: "configuração de envio incompleta",
+  database: "falha ao registrar o resultado",
+  invalid_recipient: "destinatário inválido",
+  unknown: "motivo não confirmado",
+};
+
+function reminderState(reminder: NonNullable<DonorPledge["latest_reminder"]>): string {
+  switch (reminder.status) {
+    case "sending":
+      return "Envio em andamento; aceitação ainda não registrada.";
+    case "sent":
+      return reminder.sent_at
+        ? `Aceito pelo Resend em ${formatAcceptedAt(reminder.sent_at)}. Entrega na caixa de entrada não confirmada.`
+        : "Aceito pelo Resend. Entrega na caixa de entrada não confirmada.";
+    case "failed":
+      return reminder.error_code
+        ? `Falha no envio: ${REMINDER_FAILURE_LABELS[reminder.error_code] ?? "motivo não informado"}.`
+        : "Falha no envio registrada.";
+    case "uncertain":
+      return "Resultado incerto; verificar no Resend antes de reenviar.";
+  }
+}
+
 interface DonorCardProps {
   donor: DonorPledge;
   onDelete: (id: string) => void;
   onWelcomeSent?: (id: string, sentAt: string | null) => void;
+  onDueDayUpdated: (id: string, day: number, nextDueDate: string | null) => void;
+  onInstructionsUpdated?: (id: string, latest: MonthlyInstructionsAttempt) => void;
 }
 
-export function DonorCard({ donor, onDelete, onWelcomeSent }: DonorCardProps) {
+export function DonorCard({ donor, onDelete, onWelcomeSent, onDueDayUpdated, onInstructionsUpdated }: DonorCardProps) {
   const [markingWelcome, setMarkingWelcome] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -86,6 +140,41 @@ export function DonorCard({ donor, onDelete, onWelcomeSent }: DonorCardProps) {
   const [welcomeInProgress, setWelcomeInProgress] = useState(donor.welcome_email_in_progress ?? false);
   const [sendingWelcome, setSendingWelcome] = useState(false);
   const [welcomeError, setWelcomeError] = useState<string | null>(null);
+  const [editingDueDay, setEditingDueDay] = useState(false);
+  const [draftDueDay, setDraftDueDay] = useState(String(donor.dia_vencimento ?? ""));
+  const [savingDueDay, setSavingDueDay] = useState(false);
+  const savingDueDayRef = useRef(false);
+  const [dueDayFeedback, setDueDayFeedback] = useState<{ message: string; error: boolean } | null>(null);
+
+  const handleSaveDueDay = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (savingDueDayRef.current) return;
+    const day = Number(draftDueDay);
+    if (!Number.isInteger(day) || day < 1 || day > 31) {
+      setDueDayFeedback({ message: "Informe um dia inteiro entre 1 e 31.", error: true });
+      return;
+    }
+
+    savingDueDayRef.current = true;
+    setSavingDueDay(true);
+    setDueDayFeedback(null);
+    try {
+      const result = await updateDonorDueDay(donor.id, day);
+      if (result.success) {
+        onDueDayUpdated(donor.id, result.dia_vencimento, result.next_due_date);
+        setDraftDueDay(String(result.dia_vencimento));
+        setEditingDueDay(false);
+        setDueDayFeedback({ message: "Dia de vencimento atualizado.", error: false });
+      } else {
+        setDueDayFeedback({ message: result.error, error: true });
+      }
+    } catch {
+      setDueDayFeedback({ message: "Não foi possível atualizar o dia. Tente novamente.", error: true });
+    } finally {
+      savingDueDayRef.current = false;
+      setSavingDueDay(false);
+    }
+  };
 
   const handleSendWelcome = useCallback(async () => {
     if (sendingWelcome || markingWelcome || welcomeSentAt || welcomeInProgress) return;
@@ -237,7 +326,7 @@ export function DonorCard({ donor, onDelete, onWelcomeSent }: DonorCardProps) {
                 {donor.frequencia === "mensal" ? "/mês" : ""}
               </span>
             </span>
-            {donor.data_pagamento && (
+            {donor.frequencia === "unica" && donor.data_pagamento && (
               <span>
                 <span className="text-muted">Pagamento: </span>
                 <span className="text-fg">{formatDateBR(donor.data_pagamento)}</span>
@@ -256,6 +345,79 @@ export function DonorCard({ donor, onDelete, onWelcomeSent }: DonorCardProps) {
               </span>
             )}
           </div>
+
+          {donor.frequencia === "mensal" && (
+            <div className="mt-3 text-sm" data-testid="donor-due-day">
+              <p className="text-fg">
+                Dia de vencimento: <span className="font-medium">{donor.dia_vencimento ?? "Não informado"}</span>
+                {donor.dia_vencimento ? " de cada mês" : ""}
+                <span className="ml-3 text-muted">
+                  Próximo vencimento: {donor.next_due_date
+                    ? formatDateBR(donor.next_due_date)
+                    : donor.duracao === "um_ano" && donor.dia_vencimento
+                      ? "Encerrado"
+                      : "Não disponível"}
+                </span>
+              </p>
+              <p className="mt-1 text-muted" data-testid="donor-reminder-status">
+                Último lembrete: {donor.latest_reminder
+                  ? <>
+                      {donor.latest_reminder.kind === "10d" ? "10 dias" : "5 dias"} antes
+                      {" · competência "}{donor.latest_reminder.competencia.slice(5, 7)}/{donor.latest_reminder.competencia.slice(0, 4)}
+                      {" · "}{reminderState(donor.latest_reminder)}
+                    </>
+                  : donor.lembrete_canal === "email"
+                    ? "Nenhum envio registrado."
+                    : "Lembretes por e-mail desativados."}
+              </p>
+              {editingDueDay ? (
+                <form noValidate onSubmit={(event) => void handleSaveDueDay(event)} className="mt-2 flex flex-wrap items-end gap-2">
+                  <div>
+                    <label htmlFor={`due-day-${donor.id}`} className="mb-1 block text-muted">Novo dia de vencimento</label>
+                    <input
+                      id={`due-day-${donor.id}`}
+                      type="number"
+                      min="1"
+                      max="31"
+                      step="1"
+                      required
+                      value={draftDueDay}
+                      onChange={(event) => setDraftDueDay(event.target.value)}
+                      disabled={savingDueDay}
+                      aria-describedby={`due-day-help-${donor.id}`}
+                      className="w-24 rounded-md border border-border bg-surface px-3 py-1.5 text-fg focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50"
+                    />
+                    <p id={`due-day-help-${donor.id}`} className="mt-1 text-xs text-muted">De 1 a 31. Em meses mais curtos, vale o último dia.</p>
+                  </div>
+                  <button type="submit" disabled={savingDueDay} className="rounded-md border border-accent px-3 py-1.5 font-medium text-accent hover:bg-bg disabled:opacity-50">
+                    {savingDueDay ? "Salvando…" : "Salvar dia"}
+                  </button>
+                  <button type="button" disabled={savingDueDay} onClick={() => { setEditingDueDay(false); setDraftDueDay(String(donor.dia_vencimento ?? "")); setDueDayFeedback(null); }} className="rounded-md border border-border px-3 py-1.5 text-muted hover:bg-bg disabled:opacity-50">
+                    Cancelar
+                  </button>
+                </form>
+              ) : (
+                <button type="button" onClick={() => { setEditingDueDay(true); setDueDayFeedback(null); }} className="mt-2 rounded-md border border-border px-3 py-1.5 font-medium text-accent hover:bg-bg">
+                  Alterar dia de vencimento
+                </button>
+              )}
+              {dueDayFeedback && (
+                <p className={`mt-2 ${dueDayFeedback.error ? "text-danger" : "text-success"}`} role={dueDayFeedback.error ? "alert" : "status"}>
+                  {dueDayFeedback.message}
+                </p>
+              )}
+            </div>
+          )}
+
+          {donor.frequencia === "mensal" && (
+            <DonorMonthlyInstructions
+              pledgeId={donor.id}
+              latest={donor.latest_instructions ?? null}
+              currentReceipt={donor.current_receipt ?? null}
+              pendingOccurrences={donor.pending_occurrences ?? []}
+              onUpdated={(latest) => onInstructionsUpdated?.(donor.id, latest)}
+            />
+          )}
 
           <div className="mt-3 flex flex-wrap items-center gap-2 text-sm" data-testid="donor-welcome-status" aria-live="polite">
             {welcomeSentAt ? (

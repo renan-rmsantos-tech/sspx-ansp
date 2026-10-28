@@ -83,6 +83,7 @@ import {
   saveContractTemplate,
   saveTemplate,
   toggleSchoolYear,
+  updateDonorDueDay,
 } from "@/app/admin/_actions/admin-actions";
 import {
   deleted,
@@ -267,6 +268,180 @@ describe("administrator donor email projection", () => {
     });
     expect(result.data?.[0]).not.toHaveProperty("welcome_email_reservation_token");
     expect(result.data?.[0]).not.toHaveProperty("welcome_email_reservation_expires_at");
+  });
+});
+
+describe("administrator donor reminder projection", () => {
+  it("returns only the latest reminder metadata and computes the next monthly due date", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-26T15:00:00Z"));
+    queryFor("donorPledges").findMany.mockResolvedValue([{
+      id: "d1", frequencia: "mensal", duracao: "indeterminado",
+      dia_vencimento: 5, created_at: "2026-10-01T12:00:00Z",
+    }]);
+    queryFor("donorReminderSends").findMany.mockResolvedValue([
+      { pledge_id: "d1", kind: "5d", competencia: "2026-11", status: "sent", sent_at: "2026-10-31T12:00:00Z", error_code: null, frozen_recipient: "private@example.test", frozen_html: "private body" },
+      { pledge_id: "d1", kind: "10d", competencia: "2026-11", status: "failed", sent_at: null, error_code: "provider_rejected" },
+    ]);
+
+    try {
+      const result = await getDonorPledges();
+      expect(result.data?.[0]).toMatchObject({
+        next_due_date: "2026-11-05",
+        latest_reminder: { kind: "5d", competencia: "2026-11", status: "sent", sent_at: "2026-10-31T12:00:00Z" },
+      });
+      const donor = result.data?.[0];
+      if (!donor || !("latest_reminder" in donor)) throw new Error("Administrator projection missing");
+      expect(donor.latest_reminder).not.toHaveProperty("frozen_html");
+      expect(donor.latest_reminder).not.toHaveProperty("frozen_recipient");
+      expect(donor.latest_reminder).not.toHaveProperty("pledge_id");
+      const options = queryFor("donorReminderSends").findMany.mock.calls[0][0];
+      expect(options.columns).toEqual({ pledge_id: true, kind: true, competencia: true, status: true, sent_at: true, error_code: true });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("projects the latest instructions generation and current receipt without frozen content", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-26T15:00:00Z"));
+    queryFor("donorPledges").findMany.mockResolvedValue([{
+      id: "d1", frequencia: "mensal", duracao: "indeterminado", dia_vencimento: 30,
+      created_at: "2026-01-01T12:00:00Z",
+    }]);
+    queryFor("donorMonthlyInstructionSends").findMany.mockResolvedValue([
+      { pledge_id: "d1", generation: 2, receipt_competencia: "2026-11", status: "sent",
+        sent_at: "2026-10-26T15:00:00Z", error_code: null, frozen_html: "private body" },
+      { pledge_id: "d1", generation: 1, receipt_competencia: "2026-10", status: "failed",
+        sent_at: null, error_code: "provider_rejected" },
+    ]);
+    queryFor("donorPaymentLedger").findMany.mockResolvedValue([
+      { pledge_id: "d1", competencia: "2026-10", due_date: "2026-10-30",
+        receipt_path: "private/path.pdf", receipt_name: "receipt.pdf", receipt_uploaded_at: "2026-10-20T12:00:00Z" },
+      { pledge_id: "d1", competencia: "2026-11", due_date: "2026-11-30",
+        receipt_path: null, receipt_name: null, receipt_uploaded_at: null },
+    ]);
+    try {
+      const result = await getDonorPledges();
+      expect(result.data?.[0]).toMatchObject({
+        latest_instructions: { generation: 2, status: "sent", receipt_competencia: "2026-11" },
+        current_receipt: { competencia: "2026-10", status: "Comprovante enviado – aguardando conferência" },
+        pending_occurrences: [{ competencia: "2026-11", due_date: "2026-11-30" }],
+      });
+      expect(JSON.stringify(result.data)).not.toContain("private/path.pdf");
+      expect(JSON.stringify(result.data)).not.toContain("private body");
+      expect(queryFor("donorMonthlyInstructionSends").findMany.mock.calls[0][0].columns)
+        .not.toHaveProperty("frozen_html");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("reports no instructions attempt for a historical monthly donor", async () => {
+    queryFor("donorPledges").findMany.mockResolvedValue([{
+      id: "d1", frequencia: "mensal", duracao: "indeterminado", dia_vencimento: 10,
+      created_at: "2025-01-01T12:00:00Z",
+    }]);
+    const result = await getDonorPledges();
+    expect(result.data?.[0]).toMatchObject({ latest_instructions: null });
+  });
+
+  it.each([
+    [null, "pending"],
+    ["2026-10-25T12:00:00Z", "uncertain"],
+  ])("projects an expired reservation with provider start %s as %s", async (startedAt, status) => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-26T15:00:00Z"));
+    queryFor("donorPledges").findMany.mockResolvedValue([{
+      id: "d1", frequencia: "mensal", duracao: "indeterminado", dia_vencimento: 30,
+      created_at: "2026-01-01T12:00:00Z",
+    }]);
+    queryFor("donorMonthlyInstructionSends").findMany.mockResolvedValue([{
+      pledge_id: "d1", generation: 1, receipt_competencia: "2026-10",
+      status: "sending", sent_at: null, error_code: null,
+      reservation_expires_at: "2026-10-25T15:00:00Z",
+      provider_call_started_at: startedAt,
+    }]);
+    try {
+      const result = await getDonorPledges();
+      expect(result.data?.[0]).toMatchObject({ latest_instructions: { status } });
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("does not query reminder records for Secretaria", async () => {
+    authAs({ id: "sec", email: "sec@test.com", role: "secretaria", ativo: true });
+    queryFor("donorPledges").findMany.mockResolvedValue([]);
+    await getDonorPledges();
+    expect(queryFor("donorReminderSends").findMany).not.toHaveBeenCalled();
+    expect(queryFor("donorMonthlyInstructionSends").findMany).not.toHaveBeenCalled();
+    expect(queryFor("donorPaymentLedger").findMany).not.toHaveBeenCalled();
+  });
+});
+
+describe("updateDonorDueDay", () => {
+  const id = "48a283a7-4869-48ca-ac75-dc48bd30c9e8";
+
+  it("updates a monthly day and returns the recomputed next due date", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-26T15:00:00Z"));
+    setReturning(donorPledges, [{
+      id,
+      frequencia: "mensal",
+      duracao: "indeterminado",
+      dia_vencimento: 12,
+      created_at: "2026-10-26T12:00:00Z",
+    }]);
+
+    try {
+      expect(await updateDonorDueDay(id, 12)).toEqual({
+        success: true,
+        dia_vencimento: 12,
+        next_due_date: "2026-11-12",
+      });
+      expect(updated).toEqual([{ table: donorPledges, values: { dia_vencimento: 12 } }]);
+      expect(mockRequireAdmin).toHaveBeenCalledOnce();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it.each([0, 32, 1.5, NaN])("rejects invalid day %s before writing", async (day) => {
+    expect(await updateDonorDueDay(id, day)).toMatchObject({ success: false });
+    expect(updated).toHaveLength(0);
+  });
+
+  it("rejects an invalid pledge ID before writing", async () => {
+    expect(await updateDonorDueDay("not-a-uuid", 12)).toMatchObject({ success: false });
+    expect(updated).toHaveLength(0);
+  });
+
+  it("reports a one-time or missing pledge without changing its payment date", async () => {
+    expect(await updateDonorDueDay(id, 12)).toMatchObject({ success: false });
+    expect(updated).toEqual([{ table: donorPledges, values: { dia_vencimento: 12 } }]);
+  });
+
+  it("reports a database failure without exposing internals", async () => {
+    failWrites();
+    expect(await updateDonorDueDay(id, 12)).toEqual({
+      success: false,
+      error: "Não foi possível atualizar o dia. Tente novamente.",
+    });
+  });
+
+  it("denies a direct Secretaria call before querying or writing", async () => {
+    authAs({ id: "secretaria", email: "sec@example.test", role: "secretaria", ativo: true });
+    mockRequireAdmin.mockRejectedValue(new Error("Você não tem permissão para realizar esta ação."));
+    await expect(updateDonorDueDay(id, 12)).rejects.toThrow("permissão");
+    expect(updated).toHaveLength(0);
+  });
+
+  it("keeps the due-day fields out of the Secretaria projection", async () => {
+    authAs({ id: "secretaria", email: "sec@example.test", role: "secretaria", ativo: true });
+    queryFor("donorPledges").findMany.mockResolvedValue([]);
+    await getDonorPledges();
+    const options = queryFor("donorPledges").findMany.mock.calls[0][0];
+    expect(options.columns).not.toHaveProperty("dia_vencimento");
+    expect(options.columns).not.toHaveProperty("next_due_date");
   });
 });
 

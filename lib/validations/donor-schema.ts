@@ -10,6 +10,8 @@ export const BRAZILIAN_UFS = [
   "SP", "SE", "TO",
 ] as const;
 
+export const PUBLIC_MONTHLY_DUE_DAYS = [1, 10, 15, 20, 30] as const;
+
 export const donorPledgeSchema = z
   .object({
     nome: z.string().min(1, "Nome é obrigatório"),
@@ -34,6 +36,10 @@ export const donorPledgeSchema = z
     }),
     frequencia: z.enum(["unica", "mensal"]),
     duracao: z.enum(["um_ano", "indeterminado"]).optional(),
+    dia_vencimento: z.number().int().refine(
+      (day) => PUBLIC_MONTHLY_DUE_DAYS.some((choice) => choice === day),
+      { message: "Selecione um dia de pagamento: 1, 10, 15, 20 ou 30." }
+    ).optional(),
     valor: z.number().positive("Informe um valor maior que zero"),
     data_pagamento: z.string().optional(),
     lembrete_canal: z.enum(["email"]).optional().nullable(),
@@ -49,9 +55,16 @@ export const donorPledgeSchema = z
     }
   )
   .refine(
-    (data) => data.frequencia !== "unica" || Boolean(data.data_pagamento?.trim()),
+    (data) => data.frequencia !== "mensal" || data.dia_vencimento !== undefined,
     {
-      message: "Informe a data do pagamento",
+      message: "Selecione um dia de pagamento: 1, 10, 15, 20 ou 30.",
+      path: ["dia_vencimento"],
+    }
+  )
+  .refine(
+    (data) => data.frequencia !== "unica" || z.iso.date().safeParse(data.data_pagamento).success,
+    {
+      message: "Informe uma data de pagamento válida",
       path: ["data_pagamento"],
     }
   )

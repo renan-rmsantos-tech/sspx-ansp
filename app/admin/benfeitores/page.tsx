@@ -3,9 +3,11 @@ import { BenfeitoresClient } from "./client";
 import type { DonorPledge } from "../_components/donor-card";
 import { requireStaff } from "@/lib/auth/authorization";
 import { SecretariatDonorsClient, type SecretariatDonorPledge } from "./client";
+import { materializeCurrentAndNextMonthlyPayments } from "@/lib/donor-payment-ledger";
 
 export default async function BenfeitoresPage() {
   const staff = await requireStaff();
+  if (staff.role === "admin") await materializeCurrentAndNextMonthlyPayments();
   const { data: donors } = await getDonorPledges();
 
   return (
