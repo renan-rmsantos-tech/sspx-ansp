@@ -5,9 +5,9 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth/authorization";
 import { db } from "@/lib/db";
-import { documentHeader, donorPledges, donorReminderSends } from "@/lib/db/schema";
+import { donorPledges, donorReminderSends } from "@/lib/db/schema";
 import { occurrenceForMonth } from "@/lib/donor-recurrence";
-import { resolveDocumentHeader } from "@/lib/documents/document-header";
+import { loadDocumentHeader } from "@/lib/documents/document-header-store";
 import { canRetryDonorReminder } from "@/lib/email/donor-reminder-policy";
 import {
   DonorReminderTemplateError,
@@ -34,9 +34,7 @@ function templateError(error: unknown) {
 }
 
 async function currentHeader() {
-  return resolveDocumentHeader(await db.query.documentHeader.findFirst({
-    orderBy: desc(documentHeader.updated_at),
-  }));
+  return await loadDocumentHeader();
 }
 
 export async function getDonorReminderDashboard() {

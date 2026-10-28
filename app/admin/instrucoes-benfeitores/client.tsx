@@ -108,7 +108,7 @@ export function DonorMonthlyInstructionsClient({
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-lg border border-border bg-surface p-5" aria-labelledby="monthly-editor-heading">
           <h2 id="monthly-editor-heading" className="text-base font-semibold text-fg">Conteúdo das instruções</h2>
-          <p className="mt-1 text-sm text-muted">O e-mail usa o <Link href="/admin/cabecalho" className="text-accent underline-offset-2 hover:underline">Cabeçalho dos Documentos</Link> e a assinatura institucional.</p>
+          <p className="mt-1 text-sm text-muted">O e-mail usa o <Link href="/admin/cabecalho" className="text-accent underline-offset-2 hover:underline">Cabeçalho institucional</Link> e a assinatura institucional.</p>
           <div className="mt-5 space-y-4">
             <div>
               <label htmlFor="monthly-subject" className="mb-1.5 block text-sm font-medium text-fg">Assunto</label>

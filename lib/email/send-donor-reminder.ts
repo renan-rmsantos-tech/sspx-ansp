@@ -1,9 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { and, desc, eq, inArray, isNotNull, isNull, lte, or, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, lte, or, sql } from "drizzle-orm";
 import { Resend } from "resend";
 import { db } from "@/lib/db";
 import {
-  documentHeader,
   donorPaymentLedger,
   donorPledges,
   donorReminderSends,
@@ -11,7 +10,7 @@ import {
 import { hasMonthlyReceipt, materializeCurrentAndNextMonthlyPayments } from "@/lib/donor-payment-ledger";
 import { occurrenceForMonth, saoPauloDate, scheduledReminder, type ReminderKind } from "@/lib/donor-recurrence";
 import { createDonorReceiptLink } from "@/lib/donor-receipts/tickets";
-import { resolveDocumentHeader } from "@/lib/documents/document-header";
+import { loadDocumentHeader } from "@/lib/documents/document-header-store";
 import { getDonorReminderTemplate } from "./donor-reminder-template-store";
 import { reminderProviderKey, renderDonorReminder, renderDonorReminderPreview, type DonorReminderTemplate } from "./donor-reminder-template";
 import { institutionalEmailAttachments } from "./institutional-email-attachments";
@@ -132,9 +131,7 @@ async function frozenPayload(
     settings.origin, eligible.pledge.id, eligible.occurrence.competence,
     eligible.ledger.due_date
   );
-  const header = resolveDocumentHeader(await database.query.documentHeader.findFirst({
-    orderBy: desc(documentHeader.updated_at),
-  }));
+  const header = await loadDocumentHeader(database);
   const rendered = renderDonorReminder({
     template: await getDonorReminderTemplate(database),
     nome: eligible.pledge.nome,
@@ -378,9 +375,7 @@ export async function sendDonorReminderTestEmail(
   const apiKey = process.env.RESEND_API_KEY?.trim();
   const sender = process.env.RESEND_FROM?.trim();
   if (!apiKey || !sender) return { status: "failed", error_code: "configuration" } as const;
-  const header = resolveDocumentHeader(await database.query.documentHeader.findFirst({
-    orderBy: desc(documentHeader.updated_at),
-  }));
+  const header = await loadDocumentHeader(database);
   const rendered = renderDonorReminderPreview(template, header);
   try {
     const response = await new Resend(apiKey).emails.send({

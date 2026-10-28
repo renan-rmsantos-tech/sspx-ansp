@@ -1,6 +1,9 @@
 "use server";
 
 import { and, asc, desc, eq, gte, inArray, isNull } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+import { loadDocumentHeader, persistDocumentHeader, HEADER_LOAD_ERROR } from "@/lib/documents/document-header-store";
+import type { DocumentHeaderData } from "@/lib/documents/document-header";
 import { z } from "zod";
 import {
   requireAdmin,
@@ -17,7 +20,6 @@ import {
   adminUsers,
   contractTemplates,
   decisionTemplates,
-  documentHeader,
   donorPaymentLedger,
   donorMonthlyInstructionSends,
   donorPledges,
@@ -407,7 +409,8 @@ export async function exportDonorPledge(
     return { error: "Benfeitor não encontrado." };
   }
 
-  const { data: header } = await getDocumentHeader();
+  const { data: header, error: headerError } = await getDocumentHeader();
+  if (!header) return { error: headerError ?? HEADER_LOAD_ERROR };
 
   const { renderDonorPdf } = await import("@/lib/pdf/donor-pdf");
   const pdf = await renderDonorPdf({ ...donor, header });
@@ -740,7 +743,8 @@ export async function exportDecision(
     ano_letivo: app.school_years?.nome ?? "",
   };
 
-  const { data: header } = await getDocumentHeader();
+  const { data: header, error: headerError } = await getDocumentHeader();
+  if (!header) return { error: headerError ?? HEADER_LOAD_ERROR };
 
   const resolved = {
     titulo: `Decisão - ${app.escola}`,
@@ -791,7 +795,8 @@ export async function exportApplication(
     return { error: "Solicitação não encontrada." };
   }
 
-  const { data: header } = await getDocumentHeader();
+  const { data: header, error: headerError } = await getDocumentHeader();
+  if (!header) return { error: headerError ?? HEADER_LOAD_ERROR };
 
   const { renderApplicationPdf } = await import("@/lib/pdf/application-pdf");
   const pdf = await renderApplicationPdf({
@@ -809,69 +814,25 @@ export async function exportApplication(
   return { pdfBase64: pdf.toString("base64"), filename };
 }
 
-// --- Document Header (selo + texto compartilhado nos PDFs) ---
-
-export interface DocumentHeader {
-  id: string;
-  linha1: string;
-  linha2: string;
-  linha3: string;
-  mostrar_selo: boolean;
-}
+// --- Institutional header shared by all PDFs and emails ---
 
 export async function getDocumentHeader() {
   await requireAuth();
-
   try {
-    const data = await db.query.documentHeader.findFirst({
-      orderBy: desc(documentHeader.updated_at),
-    });
-
-    return { data: (data as DocumentHeader) ?? null, error: null };
+    return { data: await loadDocumentHeader(), error: null };
   } catch {
-    return { data: null, error: "Erro ao buscar cabeçalho dos documentos." };
+    return { data: null, error: HEADER_LOAD_ERROR };
   }
 }
 
-export async function saveDocumentHeader(input: {
-  linha1: string;
-  linha2: string;
-  linha3: string;
-  mostrar_selo: boolean;
-}): Promise<ActionResult> {
+export async function saveDocumentHeader(input: DocumentHeaderData): Promise<ActionResult> {
   await requireAuth();
-
-  const existing = await db.query.documentHeader.findFirst({
-    columns: { id: true },
-    orderBy: desc(documentHeader.updated_at),
-  });
-
-  const payload = {
-    linha1: input.linha1,
-    linha2: input.linha2,
-    linha3: input.linha3,
-    mostrar_selo: input.mostrar_selo,
-    updated_at: new Date().toISOString(),
-  };
-
   try {
-    if (existing) {
-      await db
-        .update(documentHeader)
-        .set(payload)
-        .where(eq(documentHeader.id, existing.id));
-    } else {
-      await db.insert(documentHeader).values(payload);
-    }
+    await persistDocumentHeader(input);
   } catch {
-    return {
-      success: false,
-      error: existing
-        ? "Erro ao atualizar cabeçalho."
-        : "Erro ao criar cabeçalho.",
-    };
+    return { success: false, error: "Não foi possível salvar o cabeçalho. Tente novamente." };
   }
-
+  revalidatePath("/admin", "layout");
   return { success: true };
 }
 
@@ -992,7 +953,8 @@ export async function exportContract(
     data_extenso: formatDataExtenso(new Date()),
   };
 
-  const { data: header } = await getDocumentHeader();
+  const { data: header, error: headerError } = await getDocumentHeader();
+  if (!header) return { error: headerError ?? HEADER_LOAD_ERROR };
 
   const resolved = {
     titulo: replaceContractTokens(template.titulo, tokenData),

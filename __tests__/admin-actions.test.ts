@@ -53,6 +53,15 @@ vi.mock("@/lib/pdf/decision-pdf", () => ({
   renderDecisionPdf: mockRenderDecisionPdf,
 }));
 
+const extraPdfs = vi.hoisted(() => ({
+  application: vi.fn(async (_data: unknown) => Buffer.from("PDF")),
+  donor: vi.fn(async (_data: unknown) => Buffer.from("PDF")),
+  revalidate: vi.fn(),
+}));
+vi.mock("@/lib/pdf/application-pdf", () => ({ renderApplicationPdf: extraPdfs.application }));
+vi.mock("@/lib/pdf/donor-pdf", () => ({ renderDonorPdf: extraPdfs.donor }));
+vi.mock("next/cache", () => ({ revalidatePath: extraPdfs.revalidate }));
+
 import {
   applications,
   contractTemplates,
@@ -67,6 +76,10 @@ import {
   createSchoolYear,
   deleteDonorPledge,
   deleteSchoolYear,
+  exportApplication,
+  exportDonorPledge,
+  getDocumentHeader,
+  saveDocumentHeader,
   exportContract,
   exportDecision,
   getApplicationDetail,
@@ -959,5 +972,53 @@ describe("exportContract", () => {
     queryFor("contractTemplates").findFirst.mockResolvedValue(template);
     failWrites();
     await expect(exportContract("app-1")).resolves.toEqual({ error: "Não foi possível registrar a emissão do contrato." });
+  });
+});
+
+
+describe("institutional header at all PDF export boundaries", () => {
+  const header = { linha1: 'Fundação São Tomé & <Filhos>', linha2: 'Educação "Católica"', linha3: "Itatiba • São Paulo", mostrar_selo: false };
+  const exports = [
+    [exportApplication, () => extraPdfs.application],
+    [exportDonorPledge, () => extraPdfs.donor],
+    [exportDecision, () => mockRenderDecisionPdf],
+    [exportContract, () => mockRenderContractPdf],
+  ] as const;
+
+  beforeEach(() => {
+    queryFor("applications").findFirst.mockResolvedValue({
+      id: "app-1", status: "aprovada", pai_nome: "Responsável", mae_nome: "Mãe",
+      escola: "Escola", students: [], school_years: null,
+    });
+    queryFor("donorPledges").findFirst.mockResolvedValue({ nome: "Benfeitor" });
+    queryFor("decisionTemplates").findFirst.mockResolvedValue({ cabecalho: "", corpo: "", rodape: "" });
+    queryFor("contractTemplates").findFirst.mockResolvedValue({ titulo: "", cabecalho: "", clausulas: [], rodape: "" });
+  });
+
+  it.each(exports)("passes current fields and seal to export %s, then observes an update", async (action, renderer) => {
+    queryFor("documentHeader").findFirst.mockResolvedValue({ id: "header-1", ...header });
+    expect(await action("app-1")).toHaveProperty("pdfBase64");
+    expect(renderer()).toHaveBeenLastCalledWith(expect.objectContaining({ header }));
+    const changed = { ...header, linha2: "", linha3: "", mostrar_selo: true };
+    await saveDocumentHeader(changed);
+    expect(extraPdfs.revalidate).toHaveBeenCalledWith("/admin", "layout");
+    queryFor("documentHeader").findFirst.mockResolvedValue(changed);
+    expect(await action("app-1")).toHaveProperty("pdfBase64");
+    expect(renderer()).toHaveBeenLastCalledWith(expect.objectContaining({ header: changed }));
+  });
+
+  it.each(exports)("blocks export %s on header DB failure before rendering or issuance", async (action, renderer) => {
+    queryFor("documentHeader").findFirst.mockRejectedValue(new Error("sensitive connection details"));
+    expect(await action("app-1")).toEqual({ error: "Não foi possível carregar o cabeçalho institucional. Tente novamente." });
+    expect(renderer()).not.toHaveBeenCalled();
+    expect(mockPut).not.toHaveBeenCalled();
+    expect(inserted).toHaveLength(0);
+  });
+
+  it("distinguishes a missing settings row from a failed read", async () => {
+    expect(await getDocumentHeader()).toEqual({ data: { linha1: "Arca Nossa Senhora da Providência", linha2: "", linha3: "", mostrar_selo: true }, error: null });
+    queryFor("documentHeader").findFirst.mockRejectedValue(new Error("private"));
+    expect(await getDocumentHeader()).toMatchObject({ data: null, error: expect.any(String) });
+    expect(await saveDocumentHeader(header)).toEqual({ success: false, error: "Não foi possível salvar o cabeçalho. Tente novamente." });
   });
 });

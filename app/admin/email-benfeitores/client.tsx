@@ -110,7 +110,7 @@ export function DonorEmailClient({
         <section className="rounded-lg border border-border bg-surface p-5" aria-labelledby="email-editor-heading">
           <h2 id="email-editor-heading" className="text-base font-semibold text-fg">Conteúdo da mensagem</h2>
           <p className="mt-1 text-sm text-muted">
-            O e-mail usa o <Link href="/admin/cabecalho" className="font-medium text-accent underline-offset-2 hover:underline">Cabeçalho dos Documentos</Link> e a assinatura institucional.
+            O e-mail usa o <Link href="/admin/cabecalho" className="font-medium text-accent underline-offset-2 hover:underline">Cabeçalho institucional</Link> e a assinatura institucional.
           </p>
 
           <div className="mt-5 space-y-4">

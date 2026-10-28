@@ -9,6 +9,7 @@ import {
 import type { ContractClause } from "@/lib/templates/contract-tokens";
 import {
   DocumentHeaderView,
+  resolveDocumentHeader,
   type DocumentHeaderData,
 } from "./document-header";
 
@@ -87,7 +88,7 @@ function ContractDocument({ contract }: { contract: ResolvedContract }) {
   return (
     <Document title={contract.titulo}>
       <Page size="A4" style={styles.page}>
-        {contract.header && <DocumentHeaderView header={contract.header} />}
+        <DocumentHeaderView header={resolveDocumentHeader(contract.header)} />
         <Text style={styles.titulo}>{contract.titulo}</Text>
 
         <Paragraphs text={contract.cabecalho} justify />

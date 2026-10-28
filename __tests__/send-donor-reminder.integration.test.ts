@@ -96,7 +96,7 @@ integration("reserved donor reminder delivery with PostgreSQL", () => {
     const id = await pledge();
     await occurrence(id);
     const renderingDatabase = Object.assign(Object.create(database!), {
-      query: { ...database!.query, documentHeader: { findFirst: async () => ({ mostrar_selo: seal }) } },
+      query: { ...database!.query, documentHeader: { findFirst: async () => ({ linha1: "Fundação São Tomé & <Filhos>", linha2: 'Educação "Católica"', linha3: "Itatiba • São Paulo", mostrar_selo: seal }) } },
     }) as typeof database;
     expect(await sender.sendDonorReminder(id, month, "10d", {
       now: localDate(`${month}-10`), database: renderingDatabase!,
@@ -105,6 +105,8 @@ integration("reserved donor reminder delivery with PostgreSQL", () => {
     expect(message.attachments.map((entry: { contentId: string }) => entry.contentId))
       .toEqual(seal ? ["ansp-document-seal", "ansp-pix-acipec-v1"] : ["ansp-pix-acipec-v1"]);
     expect(message.html).toContain('src="cid:ansp-pix-acipec-v1"');
+    for (const line of ["Fundação São Tomé & <Filhos>", 'Educação "Católica"', "Itatiba • São Paulo"]) expect(message.text).toContain(line);
+    expect(message.html).toContain("Fundação São Tomé &amp; &lt;Filhos&gt;");
     expect(message.text).toContain("Agência: 0197");
     expect(message.text).toContain("Conta: 13.008.003-2");
     const [frozen] = await sql!`SELECT frozen_html, frozen_text FROM donor_reminder_sends WHERE pledge_id = ${id}`;
@@ -120,8 +122,11 @@ integration("reserved donor reminder delivery with PostgreSQL", () => {
        frozen_recipient, frozen_sender, frozen_subject, frozen_text, frozen_html, frozen_include_seal)
       VALUES (${id}, ${month}, '10d', ${`${month}-20`}, 'failed', 'provider_rejected', ${reminderProviderKey(id, month, "10d")},
        'original@example.test', 'Original <old@example.test>', 'Original subject', 'Original text', ${html}, ${seal})`;
+    const historicalDatabase = Object.assign(Object.create(database!), {
+      query: { ...database!.query, documentHeader: { findFirst: async () => { throw new Error("Header unavailable after reservation"); } } },
+    }) as typeof database;
     expect(await sender.sendDonorReminder(id, month, "10d", {
-      now: localDate(`${month}-10`), database: database!, mode: "retry",
+      now: localDate(`${month}-10`), database: historicalDatabase!, mode: "retry",
     })).toMatchObject({ status: "sent" });
     const message = sendEmail.mock.calls[0][0];
     expect(message).toMatchObject({ from: "Original <old@example.test>", to: ["original@example.test"], subject: "Original subject", text: "Original text", html });

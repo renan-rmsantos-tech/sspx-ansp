@@ -143,7 +143,7 @@ export function CabecalhoClient({ initialHeader }: CabecalhoClientProps) {
         <div className="mt-4 rounded-md border border-border bg-white p-6">
           <DocumentHeaderPreview header={form} />
           <p className="mt-4 text-center text-xs text-muted">
-            O cabeçalho acima aparece no topo dos PDFs de Decisão e de Contrato.
+            Usado nos novos e-mails e em todos os PDFs. Documentos já emitidos e reenvios reservados mantêm o cabeçalho original.
           </p>
         </div>
       </div>

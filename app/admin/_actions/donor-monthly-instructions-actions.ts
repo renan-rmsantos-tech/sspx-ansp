@@ -5,8 +5,8 @@ import { and, desc, eq, isNotNull, lte, or } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth/authorization";
 import { db } from "@/lib/db";
-import { documentHeader, donorMonthlyInstructionSends, donorPledges } from "@/lib/db/schema";
-import { resolveDocumentHeader } from "@/lib/documents/document-header";
+import { donorMonthlyInstructionSends, donorPledges } from "@/lib/db/schema";
+import { loadDocumentHeader } from "@/lib/documents/document-header-store";
 import {
   DonorMonthlyInstructionsTemplateError,
   renderDonorMonthlyInstructionsPreview,
@@ -31,9 +31,7 @@ function safeTemplateError(error: unknown) {
 }
 
 async function currentHeader() {
-  return resolveDocumentHeader(await db.query.documentHeader.findFirst({
-    orderBy: desc(documentHeader.updated_at),
-  }));
+  return await loadDocumentHeader();
 }
 
 export async function getDonorMonthlyInstructionsSettings() {

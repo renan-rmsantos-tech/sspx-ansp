@@ -2,8 +2,8 @@ import { randomUUID } from "crypto";
 import { and, desc, eq, isNull, lte, or } from "drizzle-orm";
 import { Resend } from "resend";
 import { db } from "@/lib/db";
-import { documentHeader, donorPledges, donorWelcomeTemplates } from "@/lib/db/schema";
-import { resolveDocumentHeader } from "@/lib/documents/document-header";
+import { donorPledges, donorWelcomeTemplates } from "@/lib/db/schema";
+import { loadDocumentHeader } from "@/lib/documents/document-header-store";
 import { institutionalEmailAttachments } from "./institutional-email-attachments";
 import {
   DONOR_WELCOME_BODY,
@@ -26,10 +26,7 @@ async function sendWelcomeMessage(input: {
   body: string;
 }): Promise<void> {
   const config = resendConfig();
-  const savedHeader = await db.query.documentHeader.findFirst({
-    orderBy: desc(documentHeader.updated_at),
-  });
-  const header = resolveDocumentHeader(savedHeader);
+  const header = await loadDocumentHeader();
   const { html, text } = renderDonorWelcomeEmail(input.body, header);
   const resend = new Resend(config.apiKey);
   const { data, error } = await resend.emails.send({

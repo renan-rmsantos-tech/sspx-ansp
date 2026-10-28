@@ -5,8 +5,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth/authorization";
 import { db } from "@/lib/db";
-import { documentHeader, donorPledges, donorWelcomeTemplates } from "@/lib/db/schema";
-import { resolveDocumentHeader } from "@/lib/documents/document-header";
+import { donorPledges, donorWelcomeTemplates } from "@/lib/db/schema";
+import { loadDocumentHeader } from "@/lib/documents/document-header-store";
 import {
   sendDonorWelcomeEmail,
   sendDonorWelcomeTestEmail,
@@ -27,9 +27,7 @@ export async function getDonorEmailSettings() {
       orderBy: desc(donorPledges.created_at),
       limit: 50,
     }),
-    db.query.documentHeader.findFirst({
-      orderBy: desc(documentHeader.updated_at),
-    }),
+    loadDocumentHeader(),
   ]);
   return {
     template: {
@@ -37,7 +35,7 @@ export async function getDonorEmailSettings() {
       corpo: template?.corpo ?? DONOR_WELCOME_BODY,
     },
     pending,
-    header: resolveDocumentHeader(savedHeader),
+    header: savedHeader,
   };
 }
 

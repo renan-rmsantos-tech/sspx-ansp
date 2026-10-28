@@ -3,12 +3,12 @@ import { and, asc, desc, eq, gte, isNotNull, isNull, lte, or, sql } from "drizzl
 import { Resend } from "resend";
 import { db } from "@/lib/db";
 import {
-  documentHeader, donorMonthlyInstructionSends, donorPaymentLedger, donorPledges,
+  donorMonthlyInstructionSends, donorPaymentLedger, donorPledges,
 } from "@/lib/db/schema";
 import { firstMonthlyOccurrence, hasMonthlyReceipt } from "@/lib/donor-payment-ledger";
 import { createDonorReceiptLink, createDonorReceiptRecoveryLink, receiptExpiry } from "@/lib/donor-receipts/tickets";
 import { occurrenceForMonth, saoPauloDate } from "@/lib/donor-recurrence";
-import { resolveDocumentHeader } from "@/lib/documents/document-header";
+import { loadDocumentHeader } from "@/lib/documents/document-header-store";
 import { institutionalEmailAttachments } from "./institutional-email-attachments";
 import { getDonorMonthlyInstructionsTemplate } from "./donor-monthly-instructions-template-store";
 import {
@@ -88,9 +88,7 @@ async function payload(row: SendRow, database: typeof db, now: Date) {
   const link = receiptExpiry(ledger.due_date) < Math.floor(now.getTime() / 1000)
     ? createDonorReceiptRecoveryLink(config.origin, pledge.id, ledger.competencia, now)
     : createDonorReceiptLink(config.origin, pledge.id, ledger.competencia, ledger.due_date);
-  const header = resolveDocumentHeader(await database.query.documentHeader.findFirst({
-    orderBy: desc(documentHeader.updated_at),
-  }));
+  const header = await loadDocumentHeader(database);
   const rendered = renderDonorMonthlyInstructions({
     template: await getDonorMonthlyInstructionsTemplate(database),
     nome: pledge.nome, valor: ledger.expected_value,
@@ -313,9 +311,7 @@ export async function sendDonorMonthlyInstructionsTestEmail(
   const apiKey = process.env.RESEND_API_KEY?.trim();
   const sender = process.env.RESEND_FROM?.trim();
   if (!apiKey || !sender) return { status: "failed", code: "configuration" } as const;
-  const header = resolveDocumentHeader(await database.query.documentHeader.findFirst({
-    orderBy: desc(documentHeader.updated_at),
-  }));
+  const header = await loadDocumentHeader(database);
   const rendered = renderDonorMonthlyInstructionsPreview(template, header);
   try {
     const response = await new Resend(apiKey).emails.send({

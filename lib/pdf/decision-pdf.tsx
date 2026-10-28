@@ -8,6 +8,7 @@ import {
 } from "@react-pdf/renderer";
 import {
   DocumentHeaderView,
+  resolveDocumentHeader,
   type DocumentHeaderData,
 } from "./document-header";
 
@@ -82,7 +83,7 @@ function DecisionDocument({ decision }: { decision: ResolvedDecision }) {
   return (
     <Document title={decision.titulo}>
       <Page size="A4" style={styles.page}>
-        {decision.header && <DocumentHeaderView header={decision.header} />}
+        <DocumentHeaderView header={resolveDocumentHeader(decision.header)} />
         <View style={styles.cabecalho}>
           <Paragraphs text={decision.cabecalho} lineStyle={styles.cabecalhoLinha} />
         </View>
