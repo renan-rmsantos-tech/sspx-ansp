@@ -8,7 +8,7 @@ const actions = vi.hoisted(() => ({
 }));
 vi.mock("@/app/admin/_actions/donor-reminder-actions", () => actions);
 
-import { DonorReminderClient } from "@/app/admin/lembretes-benfeitores/client";
+import { DonorReminderClient } from "@/app/admin/emails/_clients/reminders";
 import { DONOR_REMINDER_BODY, DONOR_REMINDER_SUBJECT } from "@/lib/email/donor-reminder-template";
 
 const template = { assunto: DONOR_REMINDER_SUBJECT, corpo: DONOR_REMINDER_BODY };

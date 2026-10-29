@@ -11,6 +11,13 @@ const { getSessionUser, sendEmail, revalidatePath } = vi.hoisted(() => ({
 vi.mock("@/lib/auth/session", () => ({ getSessionUser }));
 vi.mock("resend", () => ({ Resend: class { emails = { send: sendEmail }; } }));
 vi.mock("next/cache", () => ({ revalidatePath }));
+// A página /admin/emails tem abas sincronizadas com `?aba=`; fora do App
+// Router, `useSearchParams`/`useRouter` precisam de um duplo.
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => new URLSearchParams("aba=instrucoes"),
+  useRouter: () => ({ replace: vi.fn() }),
+  usePathname: () => "/admin/emails",
+}));
 
 const databaseUrl = process.env.DATABASE_URL_TEST;
 const integration = describe.skipIf(!databaseUrl);
@@ -22,7 +29,7 @@ integration("monthly instructions admin editor with PostgreSQL", () => {
   const baseSql = databaseUrl ? postgres(databaseUrl, { max: 1 }) : null;
   let db: typeof import("@/lib/db").db;
   let actions: typeof import("@/app/admin/_actions/donor-monthly-instructions-actions");
-  let page: typeof import("@/app/admin/instrucoes-benfeitores/page").default;
+  let page: typeof import("@/app/admin/emails/page").default;
   let schema: typeof import("@/lib/db/schema");
 
   function bootstrap() {
@@ -39,6 +46,8 @@ integration("monthly instructions admin editor with PostgreSQL", () => {
       "admin_users", "school_years", "decision_templates", "contract_templates",
       "document_header", "donor_welcome_templates", "donor_reminder_templates",
       "donor_monthly_instruction_templates", "donor_monthly_instruction_sends",
+      // A página /admin/emails também carrega boas-vindas e lembretes.
+      "donor_pledges", "donor_payment_ledger", "donor_reminder_sends",
     ]) {
       await baseSql!.unsafe(`CREATE TABLE "${isolatedSchema}"."${table}" (LIKE public."${table}" INCLUDING ALL)`);
     }
@@ -53,7 +62,7 @@ integration("monthly instructions admin editor with PostgreSQL", () => {
     if (current_schema !== isolatedSchema) throw new Error("Task 22 test schema was not selected");
     schema = await import("@/lib/db/schema");
     actions = await import("@/app/admin/_actions/donor-monthly-instructions-actions");
-    ({ default: page } = await import("@/app/admin/instrucoes-benfeitores/page"));
+    ({ default: page } = await import("@/app/admin/emails/page"));
     await db.insert(schema.adminUsers).values([
       { id: adminId, email: `${adminId}@example.test`, password_hash: "test", role: "admin" },
       { id: secretariatId, email: `${secretariatId}@example.test`, password_hash: "test", role: "secretaria" },

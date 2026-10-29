@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: "Shell, Início em /admin, páginas com abas e redirects"
 type: frontend
 complexity: critical
@@ -37,14 +37,14 @@ Substitui `Sidebar`/`Topbar` pelo `AdminShell` do protótipo (3 grupos, contador
 
 ## Subtasks
 
-- [ ] 2.1 Implementar `AdminShell` e atualizar `layout.tsx`; remover `Sidebar`/`Topbar`.
-- [ ] 2.2 Implementar `getAdminHomeSummary` com testes fake-db.
-- [ ] 2.3 Implementar Início (`page.tsx` + `admin-home.tsx`) e ajustar `AFTER_LOGIN`.
-- [ ] 2.4 Criar `/admin/emails` com abas e mover/restilizar os três clientes; apagar páginas antigas.
-- [ ] 2.5 Criar `/admin/modelos` com abas; apagar páginas antigas.
-- [ ] 2.6 Registrar redirects em `next.config.ts`.
-- [ ] 2.7 Escrever/atualizar testes (lista abaixo) e rodar `npm run typecheck`, `npm run lint`, `npm test`.
-- [ ] 2.8 Conferência visual: `npm run dev` → `/admin` (admin e, via alteração temporária de papel não commitada, secretaria se viável), `/admin/emails?aba=lembretes`, `/admin/modelos?aba=contrato`, rota antiga `/admin/textos` redirecionando; comparar com `/prototipos/admin-redesign#/inicio`, `#/comunicacoes`, `#/modelos` via `agent-browser`.
+- [x] 2.1 Implementar `AdminShell` e atualizar `layout.tsx`; remover `Sidebar`/`Topbar`.
+- [x] 2.2 Implementar `getAdminHomeSummary` com testes fake-db.
+- [x] 2.3 Implementar Início (`page.tsx` + `admin-home.tsx`) e ajustar `AFTER_LOGIN`.
+- [x] 2.4 Criar `/admin/emails` com abas e mover/restilizar os três clientes; apagar páginas antigas.
+- [x] 2.5 Criar `/admin/modelos` com abas; apagar páginas antigas.
+- [x] 2.6 Registrar redirects em `next.config.ts`.
+- [x] 2.7 Escrever/atualizar testes (lista abaixo) e rodar `npm run typecheck`, `npm run lint`, `npm test`.
+- [x] 2.8 Conferência visual: `npm run dev` → `/admin` (admin e, via alteração temporária de papel não commitada, secretaria se viável), `/admin/emails?aba=lembretes`, `/admin/modelos?aba=contrato`, rota antiga `/admin/textos` redirecionando; comparar com `/prototipos/admin-redesign#/inicio`, `#/comunicacoes`, `#/modelos` via `agent-browser`.
 
 ## Implementation Details
 

@@ -5,7 +5,7 @@
 | # | Title | Status | Complexity | Dependencies |
 |---|-------|--------|------------|--------------|
 | 01 | Base: componentes shadcn, primitivos compartilhados e ajustes de tooling | completed | high | — |
-| 02 | Shell, Início em /admin, páginas com abas e redirects | pending | critical | task_01 |
+| 02 | Shell, Início em /admin, páginas com abas e redirects | completed | critical | task_01 |
 | 03 | Solicitações: filtro único, linha enxuta e detalhe em abas | pending | high | task_02 |
 | 04 | Benfeitores: toolbar, detalhe em seções e exclusão inline | pending | high | task_02 |
 | 05 | Pagamentos: leitura do livro mensal | pending | medium | task_02 |
