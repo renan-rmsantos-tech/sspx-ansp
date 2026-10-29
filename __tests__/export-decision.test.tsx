@@ -17,7 +17,11 @@ vi.mock("@/app/admin/_actions/admin-actions", () => ({
   rejectApplication: vi.fn(),
   exportDecision: mockExportDecision,
   exportContract: mockExportContract,
+  exportApplication: vi.fn(),
   getDocumentUrl: vi.fn(),
+  getCurrentIssuedDocuments: vi.fn().mockResolvedValue([]),
+  getIssuedDocumentHistory: vi.fn().mockResolvedValue([]),
+  getIssuedDocumentUrl: vi.fn(),
 }));
 
 vi.mock("@/app/admin/_components/application-observations", () => ({
@@ -47,26 +51,25 @@ function makeDecidedApp(): ApplicationSummary {
   };
 }
 
-async function openExportPreview() {
+/** Renderiza a linha já aberta: os PDFs vivem na barra de ações do detalhe. */
+async function renderOpenCard() {
   const app = makeDecidedApp();
-  const detail = {
-    ...app,
-    other_children: [],
-    vehicles: [],
-    collaboration: null,
-    benefactors: [],
-    documents: [],
-  };
-  mockGetApplicationDetail.mockResolvedValueOnce({ data: detail });
+  mockGetApplicationDetail.mockResolvedValueOnce({
+    data: { ...app, other_children: [], vehicles: [], collaboration: null, benefactors: [], documents: [] },
+  });
+  global.URL.createObjectURL = vi.fn(() => "blob:mock-url");
+  global.URL.revokeObjectURL = vi.fn();
+
+  render(<ApplicationCard application={app} onDecision={vi.fn()} defaultOpen />);
+  await act(async () => {});
+}
+
+async function openExportPreview() {
   mockExportDecision.mockResolvedValueOnce({
     pdfBase64: PDF_BASE64,
     filename: "decisao_aprovacao_João_Silva.pdf",
   });
-
-  global.URL.createObjectURL = vi.fn(() => "blob:mock-url");
-  global.URL.revokeObjectURL = vi.fn();
-
-  render(<ApplicationCard application={app} onDecision={vi.fn()} />);
+  await renderOpenCard();
 
   await act(async () => {
     fireEvent.click(screen.getByTestId("export-button"));
@@ -138,17 +141,24 @@ describe("Export Decision", () => {
     expect(screen.queryByTestId("pdf-preview-modal")).toBeNull();
   });
 
-  it("clicking generate contract opens a PDF preview with print and download options", async () => {
-    const app = makeDecidedApp();
+  it("export error is shown as an alert under the detail", async () => {
+    mockExportDecision.mockResolvedValueOnce({ error: "Modelo de decisão não configurado." });
+    await renderOpenCard();
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("export-button"));
+    });
+
+    expect(screen.queryByTestId("pdf-preview-modal")).toBeNull();
+    expect(screen.getByTestId("export-error")).toHaveTextContent("Modelo de decisão não configurado.");
+  });
+
+  it("UT-040: clicking generate contract opens a PDF preview with print and download options", async () => {
     mockExportContract.mockResolvedValueOnce({
       pdfBase64: PDF_BASE64,
       filename: "contrato_Joao_Silva.pdf",
     });
-
-    global.URL.createObjectURL = vi.fn(() => "blob:mock-url");
-    global.URL.revokeObjectURL = vi.fn();
-
-    render(<ApplicationCard application={app} onDecision={vi.fn()} />);
+    await renderOpenCard();
 
     await act(async () => {
       fireEvent.click(screen.getByTestId("contract-button"));
@@ -156,8 +166,21 @@ describe("Export Decision", () => {
 
     expect(mockExportContract).toHaveBeenCalledWith("app-1");
     expect(screen.getByTestId("pdf-preview-modal")).toBeInTheDocument();
+    expect(screen.getByTestId("pdf-preview-frame")).toBeInTheDocument();
     expect(screen.getByTestId("pdf-print-button")).toBeInTheDocument();
     expect(screen.getByTestId("pdf-download-button")).toBeInTheDocument();
-    expect(screen.getByText("Contrato")).toBeInTheDocument();
+    expect(screen.getByTestId("pdf-preview-modal")).toHaveAttribute("aria-label", "Contrato");
+  });
+
+  it("contract errors are shown without opening the preview", async () => {
+    mockExportContract.mockResolvedValueOnce({ error: "Modelo de contrato não configurado." });
+    await renderOpenCard();
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("contract-button"));
+    });
+
+    expect(screen.queryByTestId("pdf-preview-modal")).toBeNull();
+    expect(screen.getByTestId("contract-error")).toHaveTextContent("Modelo de contrato não configurado.");
   });
 });

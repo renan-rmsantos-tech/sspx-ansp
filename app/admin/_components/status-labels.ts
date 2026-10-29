@@ -14,3 +14,10 @@ export const STATUS_TONES: Record<ApplicationStatus, Tone> = {
   aprovada: "success",
   rejeitada: "danger",
 };
+
+export const APPLICATION_STATUSES: readonly ApplicationStatus[] = ["pendente", "aprovada", "rejeitada"];
+
+/** Valida o valor de `?situacao=`; qualquer outra coisa cai em "sem filtro". */
+export function parseApplicationStatus(raw: unknown): ApplicationStatus | undefined {
+  return APPLICATION_STATUSES.find((status) => status === raw);
+}

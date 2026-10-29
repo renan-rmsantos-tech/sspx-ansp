@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: "Solicitações: filtro único, linha enxuta e detalhe em abas"
 type: frontend
 complexity: high
@@ -35,12 +35,12 @@ Reescreve a lista de solicitações sobre os primitivos: um segmento de situaç�
 
 ## Subtasks
 
-- [ ] 3.1 Página server lê `?situacao=` e passa `initialStatus`; cliente admin com segmento, busca, ordenação, contagem, vazio.
-- [ ] 3.2 `ApplicationCard` sobre `RecordRow` + `ActionBar`; remover `StatsDashboard`.
-- [ ] 3.3 `ApplicationDetail` com `Tabs` shadcn e `DataGrid`; `DecisionActions` restilizado.
-- [ ] 3.4 `DocumentPreview` restilizado; visão da Secretaria no padrão.
-- [ ] 3.5 Atualizar `__tests__/solicitacoes-client.test.tsx` e `__tests__/export-decision.test.tsx` (UT-030–UT-046, UT-102); apagar `stats-dashboard.test.tsx`.
-- [ ] 3.6 `npm run typecheck`, `npm run lint`, `npm test`; conferência visual de `/admin/solicitacoes` (lista, linha aberta, aba Decisão em modo aprovar) contra `/prototipos/admin-redesign#/solicitacoes`.
+- [x] 3.1 Página server lê `?situacao=` e passa `initialStatus`; cliente admin com segmento, busca, ordenação, contagem, vazio.
+- [x] 3.2 `ApplicationCard` sobre `RecordRow` + `ActionBar`; remover `StatsDashboard`.
+- [x] 3.3 `ApplicationDetail` com `Tabs` shadcn e `DataGrid`; `DecisionActions` restilizado.
+- [x] 3.4 `DocumentPreview` restilizado; visão da Secretaria no padrão.
+- [x] 3.5 Atualizar `__tests__/solicitacoes-client.test.tsx` e `__tests__/export-decision.test.tsx` (UT-030–UT-046, UT-102); apagar `stats-dashboard.test.tsx`.
+- [x] 3.6 `npm run typecheck`, `npm run lint`, `npm test`; conferência visual de `/admin/solicitacoes` (lista, linha aberta, aba Decisão em modo aprovar) contra `/prototipos/admin-redesign#/solicitacoes`.
 
 ## Implementation Details
 

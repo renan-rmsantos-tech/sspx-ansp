@@ -1,11 +1,19 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { FileDown, FileSignature, Printer } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ApplicationDetail } from "./application-detail";
 import { DecisionActions } from "./decision-actions";
 import { PdfPreviewModal } from "./pdf-preview-modal";
 import { IssuedDocuments } from "./issued-documents";
 import { ApplicationObservations } from "./application-observations";
+import { ActionBar } from "./action-bar";
+import { DataGrid, DataItem } from "./data-grid";
+import { Notice } from "./notice";
+import { RecordRow } from "./record-row";
+import { STATUS_LABELS, STATUS_TONES, type ApplicationStatus } from "./status-labels";
+import { StatusPill } from "./status-pill";
 import {
   getApplicationDetail,
   exportDecision,
@@ -15,7 +23,7 @@ import {
 
 export interface ApplicationSummary {
   id: string;
-  status: string;
+  status: ApplicationStatus;
   escola: string;
   pai_nome: string;
   mae_nome: string;
@@ -27,189 +35,127 @@ export interface ApplicationSummary {
   students: Array<{ id: string; nome: string; serie: string; mensalidade: number }>;
 }
 
+export type DecisionHandler = (
+  id: string,
+  status: ApplicationStatus,
+  desconto_concedido?: number | null,
+  motivo?: string | null
+) => void;
+
 interface ApplicationCardProps {
   application: ApplicationSummary;
-  onDecision: (id: string, status: string, desconto_concedido?: number | null) => void;
+  onDecision: DecisionHandler;
+  defaultOpen?: boolean;
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  pendente: "Pendente",
-  aprovada: "Aprovada",
-  rejeitada: "Rejeitada",
-};
+type Preview = { pdfBase64: string; filename: string; title: string };
+type PdfResult = { pdfBase64: string; filename: string } | { error: string };
 
-const STATUS_COLORS: Record<string, string> = {
-  pendente: "bg-warn/15 text-warn",
-  aprovada: "bg-success/15 text-success",
-  rejeitada: "bg-danger/15 text-danger",
-};
+function formatDate(value: string | null | undefined): string {
+  return value ? new Date(value).toLocaleDateString("pt-BR") : "—";
+}
 
-export function ApplicationCard({ application, onDecision }: ApplicationCardProps) {
-  const [expanded, setExpanded] = useState(false);
+function sum(values: Array<number | null | undefined>): number {
+  return values.reduce<number>((total, value) => total + (Number(value) || 0), 0);
+}
+
+export function ApplicationCard({ application, onDecision, defaultOpen = false }: ApplicationCardProps) {
+  const [open, setOpen] = useState(defaultOpen);
   const [detail, setDetail] = useState<Record<string, unknown> | null>(null);
-  const [loadingDetail, setLoadingDetail] = useState(false);
-  const [exporting, setExporting] = useState(false);
-  const [exportError, setExportError] = useState<string | null>(null);
-  const [generatingContract, setGeneratingContract] = useState(false);
-  const [contractError, setContractError] = useState<string | null>(null);
-  const [exportingData, setExportingData] = useState(false);
-  const [dataError, setDataError] = useState<string | null>(null);
-  const [preview, setPreview] = useState<
-    { pdfBase64: string; filename: string; title: string } | null
-  >(null);
+  const [detailError, setDetailError] = useState(false);
+  const [pending, setPending] = useState<"data" | "decision" | "contract" | null>(null);
+  const [errors, setErrors] = useState<{ data?: string; decision?: string; contract?: string }>({});
+  const [preview, setPreview] = useState<Preview | null>(null);
 
-  const toggleExpand = useCallback(async () => {
-    if (!expanded && !detail) {
-      setLoadingDetail(true);
-      const result = await getApplicationDetail(application.id);
-      if (result.data) {
-        setDetail({
-          ...result.data,
-          status: application.status,
-        } as Record<string, unknown>);
+  // O detalhe é buscado na primeira abertura (inclusive quando a linha já vem
+  // aberta por padrão); o estado "carregando" é derivado, sem setState síncrono.
+  useEffect(() => {
+    if (!open || detail || detailError) return;
+    let cancelled = false;
+    getApplicationDetail(application.id)
+      .then((result) => {
+        if (cancelled) return;
+        if (result.data) setDetail(result.data as Record<string, unknown>);
+        else setDetailError(true);
+      })
+      .catch(() => {
+        if (!cancelled) setDetailError(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, detail, detailError, application.id]);
+
+  const runExport = useCallback(
+    async (kind: "data" | "decision" | "contract", action: (id: string) => Promise<PdfResult>, title: string) => {
+      setPending(kind);
+      setErrors((prev) => ({ ...prev, [kind]: undefined }));
+      const result = await action(application.id);
+      if ("pdfBase64" in result) {
+        setPreview({ pdfBase64: result.pdfBase64, filename: result.filename, title });
+      } else {
+        setErrors((prev) => ({ ...prev, [kind]: result.error }));
       }
-      setLoadingDetail(false);
-    }
-    setExpanded((prev) => !prev);
-  }, [expanded, detail, application.id, application.status]);
-
-  const handleExport = useCallback(async () => {
-    setExporting(true);
-    setExportError(null);
-    const result = await exportDecision(application.id);
-    if ("pdfBase64" in result) {
-      setPreview({
-        pdfBase64: result.pdfBase64,
-        filename: result.filename,
-        title: "Decisão",
-      });
-    } else {
-      setExportError(result.error);
-    }
-    setExporting(false);
-  }, [application.id]);
-
-  const handleGenerateContract = useCallback(async () => {
-    setGeneratingContract(true);
-    setContractError(null);
-    const result = await exportContract(application.id);
-    if ("pdfBase64" in result) {
-      setPreview({
-        pdfBase64: result.pdfBase64,
-        filename: result.filename,
-        title: "Contrato",
-      });
-    } else {
-      setContractError(result.error);
-    }
-    setGeneratingContract(false);
-  }, [application.id]);
-
-  const handleExportData = useCallback(async () => {
-    setExportingData(true);
-    setDataError(null);
-    const result = await exportApplication(application.id);
-    if ("pdfBase64" in result) {
-      setPreview({
-        pdfBase64: result.pdfBase64,
-        filename: result.filename,
-        title: "Dados da Solicitação",
-      });
-    } else {
-      setDataError(result.error);
-    }
-    setExportingData(false);
-  }, [application.id]);
+      setPending(null);
+    },
+    [application.id]
+  );
 
   const decided = application.status !== "pendente";
   const approved = application.status === "aprovada";
-
-  const headerActions = (
-    <div
-      className="flex shrink-0 flex-wrap items-center justify-end gap-2"
-      data-testid="card-header-actions"
-    >
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          void handleExportData();
-        }}
-        disabled={exportingData}
-        className="rounded-md border border-accent px-3 py-1.5 text-sm font-medium text-accent hover:bg-bg disabled:opacity-50"
-        data-testid="export-data-button"
-      >
-        {exportingData ? "Gerando..." : "Exportar Dados (PDF)"}
-      </button>
-      {decided && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            void handleExport();
-          }}
-          disabled={exporting}
-          className="rounded-md border border-accent bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50"
-          data-testid="export-button"
-        >
-          {exporting ? "Exportando..." : "Exportar Decisão"}
-        </button>
-      )}
-      {approved && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            void handleGenerateContract();
-          }}
-          disabled={generatingContract}
-          className="rounded-md border border-accent px-3 py-1.5 text-sm font-medium text-accent hover:bg-bg disabled:opacity-50"
-          data-testid="contract-button"
-        >
-          {generatingContract ? "Gerando..." : "Gerar Contrato (PDF)"}
-        </button>
-      )}
-    </div>
-  );
+  const loading = open && !detail && !detailError;
 
   const decisionPanel = decided ? (
-    <div data-testid="decision-info">
-      <div className="space-y-1 text-sm text-muted">
-        <p>
-          Status:{" "}
-          <span
-            className={
-              application.status === "aprovada" ? "text-success" : "text-danger"
-            }
-          >
-            {STATUS_LABELS[application.status]}
-          </span>
-        </p>
-        {application.desconto_concedido != null && (
-          <p>Desconto concedido: {application.desconto_concedido}%</p>
-        )}
-        {application.motivo && <p>Motivo: {application.motivo}</p>}
-        {application.data_decisao && (
-          <p>
-            Data:{" "}
-            {new Date(application.data_decisao).toLocaleDateString("pt-BR")}
-          </p>
-        )}
-      </div>
+    <div className="space-y-4" data-testid="decision-info">
+      <Notice
+        tone={approved ? "success" : "danger"}
+        role="status"
+        title={approved ? `Aprovada com ${application.desconto_concedido ?? 0}% de desconto` : "Rejeitada"}
+      >
+        Registrada em {formatDate(application.data_decisao)}. {application.motivo || "Sem motivo registrado."}
+      </Notice>
+      <DataGrid cols={3}>
+        <DataItem label="Desconto solicitado" value={`${application.desconto_solicitado}%`} />
+        <DataItem
+          label="Desconto concedido"
+          value={application.desconto_concedido != null ? `${application.desconto_concedido}%` : "—"}
+        />
+        <DataItem label="Data da decisão" value={formatDate(application.data_decisao)} />
+      </DataGrid>
+      <IssuedDocuments applicationId={application.id} />
     </div>
   ) : (
     <DecisionActions
       applicationId={application.id}
       requestedDiscount={application.desconto_solicitado}
+      familyIncome={detail ? sum([detail.renda_pai as number, detail.renda_mae as number, detail.renda_outros as number]) : undefined}
+      monthlyTuition={sum(application.students.map((student) => student.mensalidade))}
       onDecision={onDecision}
-      embedded
     />
   );
 
   return (
-    <div
-      className="rounded-lg border border-border bg-surface"
+    <RecordRow
       data-testid={`application-card-${application.id}`}
+      toggleTestId="card-toggle"
+      detailTestId="card-detail"
+      open={open}
+      onOpenChange={setOpen}
+      title={`${application.pai_nome} e ${application.mae_nome}`}
+      meta={
+        <>
+          <span>{application.escola}</span>
+          <span data-testid="student-count">
+            {application.students.length} {application.students.length === 1 ? "aluno" : "alunos"}
+          </span>
+          <span>Enviada em {formatDate(application.data_envio)}</span>
+        </>
+      }
+      status={
+        <StatusPill tone={STATUS_TONES[application.status]} data-testid="status-badge">
+          {STATUS_LABELS[application.status]}
+        </StatusPill>
+      }
     >
       {preview && (
         <PdfPreviewModal
@@ -219,103 +165,73 @@ export function ApplicationCard({ application, onDecision }: ApplicationCardProp
           onClose={() => setPreview(null)}
         />
       )}
-      <div className="p-4">
-        <div className="flex items-start gap-3">
-          <button
-            type="button"
-            onClick={toggleExpand}
-            className="min-w-0 flex-1 text-left hover:bg-bg/50"
-            aria-expanded={expanded}
-            data-testid="card-toggle"
-          >
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-base font-semibold text-fg">
-                {application.pai_nome} &amp; {application.mae_nome}
-              </span>
-              <span
-                className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[application.status] ?? ""}`}
-                data-testid="status-badge"
-              >
-                {STATUS_LABELS[application.status] ?? application.status}
-              </span>
-            </div>
-            <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
-              <span>{application.escola}</span>
-              <span>
-                {new Date(application.data_envio).toLocaleDateString("pt-BR")}
-              </span>
-              <span data-testid="student-count">
-                {application.students.length}{" "}
-                {application.students.length === 1 ? "aluno" : "alunos"}
-              </span>
-              <span>
-                Desconto:{" "}
-                {application.desconto_concedido != null
-                  ? application.desconto_concedido
-                  : application.desconto_solicitado}
-                %
-              </span>
-            </div>
-          </button>
 
-          {headerActions}
+      {loading ? (
+        <p className="py-4 text-center text-sm text-muted">Carregando…</p>
+      ) : detail ? (
+        <ApplicationDetail
+          detail={detail}
+          status={application.status}
+          decisionPanel={decisionPanel}
+          afterResumo={<ApplicationObservations applicationId={application.id} />}
+        />
+      ) : (
+        <Notice tone="danger">Erro ao carregar detalhes.</Notice>
+      )}
 
-          <button
-            type="button"
-            onClick={toggleExpand}
-            className="mt-0.5 shrink-0 rounded-md p-1 text-muted hover:bg-bg hover:text-fg"
-            aria-label={expanded ? "Recolher solicitação" : "Expandir solicitação"}
-            data-testid="card-expand-chevron"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className={`size-5 transition-transform ${expanded ? "rotate-180" : ""}`}
-              aria-hidden
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </button>
-        </div>
-
-        {(exportError || contractError || dataError) && (
-          <div className="mt-2 flex flex-col gap-1">
-            {dataError && (
-              <p className="text-sm text-danger" data-testid="export-data-error">
-                {dataError}
-              </p>
-            )}
-            {exportError && (
-              <p className="text-sm text-danger" data-testid="export-error">
-                {exportError}
-              </p>
-            )}
-            {contractError && (
-              <p className="text-sm text-danger" data-testid="contract-error">
-                {contractError}
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-
-      {expanded && (
-        <div className="border-t border-border px-4 pb-4 pt-3" data-testid="card-detail">
-          {loadingDetail ? (
-            <p className="py-4 text-center text-sm text-muted">Carregando...</p>
-          ) : detail ? (
-            <><ApplicationDetail detail={detail} decisionPanel={decisionPanel} /><IssuedDocuments applicationId={application.id} /><ApplicationObservations applicationId={application.id} /></>
-          ) : (
-            <p className="py-4 text-center text-sm text-danger">
-              Erro ao carregar detalhes.
-            </p>
+      {(errors.data || errors.decision || errors.contract) && (
+        <div className="mt-4 space-y-2">
+          {errors.data && (
+            <Notice tone="danger" data-testid="export-data-error">
+              {errors.data}
+            </Notice>
+          )}
+          {errors.decision && (
+            <Notice tone="danger" data-testid="export-error">
+              {errors.decision}
+            </Notice>
+          )}
+          {errors.contract && (
+            <Notice tone="danger" data-testid="contract-error">
+              {errors.contract}
+            </Notice>
           )}
         </div>
       )}
-    </div>
+
+      <ActionBar note="Os PDFs são gerados com o cabeçalho e os modelos configurados.">
+        <Button
+          variant="outline"
+          size="lg"
+          disabled={pending === "data"}
+          onClick={() => void runExport("data", exportApplication, "Dados da Solicitação")}
+          data-testid="export-data-button"
+        >
+          <Printer aria-hidden="true" /> {pending === "data" ? "Gerando…" : "Imprimir dados da solicitação"}
+        </Button>
+        {decided && (
+          <Button
+            variant="outline"
+            size="lg"
+            disabled={pending === "decision"}
+            onClick={() => void runExport("decision", exportDecision, "Decisão")}
+            data-testid="export-button"
+          >
+            <FileDown aria-hidden="true" /> {pending === "decision" ? "Gerando…" : "Carta de decisão"}
+          </Button>
+        )}
+        {approved && (
+          <Button
+            variant="outline"
+            size="lg"
+            disabled={pending === "contract"}
+            onClick={() => void runExport("contract", exportContract, "Contrato")}
+            data-testid="contract-button"
+          >
+            <FileSignature aria-hidden="true" /> {pending === "contract" ? "Gerando…" : "Contrato"}
+          </Button>
+        )}
+      </ActionBar>
+    </RecordRow>
   );
 }

@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { Button } from "@/components/ui/button";
 import { getDocumentUrl } from "../_actions/admin-actions";
 import { Modal } from "./modal";
+import { Notice } from "./notice";
 
 interface Document {
   id: string;
@@ -100,47 +102,49 @@ export function DocumentPreview({ documents }: DocumentPreviewProps) {
   }, []);
 
   return (
-    <div data-testid="documents-section">
-      <ul className="space-y-2">
+    <div className="space-y-3" data-testid="documents-section">
+      <ul className="grid gap-2 sm:grid-cols-2">
         {docs.map((doc) => (
           <li
             key={doc.id}
-            className="flex flex-wrap items-center gap-2 text-sm"
+            className="flex items-center justify-between gap-3 rounded-md border border-border bg-bg/50 px-3 py-2 text-sm"
           >
-            <span className="text-muted">
-              {resolveCategoryLabel(doc.categoria, doc.storage_path)}:
+            <span className="min-w-0">
+              <span className="block truncate font-medium text-fg">
+                {resolveCategoryLabel(doc.categoria, doc.storage_path)}
+              </span>
+              <span className="block truncate text-xs text-muted">{doc.nome_arquivo}</span>
             </span>
-            <span className="text-fg">{doc.nome_arquivo}</span>
-            <div className="flex gap-1">
+            <span className="flex shrink-0 gap-1">
               {doc.mime_type === "application/pdf" && (
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => handlePreview(doc)}
                   disabled={loading === doc.id}
-                  className="rounded border border-border px-2 py-0.5 text-xs text-accent hover:bg-bg disabled:opacity-50"
                   data-testid={`preview-${doc.id}`}
                 >
-                  {loading === doc.id ? "..." : "Visualizar"}
-                </button>
+                  Abrir
+                </Button>
               )}
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => handleDownload(doc)}
                 disabled={loading === doc.id}
-                className="rounded border border-border px-2 py-0.5 text-xs text-accent hover:bg-bg disabled:opacity-50"
                 data-testid={`download-${doc.id}`}
               >
                 Baixar
-              </button>
-            </div>
+              </Button>
+            </span>
           </li>
         ))}
       </ul>
 
       {error && (
-        <p className="mt-2 text-sm text-danger" data-testid="document-error">
+        <Notice tone="danger" data-testid="document-error">
           {error}
-        </p>
+        </Notice>
       )}
 
       <Modal
