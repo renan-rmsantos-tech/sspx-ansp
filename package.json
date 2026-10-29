@@ -19,7 +19,8 @@
     "db:seed": "node --env-file-if-exists=.env --import tsx scripts/seed-dev.ts",
     "donors:enrich-residence": "node --env-file-if-exists=.env --import tsx scripts/enrich-donor-residences.ts",
     "donors:reminders": "node --env-file-if-exists=.env --import tsx scripts/send-donor-reminders.ts",
-    "storage:cleanup": "tsx scripts/cleanup-pending.ts"
+    "storage:cleanup": "tsx scripts/cleanup-pending.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
