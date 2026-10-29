@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: "Base: componentes shadcn, primitivos compartilhados e ajustes de tooling"
 type: frontend
 complexity: high
@@ -33,13 +33,13 @@ Cria a fundação do redesenho: adiciona os componentes shadcn que faltam em `co
 
 ## Subtasks
 
-- [ ] 1.1 Adicionar os componentes shadcn e verificar que `npm run typecheck` passa com eles.
-- [ ] 1.2 Corrigir o hover de `outline`/`ghost` no `Button` e documentar.
-- [ ] 1.3 Implementar os 14 primitivos compartilhados + `status-labels.ts` com a aparência do protótipo.
-- [ ] 1.4 Implementar `nav.ts` com os 4 grupos, `adminOnly`, chaves de badge e `isActive`.
-- [ ] 1.5 Corrigir o script `lint`.
-- [ ] 1.6 Escrever `__tests__/admin-primitives.test.tsx` (UT-110–UT-124) e `__tests__/admin-nav.test.ts` (UT-001–UT-003 na parte de dados/`isActive`).
-- [ ] 1.7 Rodar `npm run typecheck`, `npm run lint`, `npm test`.
+- [x] 1.1 Adicionar os componentes shadcn e verificar que `npm run typecheck` passa com eles.
+- [x] 1.2 Corrigir o hover de `outline`/`ghost` no `Button` e documentar.
+- [x] 1.3 Implementar os 14 primitivos compartilhados + `status-labels.ts` com a aparência do protótipo.
+- [x] 1.4 Implementar `nav.ts` com os 4 grupos, `adminOnly`, chaves de badge e `isActive`.
+- [x] 1.5 Corrigir o script `lint`.
+- [x] 1.6 Escrever `__tests__/admin-primitives.test.tsx` (UT-110–UT-124) e `__tests__/admin-nav.test.ts` (UT-001–UT-003 na parte de dados/`isActive`).
+- [x] 1.7 Rodar `npm run typecheck`, `npm run lint`, `npm test`.
 
 ## Implementation Details
 
@@ -72,8 +72,8 @@ Siga `_spec.md` Part II "System Architecture", "Core Interfaces", "Key Decisions
 ## Tests
 
 - Unit tests (`_tests.md`):
-  - [ ] UT-110 PageHeader; UT-111 Section; UT-112 StatusPill; UT-113 Notice roles; UT-114/UT-115 RecordRow não controlado/controlado; UT-116 SegmentedFilter; UT-117 DataGrid/DataItem; UT-118 EmptyState; UT-119 StatTile; UT-120 ActionBar; UT-121 Field; UT-122 SearchInput; UT-123 InlineConfirm; UT-124 buttonVariants.
-  - [ ] UT-001/UT-002 (dados de `NAV` filtrados por papel), UT-003 (`isActive`).
+  - [x] UT-110 PageHeader; UT-111 Section; UT-112 StatusPill; UT-113 Notice roles; UT-114/UT-115 RecordRow não controlado/controlado; UT-116 SegmentedFilter; UT-117 DataGrid/DataItem; UT-118 EmptyState; UT-119 StatTile; UT-120 ActionBar; UT-121 Field; UT-122 SearchInput; UT-123 InlineConfirm; UT-124 buttonVariants.
+  - [x] UT-001/UT-002 (dados de `NAV` filtrados por papel), UT-003 (`isActive`).
 - Integration tests: nenhum nesta tarefa (sem actions).
 - Test coverage target: ≥ 80% dos arquivos novos.
 - All tests must pass: `npm test` completo verde.
