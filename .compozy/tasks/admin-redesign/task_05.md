@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: "Pagamentos: leitura do livro mensal"
 type: frontend
 complexity: medium
@@ -31,11 +31,11 @@ Cria `/admin/pagamentos` (admin) como leitura do livro `donor_payment_ledger` po
 
 ## Subtasks
 
-- [ ] 5.1 Implementar `getMonthlyPayments` com testes fake-db (UT-070–UT-072, IT-002).
-- [ ] 5.2 Implementar página server com leitura/validação de `?mes=`.
-- [ ] 5.3 Implementar `PagamentosClient` (totais, lista, detalhe, avisos, vazio).
-- [ ] 5.4 Testes `__tests__/pagamentos-client.test.tsx` (UT-073–UT-077).
-- [ ] 5.5 `npm run typecheck`, `npm run lint`, `npm test`; conferência visual de `/admin/pagamentos` contra `/prototipos/admin-redesign#/pagamentos` (registrando as ausências deliberadas).
+- [x] 5.1 Implementar `getMonthlyPayments` com testes fake-db (UT-070–UT-072, IT-002).
+- [x] 5.2 Implementar página server com leitura/validação de `?mes=`.
+- [x] 5.3 Implementar `PagamentosClient` (totais, lista, detalhe, avisos, vazio).
+- [x] 5.4 Testes `__tests__/pagamentos-client.test.tsx` (UT-073–UT-077).
+- [x] 5.5 `npm run typecheck`, `npm run lint`, `npm test`; conferência visual de `/admin/pagamentos` contra `/prototipos/admin-redesign#/pagamentos` (registrando as ausências deliberadas).
 
 ## Implementation Details
 

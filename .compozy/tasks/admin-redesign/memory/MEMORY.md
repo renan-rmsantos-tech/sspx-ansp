@@ -7,6 +7,7 @@
 - task_03 concluída em 2026-10-29 (sem commit): Solicitações sobre `RecordRow`/`SegmentedFilter`/`Tabs`, `StatsDashboard` removido, página lê `?situacao=`. Baseline após task_03: typecheck ok; lint limpo; `npm test` 81 arquivos / 680 testes verdes (17 skipped).
 - task_04 concluída em 2026-10-29 (sem commit): Benfeitores sobre `RecordRow`/`SegmentedFilter`/`NativeSelect`/`Checkbox`, `InlineConfirm` na `ActionBar`, página lê `?boas-vindas=pendentes`. Baseline após task_04: typecheck ok; lint limpo; `npm test` 81 arquivos / 683 testes verdes (17 skipped).
 - task_02 concluída em 2026-10-29 (sem commit): `AdminShell`, Início em `/admin`, `getAdminHomeSummary`, `/admin/emails` e `/admin/modelos` com abas, redirects, `AFTER_LOGIN = "/admin"`. Baseline após task_02: typecheck ok; lint limpo; `npm test` 82 arquivos / 684 testes verdes (17 skipped).
+- task_05 concluída em 2026-10-29 (sem commit): `/admin/pagamentos` somente leitura sobre `getMonthlyPayments` (`donor-payment-actions.ts`), `PagamentosClient` com 3 `StatTile` + `RecordRow`s + `Notice` de escopo; página lê `?mes=`. Baseline após task_05: typecheck ok; lint limpo; `npm test` 84 arquivos / 702 testes verdes (17 skipped).
 
 ## Durable Decisions
 
@@ -20,7 +21,7 @@
 - Só `record-row`, `segmented-filter`, `search-input` e `inline-confirm` são `"use client"`; os demais primitivos podem ser renderizados por páginas server.
 - Abas de página: `useUrlTab(basePath, tabs, fallback)` + `PAGE_TABS_LIST_CLASS`/`PAGE_TABS_TRIGGER_CLASS` em `app/admin/_components/url-tabs.ts` (usados por `/admin/emails` e `/admin/modelos`); páginas server envolvem o cliente em `<Suspense>`. Painéis inativos desmontam.
 - `Section` aceita `className` e serve de cartão (`rounded-lg border border-border bg-surface p-5`) com `h2` + região nomeada; `TokenReference` (`_components/token-reference.tsx`) é o aside "Campos disponíveis".
-- O Início e o layout chamam `getAdminHomeSummary()` separadamente; CTAs do Início já enviam `?situacao=pendente` (lido por `/admin/solicitacoes` desde a task_03 via `parseApplicationStatus` em `status-labels.ts`), `?boas-vindas=pendentes` (lido por `/admin/benfeitores` desde a task_04) e `/admin/pagamentos` (task_05).
+- O Início e o layout chamam `getAdminHomeSummary()` separadamente; CTAs do Início já enviam `?situacao=pendente` (lido por `/admin/solicitacoes` desde a task_03 via `parseApplicationStatus` em `status-labels.ts`), `?boas-vindas=pendentes` (lido por `/admin/benfeitores` desde a task_04) e `/admin/pagamentos` (existe desde a task_05).
 - Seções compartilhadas de benfeitor (task_04): `donor-card.tsx` exporta `DonorSummary`, `DonorRowMeta`, `DonorFrequencyPill`, `DonorContactSection`, `DonorContributionSection` além de `DonorCard`/`DonorPledge`; `Notice` sempre tem `role` (`status`/`alert`), então `getByRole("status")` precisa de `within(...)` quando há mais de um aviso na linha.
 - Padrão de detalhe em abas dentro de `RecordRow` (task_03): `Tabs` controlado + `PAGE_TABS_*` de `url-tabs.ts`; carga do detalhe por efeito sem `setState` síncrono; formulários inline com `noValidate` para que o erro apareça em `Notice` (a validação nativa de `min`/`max` engole o submit no jsdom e no navegador). `onDecision` carrega também o motivo.
 
@@ -37,6 +38,9 @@
 - ESLint `react-hooks/set-state-in-effect` proíbe `setState` dentro de `useEffect`: sincronizar props/URL com estado ajustando durante a renderização.
 - Testes de integração com `DATABASE_URL_TEST=postgres://ansp:ansp@127.0.0.1:5433/ansp` rodam contra o Postgres dev em schemas isolados (apagados ao final). Atenção: 6 suítes de integração de benfeitores/seed/rodapé falham contra o banco de dev com dados (estado compartilhado); o gate é `npm test` sem a variável.
 - Dados de dev para conferência visual: `docker exec -i ansp-postgres-dev psql -U ansp -d ansp` (inserir registros fictícios e apagá-los ao final); o banco de dev não tem solicitações por padrão.
+- `lib/donor-payment-ledger.ts` (e qualquer módulo que importe `@/lib/db`) não pode ser importado por componentes `"use client"`: jsdom quebra com "DATABASE_URL environment variable is not set". Reimplementar funções puras no cliente (task_05 fez isso com `hasMonthlyReceipt`).
+- Páginas server com `searchParams` são testáveis sem render: `await Page({ searchParams: Promise.resolve({...}) })` e assertar `element.type`/`element.props` (`__tests__/pagamentos-page.test.tsx`).
+- `agent-browser fill` em `input type="month"` limpa o valor no Chromium; usar `eval` (`input.value='AAAA-MM'; input.form.requestSubmit()`).
 
 ## Open Risks
 
