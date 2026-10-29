@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: "Benfeitores: toolbar, detalhe em seções e exclusão inline"
 type: frontend
 complexity: high
@@ -32,12 +32,12 @@ Reescreve a lista de benfeitores: segmento de frequência, busca, select de prio
 
 ## Subtasks
 
-- [ ] 4.1 Página server lê `?boas-vindas=`; cliente admin com toolbar nova, contagem, lista, vazio.
-- [ ] 4.2 `DonorCard` sobre `RecordRow` com pílulas e seções Contato/Contribuição.
-- [ ] 4.3 Seção E-mails e comprovantes (boas-vindas com "Marcar como enviado", instruções mensais) e `ActionBar` com exclusão inline.
-- [ ] 4.4 Visão da Secretaria no padrão.
-- [ ] 4.5 Atualizar `__tests__/benfeitores-client.test.tsx` (UT-050–UT-063).
-- [ ] 4.6 `npm run typecheck`, `npm run lint`, `npm test`; conferência visual de `/admin/benfeitores` (lista, linha aberta, confirmação de exclusão cancelada) contra `/prototipos/admin-redesign#/benfeitores`.
+- [x] 4.1 Página server lê `?boas-vindas=`; cliente admin com toolbar nova, contagem, lista, vazio.
+- [x] 4.2 `DonorCard` sobre `RecordRow` com pílulas e seções Contato/Contribuição.
+- [x] 4.3 Seção E-mails e comprovantes (boas-vindas com "Marcar como enviado", instruções mensais) e `ActionBar` com exclusão inline.
+- [x] 4.4 Visão da Secretaria no padrão.
+- [x] 4.5 Atualizar `__tests__/benfeitores-client.test.tsx` (UT-050–UT-063).
+- [x] 4.6 `npm run typecheck`, `npm run lint`, `npm test`; conferência visual de `/admin/benfeitores` (lista, linha aberta, confirmação de exclusão cancelada) contra `/prototipos/admin-redesign#/benfeitores`.
 
 ## Implementation Details
 

@@ -1,6 +1,9 @@
 "use client";
 
-import { useState, useCallback, useRef, type FormEvent } from "react";
+import { useState, useCallback, useRef, type FormEvent, type ReactNode } from "react";
+import { Mail, Printer, Receipt, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   deleteDonorPledge,
   exportDonorPledge,
@@ -8,6 +11,13 @@ import {
   updateDonorDueDay,
 } from "../_actions/admin-actions";
 import { PdfPreviewModal } from "./pdf-preview-modal";
+import { ActionBar } from "./action-bar";
+import { DataGrid, DataItem } from "./data-grid";
+import { Field } from "./field";
+import { InlineConfirm } from "./inline-confirm";
+import { Notice } from "./notice";
+import { RecordRow } from "./record-row";
+import { StatusPill } from "./status-pill";
 import { prioradoCapelaLabel } from "@/lib/data/priorados-capelas";
 import { formatDonorDate } from "@/lib/donor-date";
 import { markDonorWelcomeEmailSent, unmarkDonorWelcomeEmailSent, retryDonorWelcomeEmail } from "@/app/admin/_actions/donor-email-actions";
@@ -27,6 +37,7 @@ export interface DonorPledge {
   frequencia: "unica" | "mensal";
   duracao?: "um_ano" | "indeterminado" | null;
   valor: number;
+  meio_pagamento?: "cartao" | "boleto" | "transferencia" | "pix" | null;
   data_pagamento?: string | null;
   dia_vencimento?: number | null;
   next_due_date?: string | null;
@@ -47,14 +58,32 @@ export interface DonorPledge {
   created_at: string;
 }
 
+/** Campos comuns às projeções de admin e secretaria, usados pelas seções compartilhadas. */
+export type DonorSummary = Pick<
+  DonorPledge,
+  | "id"
+  | "nome"
+  | "email"
+  | "telefone"
+  | "priorado_capela"
+  | "frequencia"
+  | "duracao"
+  | "valor"
+  | "meio_pagamento"
+  | "data_pagamento"
+  | "lembrete_canal"
+  | "observacoes"
+  | "created_at"
+> & { cpf?: string; endereco?: string | null; cep?: string | null };
+
 export const FREQUENCIA_LABELS: Record<DonorPledge["frequencia"], string> = {
-  unica: "Única",
+  unica: "Doação única",
   mensal: "Mensal",
 };
 
 const DURACAO_LABELS: Record<NonNullable<DonorPledge["duracao"]>, string> = {
-  um_ano: "Por um ano",
-  indeterminado: "Indeterminado",
+  um_ano: "por um ano",
+  indeterminado: "por tempo indeterminado",
 };
 
 const CANAL_LABELS: Record<NonNullable<DonorPledge["lembrete_canal"]>, string> = {
@@ -62,9 +91,11 @@ const CANAL_LABELS: Record<NonNullable<DonorPledge["lembrete_canal"]>, string> =
   email: "E-mail",
 };
 
-const FREQUENCIA_COLORS: Record<DonorPledge["frequencia"], string> = {
-  mensal: "bg-success/15 text-success",
-  unica: "bg-accent/15 text-accent",
+const MEIO_LABELS: Record<NonNullable<DonorPledge["meio_pagamento"]>, string> = {
+  cartao: "Cartão",
+  boleto: "Boleto",
+  transferencia: "Transferência",
+  pix: "Pix",
 };
 
 const currency = new Intl.NumberFormat("pt-BR", {
@@ -116,15 +147,100 @@ function reminderState(reminder: NonNullable<DonorPledge["latest_reminder"]>): s
   }
 }
 
+export function donorAmountLabel(donor: Pick<DonorPledge, "valor" | "frequencia">): string {
+  return `${currency.format(donor.valor)}${donor.frequencia === "mensal" ? " por mês" : ""}`;
+}
+
+function frequencyLabel(donor: Pick<DonorPledge, "frequencia" | "duracao">): string {
+  if (donor.frequencia !== "mensal") return FREQUENCIA_LABELS.unica;
+  return donor.duracao ? `Mensal, ${DURACAO_LABELS[donor.duracao]}` : "Mensal";
+}
+
+/** Resumo da linha (valor, priorado, vencimento, cadastro), igual para os dois papéis. */
+export function DonorRowMeta({ donor, dueDay }: { donor: DonorSummary; dueDay?: number | null }) {
+  return (
+    <>
+      <span className="font-medium text-fg">{donorAmountLabel(donor)}</span>
+      {donor.priorado_capela && <span>{prioradoCapelaLabel(donor.priorado_capela)}</span>}
+      {donor.frequencia === "mensal" && dueDay && <span>Vence dia {dueDay}</span>}
+      <span>Cadastro em {formatDonorDate(donor.created_at)}</span>
+    </>
+  );
+}
+
+export function DonorFrequencyPill({ frequencia }: { frequencia: DonorPledge["frequencia"] }) {
+  return (
+    <StatusPill tone={frequencia === "mensal" ? "accent" : "neutral"} dot={false} data-testid="frequencia-badge">
+      {FREQUENCIA_LABELS[frequencia]}
+    </StatusPill>
+  );
+}
+
+function DetailSection({ title, children, className }: { title: string; children: ReactNode; className?: string }) {
+  return (
+    <section className={className ?? "space-y-3"}>
+      <h3 className="text-sm font-semibold text-fg">{title}</h3>
+      {children}
+    </section>
+  );
+}
+
+export function DonorContactSection({ donor }: { donor: DonorSummary }) {
+  return (
+    <DetailSection title="Contato">
+      <DataGrid cols={2}>
+        <DataItem
+          label="E-mail"
+          value={
+            <a href={`mailto:${donor.email}`} className="text-accent underline-offset-4 hover:underline">
+              {donor.email}
+            </a>
+          }
+        />
+        <DataItem label="Telefone" value={donor.telefone} />
+        {donor.cpf && <DataItem label="CPF" value={donor.cpf} />}
+        <DataItem label="Priorado ou capela" value={donor.priorado_capela ? prioradoCapelaLabel(donor.priorado_capela) : null} />
+        {(donor.endereco || donor.cep) && (
+          <DataItem
+            label="Endereço"
+            value={[donor.endereco, donor.cep ? `CEP ${donor.cep}` : null].filter(Boolean).join(" · ")}
+            className="sm:col-span-2"
+          />
+        )}
+        {donor.observacoes && <DataItem label="Observações" value={donor.observacoes} className="sm:col-span-2" />}
+      </DataGrid>
+    </DetailSection>
+  );
+}
+
+/** Dados da contribuição; `children` recebe o bloco de vencimento/lembrete do admin. */
+export function DonorContributionSection({ donor, children }: { donor: DonorSummary; children?: ReactNode }) {
+  return (
+    <DetailSection title="Contribuição">
+      <DataGrid cols={2}>
+        <DataItem label="Valor" value={donorAmountLabel(donor)} />
+        <DataItem label="Frequência" value={frequencyLabel(donor)} />
+        {donor.meio_pagamento && <DataItem label="Meio de pagamento" value={MEIO_LABELS[donor.meio_pagamento]} />}
+        {donor.frequencia === "unica" && donor.data_pagamento && (
+          <DataItem label="Data do pagamento" value={formatDateBR(donor.data_pagamento)} />
+        )}
+        {donor.lembrete_canal && <DataItem label="Lembrete" value={CANAL_LABELS[donor.lembrete_canal]} />}
+      </DataGrid>
+      {children}
+    </DetailSection>
+  );
+}
+
 interface DonorCardProps {
   donor: DonorPledge;
   onDelete: (id: string) => void;
   onWelcomeSent?: (id: string, sentAt: string | null) => void;
   onDueDayUpdated: (id: string, day: number, nextDueDate: string | null) => void;
   onInstructionsUpdated?: (id: string, latest: MonthlyInstructionsAttempt) => void;
+  defaultOpen?: boolean;
 }
 
-export function DonorCard({ donor, onDelete, onWelcomeSent, onDueDayUpdated, onInstructionsUpdated }: DonorCardProps) {
+export function DonorCard({ donor, onDelete, onWelcomeSent, onDueDayUpdated, onInstructionsUpdated, defaultOpen = false }: DonorCardProps) {
   const [markingWelcome, setMarkingWelcome] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -145,6 +261,9 @@ export function DonorCard({ donor, onDelete, onWelcomeSent, onDueDayUpdated, onI
   const [savingDueDay, setSavingDueDay] = useState(false);
   const savingDueDayRef = useRef(false);
   const [dueDayFeedback, setDueDayFeedback] = useState<{ message: string; error: boolean } | null>(null);
+
+  const mensal = donor.frequencia === "mensal";
+  const receiptPending = mensal && donor.current_receipt?.status === "Comprovante pendente";
 
   const handleSaveDueDay = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -271,10 +390,60 @@ export function DonorCard({ donor, onDelete, onWelcomeSent, onDueDayUpdated, onI
     }
   }, [donor.id, onDelete]);
 
+  const welcomeNotice = welcomeSentAt ? (
+    <Notice
+      tone="success"
+      title={`Boas-vindas enviado em ${formatDonorDate(welcomeSentAt)}`}
+      data-testid="donor-welcome-status"
+      action={
+        <Button variant="ghost" size="sm" onClick={() => void handleUnmarkWelcome()} disabled={markingWelcome || sendingWelcome} data-testid="donor-welcome-unmark-sent">
+          {markingWelcome ? "Desmarcando…" : "Desmarcar envio"}
+        </Button>
+      }
+    >
+      Desmarque se a mensagem não chegou e precisa ser enviada de novo.
+    </Notice>
+  ) : welcomeInProgress || sendingWelcome ? (
+    <Notice tone="neutral" title="Boas-vindas em andamento" data-testid="donor-welcome-status">
+      Envio em andamento…
+    </Notice>
+  ) : (
+    <Notice
+      tone="warn"
+      title="Boas-vindas ainda não enviado"
+      data-testid="donor-welcome-status"
+      action={
+        <>
+          <Button size="sm" onClick={() => void handleSendWelcome()} disabled={sendingWelcome || markingWelcome} data-testid="donor-welcome-send">
+            <Mail aria-hidden="true" /> {sendingWelcome ? "Enviando…" : "Enviar agora"}
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => void handleMarkWelcome()} disabled={markingWelcome || sendingWelcome} data-testid="donor-welcome-mark-sent">
+            {markingWelcome ? "Registrando…" : "Marcar como enviado"}
+          </Button>
+        </>
+      }
+    >
+      A mensagem usa o texto configurado em E-mails.
+    </Notice>
+  );
+
   return (
-    <div
-      className="rounded-lg border border-border bg-surface p-4"
+    <RecordRow
       data-testid={`donor-card-${donor.id}`}
+      defaultOpen={defaultOpen}
+      title={donor.nome}
+      meta={<DonorRowMeta donor={donor} dueDay={donor.dia_vencimento} />}
+      status={
+        <div className="flex flex-wrap items-center gap-1.5 sm:justify-end">
+          {!welcomeSentAt && <StatusPill tone="warn">Boas-vindas pendente</StatusPill>}
+          {receiptPending && (
+            <StatusPill tone="neutral" dot={false}>
+              Sem comprovante do mês
+            </StatusPill>
+          )}
+          <DonorFrequencyPill frequencia={donor.frequencia} />
+        </div>
+      }
     >
       {preview && (
         <PdfPreviewModal
@@ -284,74 +453,17 @@ export function DonorCard({ donor, onDelete, onWelcomeSent, onDueDayUpdated, onI
           onClose={() => setPreview(null)}
         />
       )}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-base font-semibold text-fg">{donor.nome}</span>
-            <span
-              className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${FREQUENCIA_COLORS[donor.frequencia]}`}
-              data-testid="frequencia-badge"
-            >
-              {FREQUENCIA_LABELS[donor.frequencia]}
-              {donor.frequencia === "mensal" && donor.duracao
-                ? ` · ${DURACAO_LABELS[donor.duracao]}`
-                : ""}
-            </span>
-          </div>
 
-          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
-            <a
-              href={`mailto:${donor.email}`}
-              className="hover:text-accent hover:underline"
-            >
-              {donor.email}
-            </a>
-            <span>CPF: {donor.cpf}</span>
-            {donor.telefone && <span>{donor.telefone}</span>}
-            {donor.endereco && <span>{donor.endereco}</span>}
-            {donor.cep && <span>CEP: {donor.cep}</span>}
-            {donor.priorado_capela && (
-              <span>
-                Priorado/Capela: {prioradoCapelaLabel(donor.priorado_capela)}
-              </span>
-            )}
-            <span>Cadastro: {formatDonorDate(donor.created_at)}</span>
-          </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <DonorContactSection donor={donor} />
 
-          <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm">
-            <span>
-              <span className="text-muted">Valor: </span>
-              <span className="font-semibold text-fg">
-                {currency.format(donor.valor)}
-                {donor.frequencia === "mensal" ? "/mês" : ""}
-              </span>
-            </span>
-            {donor.frequencia === "unica" && donor.data_pagamento && (
-              <span>
-                <span className="text-muted">Pagamento: </span>
-                <span className="text-fg">{formatDateBR(donor.data_pagamento)}</span>
-              </span>
-            )}
-            {donor.lembrete_canal && (
-              <span>
-                <span className="text-muted">Lembrete: </span>
-                <span className="text-fg">{CANAL_LABELS[donor.lembrete_canal]}</span>
-              </span>
-            )}
-            {donor.recibo_nome && (
-              <span>
-                <span className="text-muted">Recibo: </span>
-                <span className="text-fg">{donor.recibo_nome}</span>
-              </span>
-            )}
-          </div>
-
-          {donor.frequencia === "mensal" && (
-            <div className="mt-3 text-sm" data-testid="donor-due-day">
+        <DonorContributionSection donor={donor}>
+          {mensal && (
+            <div className="space-y-2 text-sm" data-testid="donor-due-day">
               <p className="text-fg">
                 Dia de vencimento: <span className="font-medium">{donor.dia_vencimento ?? "Não informado"}</span>
                 {donor.dia_vencimento ? " de cada mês" : ""}
-                <span className="ml-3 text-muted">
+                <span className="block text-muted">
                   Próximo vencimento: {donor.next_due_date
                     ? formatDateBR(donor.next_due_date)
                     : donor.duracao === "um_ano" && donor.dia_vencimento
@@ -359,7 +471,7 @@ export function DonorCard({ donor, onDelete, onWelcomeSent, onDueDayUpdated, onI
                       : "Não disponível"}
                 </span>
               </p>
-              <p className="mt-1 text-muted" data-testid="donor-reminder-status">
+              <p className="text-muted" data-testid="donor-reminder-status">
                 Último lembrete: {donor.latest_reminder
                   ? <>
                       {donor.latest_reminder.kind === "10d" ? "10 dias" : "5 dias"} antes
@@ -371,45 +483,65 @@ export function DonorCard({ donor, onDelete, onWelcomeSent, onDueDayUpdated, onI
                     : "Lembretes por e-mail desativados."}
               </p>
               {editingDueDay ? (
-                <form noValidate onSubmit={(event) => void handleSaveDueDay(event)} className="mt-2 flex flex-wrap items-end gap-2">
-                  <div>
-                    <label htmlFor={`due-day-${donor.id}`} className="mb-1 block text-muted">Novo dia de vencimento</label>
-                    <input
-                      id={`due-day-${donor.id}`}
-                      type="number"
-                      min="1"
-                      max="31"
-                      step="1"
-                      required
-                      value={draftDueDay}
-                      onChange={(event) => setDraftDueDay(event.target.value)}
-                      disabled={savingDueDay}
-                      aria-describedby={`due-day-help-${donor.id}`}
-                      className="w-24 rounded-md border border-border bg-surface px-3 py-1.5 text-fg focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50"
-                    />
-                    <p id={`due-day-help-${donor.id}`} className="mt-1 text-xs text-muted">De 1 a 31. Em meses mais curtos, vale o último dia.</p>
-                  </div>
-                  <button type="submit" disabled={savingDueDay} className="rounded-md border border-accent px-3 py-1.5 font-medium text-accent hover:bg-bg disabled:opacity-50">
-                    {savingDueDay ? "Salvando…" : "Salvar dia"}
-                  </button>
-                  <button type="button" disabled={savingDueDay} onClick={() => { setEditingDueDay(false); setDraftDueDay(String(donor.dia_vencimento ?? "")); setDueDayFeedback(null); }} className="rounded-md border border-border px-3 py-1.5 text-muted hover:bg-bg disabled:opacity-50">
+                <form noValidate onSubmit={(event) => void handleSaveDueDay(event)} className="flex flex-wrap items-end gap-2 pt-1">
+                  <Field
+                    label="Novo dia de vencimento"
+                    hint="De 1 a 31. Em meses mais curtos, vale o último dia."
+                    id={`due-day-${donor.id}`}
+                    className="w-56"
+                  >
+                    {(a11y) => (
+                      <Input
+                        {...a11y}
+                        type="number"
+                        min="1"
+                        max="31"
+                        step="1"
+                        required
+                        value={draftDueDay}
+                        onChange={(event) => setDraftDueDay(event.target.value)}
+                        disabled={savingDueDay}
+                        className="h-9 bg-surface"
+                      />
+                    )}
+                  </Field>
+                  <Button type="submit" size="lg" disabled={savingDueDay}>
+                    {savingDueDay ? "Salvando…" : "Salvar"}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="lg"
+                    variant="ghost"
+                    disabled={savingDueDay}
+                    onClick={() => { setEditingDueDay(false); setDraftDueDay(String(donor.dia_vencimento ?? "")); setDueDayFeedback(null); }}
+                  >
                     Cancelar
-                  </button>
+                  </Button>
                 </form>
               ) : (
-                <button type="button" onClick={() => { setEditingDueDay(true); setDueDayFeedback(null); }} className="mt-2 rounded-md border border-border px-3 py-1.5 font-medium text-accent hover:bg-bg">
+                <Button variant="outline" size="sm" onClick={() => { setEditingDueDay(true); setDueDayFeedback(null); }}>
                   Alterar dia de vencimento
-                </button>
+                </Button>
               )}
               {dueDayFeedback && (
-                <p className={`mt-2 ${dueDayFeedback.error ? "text-danger" : "text-success"}`} role={dueDayFeedback.error ? "alert" : "status"}>
-                  {dueDayFeedback.message}
-                </p>
+                <Notice tone={dueDayFeedback.error ? "danger" : "success"}>{dueDayFeedback.message}</Notice>
               )}
             </div>
           )}
+        </DonorContributionSection>
+      </div>
 
-          {donor.frequencia === "mensal" && (
+      <DetailSection title="E-mails e comprovantes" className="mt-6 space-y-3">
+        <div className="grid gap-3 lg:grid-cols-2">
+          <div className="space-y-2">
+            {welcomeNotice}
+            {welcomeError && (
+              <Notice tone="danger" data-testid="donor-welcome-error">
+                {welcomeError}
+              </Notice>
+            )}
+          </div>
+          {mensal ? (
             <DonorMonthlyInstructions
               pledgeId={donor.id}
               latest={donor.latest_instructions ?? null}
@@ -417,123 +549,65 @@ export function DonorCard({ donor, onDelete, onWelcomeSent, onDueDayUpdated, onI
               pendingOccurrences={donor.pending_occurrences ?? []}
               onUpdated={(latest) => onInstructionsUpdated?.(donor.id, latest)}
             />
+          ) : (
+            <Notice title="Doação única">
+              Instruções de pagamento enviadas no cadastro. O crédito é conferido em Pagamentos.
+            </Notice>
           )}
+        </div>
+      </DetailSection>
 
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm" data-testid="donor-welcome-status" aria-live="polite">
-            {welcomeSentAt ? (
-              <>
-                <span className="text-success">Envio de boas-vindas registrado em {formatDonorDate(welcomeSentAt)}.</span>
-                <button type="button" onClick={() => void handleUnmarkWelcome()} disabled={markingWelcome || sendingWelcome}
-                  className="rounded-md border border-border px-3 py-1.5 text-sm font-medium text-accent hover:bg-bg disabled:opacity-50"
-                  data-testid="donor-welcome-unmark-sent">
-                  {markingWelcome ? "Desmarcando…" : "Desmarcar envio"}
-                </button>
-              </>
-            ) : welcomeInProgress || sendingWelcome ? (
-              <span className="text-muted" aria-live="polite">Envio em andamento…</span>
-            ) : (
-              <>
-                <span className="text-muted">E-mail de boas-vindas pendente.</span>
-                <button
-                  type="button"
-                  onClick={() => void handleSendWelcome()}
-                  disabled={sendingWelcome || markingWelcome}
-                  className="rounded-md border border-accent px-3 py-1.5 text-sm font-medium text-accent hover:bg-bg disabled:opacity-50"
-                  data-testid="donor-welcome-send"
-                >
-                  {sendingWelcome ? "Enviando…" : "Enviar e-mail"}
-                </button>
-                <button type="button" onClick={() => void handleMarkWelcome()} disabled={markingWelcome || sendingWelcome}
-                  className="rounded-md border border-border px-3 py-1.5 text-sm font-medium text-accent hover:bg-bg disabled:opacity-50"
-                  data-testid="donor-welcome-mark-sent">
-                  {markingWelcome ? "Registrando…" : "Marcar como enviado manualmente"}
-                </button>
-              </>
-            )}
-          </div>
-          {welcomeError && (
-            <p className="mt-2 text-sm text-danger" role="alert" data-testid="donor-welcome-error">
-              {welcomeError}
-            </p>
-          )}
-
-          {donor.observacoes && (
-            <p className="mt-2 text-sm text-muted">
-              <span className="font-medium text-fg">Observações: </span>
-              {donor.observacoes}
-            </p>
-          )}
-
+      {(error || exportError || reciboError) && (
+        <div className="mt-4 space-y-2">
           {error && (
-            <p className="mt-2 text-sm text-danger" data-testid="donor-delete-error">
+            <Notice tone="danger" data-testid="donor-delete-error">
               {error}
-            </p>
+            </Notice>
           )}
           {exportError && (
-            <p className="mt-2 text-sm text-danger" data-testid="donor-export-error">
+            <Notice tone="danger" data-testid="donor-export-error">
               {exportError}
-            </p>
+            </Notice>
           )}
           {reciboError && (
-            <p className="mt-2 text-sm text-danger" data-testid="donor-recibo-error">
+            <Notice tone="danger" data-testid="donor-recibo-error">
               {reciboError}
-            </p>
+            </Notice>
           )}
         </div>
+      )}
 
-        <div className="flex shrink-0 flex-wrap items-center justify-start gap-2 sm:justify-end">
-          {donor.recibo_path && (
-            <button
-              type="button"
-              onClick={handleOpenRecibo}
-              disabled={reciboLoading}
-              className="rounded-md border border-border px-3 py-1.5 text-sm font-medium text-accent hover:bg-bg disabled:opacity-50"
-              data-testid="donor-recibo-button"
-            >
-              {reciboLoading ? "Abrindo..." : "Ver recibo"}
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={handleExport}
-            disabled={exporting}
-            className="rounded-md border border-accent px-3 py-1.5 text-sm font-medium text-accent hover:bg-bg disabled:opacity-50"
-            data-testid="donor-export-button"
+      <ActionBar>
+        <Button variant="outline" size="lg" onClick={() => void handleExport()} disabled={exporting} data-testid="donor-export-button">
+          <Printer aria-hidden="true" /> {exporting ? "Gerando…" : "Imprimir ficha"}
+        </Button>
+        {donor.recibo_path && (
+          <Button variant="outline" size="lg" onClick={() => void handleOpenRecibo()} disabled={reciboLoading} data-testid="donor-recibo-button">
+            <Receipt aria-hidden="true" /> {reciboLoading ? "Abrindo…" : "Ver recibo"}
+          </Button>
+        )}
+        {confirming ? (
+          <InlineConfirm
+            question="Excluir este cadastro?"
+            confirmLabel={deleting ? "Excluindo…" : "Sim, excluir"}
+            onConfirm={() => void handleDelete()}
+            onCancel={() => setConfirming(false)}
+            pending={deleting}
+            confirmTestId="donor-delete-confirm"
+            className="py-1.5"
+          />
+        ) : (
+          <Button
+            variant="ghost"
+            size="lg"
+            className="text-danger hover:text-danger"
+            onClick={() => setConfirming(true)}
+            data-testid="donor-delete-button"
           >
-            {exporting ? "Gerando..." : "Visualizar e Imprimir"}
-          </button>
-          {confirming ? (
-            <>
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={deleting}
-                className="rounded-md border border-danger bg-danger px-3 py-1.5 text-sm font-medium text-white hover:bg-danger/90 disabled:opacity-50"
-                data-testid="donor-delete-confirm"
-              >
-                {deleting ? "Excluindo..." : "Confirmar"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setConfirming(false)}
-                disabled={deleting}
-                className="rounded-md border border-border px-3 py-1.5 text-sm font-medium text-muted hover:bg-bg disabled:opacity-50"
-              >
-                Cancelar
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setConfirming(true)}
-              className="rounded-md border border-border px-3 py-1.5 text-sm font-medium text-danger hover:bg-bg"
-              data-testid="donor-delete-button"
-            >
-              Excluir
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
+            <Trash2 aria-hidden="true" /> Excluir
+          </Button>
+        )}
+      </ActionBar>
+    </RecordRow>
   );
 }

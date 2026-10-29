@@ -162,7 +162,7 @@ export function DonorMonthlyInstructions({ pledgeId, latest, currentReceipt, pen
   }
 
   return (
-    <section className="mt-4 border-t border-border pt-3 text-sm" aria-label="Instruções do pagamento mensal">
+    <section className="rounded-lg border border-border bg-cream/60 px-4 py-3 text-sm" aria-label="Instruções do pagamento mensal">
       <p data-testid="donor-current-receipt" className="text-fg">
         Comprovante {currentReceipt ? `de ${monthLabel(currentReceipt.competencia)}` : "atual"}: {currentReceipt?.status ?? "sem ocorrência ativa"}.
       </p>
