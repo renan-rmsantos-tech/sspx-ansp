@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: "Relatórios e Configurações no novo padrão"
 type: frontend
 complexity: high
@@ -32,12 +32,12 @@ Leva Relatórios, Ano letivo, Usuários e Cabeçalho e rodapé para a mesma gram
 
 ## Subtasks
 
-- [ ] 6.1 Ano letivo: cabeçalho com ação, formulário em `Card`, tabela, confirmação inline.
-- [ ] 6.2 Usuários: duas seções, pílulas, aviso, vazio.
-- [ ] 6.3 Cabeçalho e rodapé: formulário + prévia.
-- [ ] 6.4 Relatórios: casca nova.
-- [ ] 6.5 Atualizar `__tests__/school-year.test.tsx`, criar `__tests__/usuarios-client.test.tsx`, manter verdes `institutional-footer-client.test.tsx`, `donor-reports-client.test.tsx`, `communication-layout.test.tsx`, `configured-header.test.tsx` (UT-090–UT-095).
-- [ ] 6.6 `npm run typecheck`, `npm run lint`, `npm test`; conferência visual de `/admin/ano-letivo`, `/admin/usuarios`, `/admin/cabecalho`, `/admin/relatorios` contra `/prototipos/admin-redesign#/ano-letivo`, `#/usuarios`, `#/cabecalho`, `#/relatorios`.
+- [x] 6.1 Ano letivo: cabeçalho com ação, formulário em `Card`, tabela, confirmação inline.
+- [x] 6.2 Usuários: duas seções, pílulas, aviso, vazio.
+- [x] 6.3 Cabeçalho e rodapé: formulário + prévia.
+- [x] 6.4 Relatórios: casca nova.
+- [x] 6.5 Atualizar `__tests__/school-year.test.tsx`, criar `__tests__/usuarios-client.test.tsx`, manter verdes `institutional-footer-client.test.tsx`, `donor-reports-client.test.tsx`, `communication-layout.test.tsx`, `configured-header.test.tsx` (UT-090–UT-095).
+- [x] 6.6 `npm run typecheck`, `npm run lint`, `npm test`; conferência visual de `/admin/ano-letivo`, `/admin/usuarios`, `/admin/cabecalho`, `/admin/relatorios` contra `/prototipos/admin-redesign#/ano-letivo`, `#/usuarios`, `#/cabecalho`, `#/relatorios`.
 
 ## Implementation Details
 

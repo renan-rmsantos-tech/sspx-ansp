@@ -9,7 +9,7 @@
 | 03 | Solicitações: filtro único, linha enxuta e detalhe em abas | completed | high | task_02 |
 | 04 | Benfeitores: toolbar, detalhe em seções e exclusão inline | completed | high | task_02 |
 | 05 | Pagamentos: leitura do livro mensal | completed | medium | task_02 |
-| 06 | Relatórios e Configurações no novo padrão | pending | high | task_02 |
+| 06 | Relatórios e Configurações no novo padrão | completed | high | task_02 |
 
 ## Graph
 

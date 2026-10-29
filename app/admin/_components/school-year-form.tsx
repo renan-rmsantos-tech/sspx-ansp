@@ -1,14 +1,21 @@
 "use client";
 
 import { useState, useCallback, type FormEvent } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { createSchoolYear } from "../_actions/admin-actions";
+import { Field } from "./field";
+import { Notice } from "./notice";
 import type { SchoolYear } from "./school-year-list";
 
 interface SchoolYearFormProps {
   onCreated: (year: SchoolYear) => void;
+  onCancel?: () => void;
 }
 
-export function SchoolYearForm({ onCreated }: SchoolYearFormProps) {
+const INPUT_CLASS = "h-10 bg-surface";
+
+export function SchoolYearForm({ onCreated, onCancel }: SchoolYearFormProps) {
   const [nome, setNome] = useState("");
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
@@ -61,79 +68,60 @@ export function SchoolYearForm({ onCreated }: SchoolYearFormProps) {
   );
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="rounded-lg border border-border bg-surface p-4"
-      data-testid="school-year-form"
-    >
-      <h3 className="text-sm font-semibold text-fg">
-        Novo Ano Letivo
-      </h3>
-      <div className="mt-3 grid gap-3 sm:grid-cols-3">
-        <div>
-          <label
-            htmlFor="sy-nome"
-            className="mb-1 block text-xs font-medium text-muted"
-          >
-            Nome
-          </label>
-          <input
-            id="sy-nome"
-            type="text"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            placeholder="Ex: 2026"
-            className="w-full rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg placeholder:text-muted/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-            data-testid="input-nome"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="sy-inicio"
-            className="mb-1 block text-xs font-medium text-muted"
-          >
-            Data de Início
-          </label>
-          <input
-            id="sy-inicio"
-            type="date"
-            value={dataInicio}
-            onChange={(e) => setDataInicio(e.target.value)}
-            className="w-full rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-            data-testid="input-inicio"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="sy-fim"
-            className="mb-1 block text-xs font-medium text-muted"
-          >
-            Data de Fim
-          </label>
-          <input
-            id="sy-fim"
-            type="date"
-            value={dataFim}
-            onChange={(e) => setDataFim(e.target.value)}
-            className="w-full rounded-md border border-border bg-bg px-3 py-2 text-sm text-fg focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-            data-testid="input-fim"
-          />
-        </div>
+    <form onSubmit={handleSubmit} noValidate className="space-y-4" data-testid="school-year-form">
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Field label="Nome">
+          {(a11y) => (
+            <Input
+              {...a11y}
+              type="text"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              placeholder="Ex: 2027"
+              className={INPUT_CLASS}
+              data-testid="input-nome"
+            />
+          )}
+        </Field>
+        <Field label="Início">
+          {(a11y) => (
+            <Input
+              {...a11y}
+              type="date"
+              value={dataInicio}
+              onChange={(e) => setDataInicio(e.target.value)}
+              className={INPUT_CLASS}
+              data-testid="input-inicio"
+            />
+          )}
+        </Field>
+        <Field label="Fim">
+          {(a11y) => (
+            <Input
+              {...a11y}
+              type="date"
+              value={dataFim}
+              onChange={(e) => setDataFim(e.target.value)}
+              className={INPUT_CLASS}
+              data-testid="input-fim"
+            />
+          )}
+        </Field>
       </div>
       {error && (
-        <p className="mt-2 text-xs text-danger" data-testid="form-error">
+        <Notice tone="danger" data-testid="form-error">
           {error}
-        </p>
+        </Notice>
       )}
-      <div className="mt-3 flex justify-end">
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50"
-          data-testid="submit-button"
-        >
-          {loading ? "Criando..." : "Criar Ano Letivo"}
-        </button>
+      <div className="flex flex-wrap gap-2">
+        <Button type="submit" size="lg" disabled={loading} data-testid="submit-button">
+          {loading ? "Criando..." : "Criar ano letivo"}
+        </Button>
+        {onCancel && (
+          <Button type="button" size="lg" variant="ghost" onClick={onCancel} disabled={loading}>
+            Cancelar
+          </Button>
+        )}
       </div>
     </form>
   );

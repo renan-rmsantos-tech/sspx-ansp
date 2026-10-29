@@ -9,6 +9,8 @@
 - task_02 concluída em 2026-10-29 (sem commit): `AdminShell`, Início em `/admin`, `getAdminHomeSummary`, `/admin/emails` e `/admin/modelos` com abas, redirects, `AFTER_LOGIN = "/admin"`. Baseline após task_02: typecheck ok; lint limpo; `npm test` 82 arquivos / 684 testes verdes (17 skipped).
 - task_05 concluída em 2026-10-29 (sem commit): `/admin/pagamentos` somente leitura sobre `getMonthlyPayments` (`donor-payment-actions.ts`), `PagamentosClient` com 3 `StatTile` + `RecordRow`s + `Notice` de escopo; página lê `?mes=`. Baseline após task_05: typecheck ok; lint limpo; `npm test` 84 arquivos / 702 testes verdes (17 skipped).
 
+- task_06 concluída em 2026-10-29 (sem commit): Relatórios, Ano letivo, Usuários e Cabeçalho sobre `PageHeader`/`Card`/`Section`/`StatusPill`/`Field`/`Notice`; `InlineConfirm` em ano letivo. Baseline após task_06: typecheck ok; lint limpo; `npm test` 86 arquivos / 716 testes verdes (17 skipped).
+
 ## Durable Decisions
 
 - Pagamentos é somente leitura nesta spec: não existe conferência bancária nem CSV no código (tasks 10–14 de `donor-payments-reminders` pendentes). Controles ausentes, não desabilitados.
@@ -24,6 +26,9 @@
 - O Início e o layout chamam `getAdminHomeSummary()` separadamente; CTAs do Início já enviam `?situacao=pendente` (lido por `/admin/solicitacoes` desde a task_03 via `parseApplicationStatus` em `status-labels.ts`), `?boas-vindas=pendentes` (lido por `/admin/benfeitores` desde a task_04) e `/admin/pagamentos` (existe desde a task_05).
 - Seções compartilhadas de benfeitor (task_04): `donor-card.tsx` exporta `DonorSummary`, `DonorRowMeta`, `DonorFrequencyPill`, `DonorContactSection`, `DonorContributionSection` além de `DonorCard`/`DonorPledge`; `Notice` sempre tem `role` (`status`/`alert`), então `getByRole("status")` precisa de `within(...)` quando há mais de um aviso na linha.
 - Padrão de detalhe em abas dentro de `RecordRow` (task_03): `Tabs` controlado + `PAGE_TABS_*` de `url-tabs.ts`; carga do detalhe por efeito sem `setState` síncrono; formulários inline com `noValidate` para que o erro apareça em `Notice` (a validação nativa de `min`/`max` engole o submit no jsdom e no navegador). `onDecision` carrega também o motivo.
+
+- `Modal` (`modal.tsx`) permanece só para visualização de PDF (`document-preview.tsx`, `pdf-preview-modal.tsx`); nenhuma confirmação usa modal (task_06).
+- Classes de `Card` shadcn nas páginas: `gap-4 rounded-lg border border-border bg-surface p-5 ring-0` (com padding) e `gap-0 rounded-lg border border-border bg-surface py-0 ring-0` (tabela/lista); `Field` com `id` fixo quando `getByLabelText`/testids dependem dele (task_06).
 
 ## Learnings
 
@@ -41,6 +46,8 @@
 - `lib/donor-payment-ledger.ts` (e qualquer módulo que importe `@/lib/db`) não pode ser importado por componentes `"use client"`: jsdom quebra com "DATABASE_URL environment variable is not set". Reimplementar funções puras no cliente (task_05 fez isso com `hasMonthlyReceipt`).
 - Páginas server com `searchParams` são testáveis sem render: `await Page({ searchParams: Promise.resolve({...}) })` e assertar `element.type`/`element.props` (`__tests__/pagamentos-page.test.tsx`).
 - `agent-browser fill` em `input type="month"` limpa o valor no Chromium; usar `eval` (`input.value='AAAA-MM'; input.form.requestSubmit()`).
+
+- `agent-browser`: com `AUTH_BYPASS=true` ainda é preciso enviar o `/login` no navegador antes de `/admin/*`; `click 'text=…'` falha em botões com ícone — usar seletor CSS ou refs do `snapshot -i`; variável zsh com `npx -y agent-browser@… --session X` exige wrapper `sh` (task_06).
 
 ## Open Risks
 
