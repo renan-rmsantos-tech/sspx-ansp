@@ -16,6 +16,9 @@ export type DueSnapshot = {
   receipt_path: string | null;
   receipt_name: string | null;
   receipt_uploaded_at: string | null;
+  status?: string;
+  confirmed_by?: string | null;
+  confirmed_at?: string | null;
 };
 
 export type MonthlyReceiptMetadata = Pick<DueSnapshot,
@@ -55,10 +58,13 @@ export function dueSnapshotDecision(
   today: string
 ): { kind: "keep" | "remove" } | { kind: "update"; dueDate: string } {
   if (
-    snapshot.due_date < today ||
+    snapshot.due_date <= today ||
     snapshot.receipt_path !== null ||
     snapshot.receipt_name !== null ||
-    snapshot.receipt_uploaded_at !== null
+    snapshot.receipt_uploaded_at !== null ||
+    (snapshot.status !== undefined && snapshot.status !== "pendente") ||
+    snapshot.confirmed_by != null ||
+    snapshot.confirmed_at != null
   ) {
     return { kind: "keep" };
   }
@@ -91,7 +97,9 @@ export async function materializeMonthlyPaymentsForMonth(
         dia_vencimento: true, valor: true,
       },
       where: eq(donorPledges.frequencia, "mensal"),
+      limit: 5001,
     });
+    if (pledges.length > 5000) throw new Error("Monthly ledger materialization limit exceeded");
     const values = pledges.flatMap((pledge) => {
       const occurrence = occurrenceForMonth(pledge, month);
       return occurrence && pledge.valor > 0

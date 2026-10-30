@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { db } from "@/lib/db";
 import { donorMonthlyInstructionSends, donorPaymentLedger, donorPledges } from "@/lib/db/schema";
 import { firstMonthlyOccurrence } from "@/lib/donor-payment-ledger";
+import { saoPauloDate } from "@/lib/donor-recurrence";
 import { getStorage } from "@/lib/storage";
 import { formatCPF } from "@/lib/validations/cpf";
 import { sendDonorWelcomeEmail } from "@/lib/email/send-donor-welcome";
@@ -93,6 +94,18 @@ export async function registerDonorPledge(
 
     await db.transaction(async (tx) => {
       await tx.insert(donorPledges).values(pledgeValues);
+      if (isUnica) {
+        const paymentDate = pledgeValues.data_pagamento ?? saoPauloDate(new Date(registeredAt));
+        await tx.insert(donorPaymentLedger).values({
+          pledge_id: pledgeId,
+          competencia: paymentDate.slice(0, 7),
+          due_date: paymentDate,
+          expected_value: data.valor,
+          receipt_path: finalReciboPath,
+          receipt_name: finalReciboNome,
+          receipt_uploaded_at: registeredAt,
+        });
+      }
       if (!isUnica) {
         const occurrence = firstMonthlyOccurrence(pledgeValues);
         if (!occurrence) throw new Error("Invalid monthly recurrence");

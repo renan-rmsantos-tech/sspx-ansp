@@ -67,7 +67,10 @@ describe("Sidebar", () => {
         title: "Benfeitores",
         links: [
           { label: "Cadastros", href: "/admin/benfeitores" },
+          { label: "Conferência de pagamentos", href: "/admin/conferencia-pagamentos" },
           { label: "Relatórios", href: "/admin/relatorios" },
+          { label: "Cadastros", href: "/admin/relatorios/cadastros" },
+          { label: "Financeiro", href: "/admin/relatorios/financeiro" },
         ],
       },
       {
@@ -86,7 +89,7 @@ describe("Sidebar", () => {
         ],
       },
     ]);
-    expect(screen.queryByRole("link", { name: "Conferência de pagamentos" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Conferência de pagamentos" })).toBeInTheDocument();
   });
 
   it("keeps only the existing Secretaria destinations and omits empty groups", () => {

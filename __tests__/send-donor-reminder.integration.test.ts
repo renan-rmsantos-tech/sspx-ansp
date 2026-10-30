@@ -92,6 +92,59 @@ integration("reserved donor reminder delivery with PostgreSQL", () => {
     );
   }
 
+  async function confirm(id: string, status: "confirmado" | "divergente") {
+    const [admin] = await sql!`SELECT id FROM admin_users LIMIT 1`;
+    await sql!`UPDATE donor_payment_ledger SET status = ${status}, received_value = 87.50,
+      credit_date = ${`${month}-10`}, confirmed_by = ${admin.id}, confirmed_at = now()
+      WHERE pledge_id = ${id} AND competencia = ${month}`;
+  }
+
+  it.each(["confirmado", "divergente"] as const)("skips paid %s in daily selection and direct send", async (state) => {
+    const id = await pledge();
+    await occurrence(id);
+    await confirm(id, state);
+    const counts = await sender.runDailyDonorReminders(localDate(`${month}-10`), database!);
+    expect(counts.skipped_paid).toBeGreaterThanOrEqual(1);
+    expect(await sender.sendDonorReminder(id, month, "10d", {
+      now: localDate(`${month}-10`), database: database!,
+    })).toEqual({ status: "skipped_paid" });
+    expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it("stops a reserved send when a credit commits before the provider call", async () => {
+    const id = await pledge();
+    await occurrence(id);
+    const ledgerQuery = database!.query.donorPaymentLedger;
+    const original = ledgerQuery.findFirst.bind(ledgerQuery) as (config: unknown) => Promise<unknown>;
+    let reads = 0;
+    const guardedDatabase = Object.assign(Object.create(database!), {
+      query: { ...database!.query, donorPaymentLedger: { findFirst: async (config: unknown) => {
+        if (++reads === 2) await confirm(id, "confirmado");
+        return original(config);
+      } } },
+    }) as typeof database;
+    expect(await sender.sendDonorReminder(id, month, "10d", {
+      now: localDate(`${month}-10`), database: guardedDatabase!,
+    })).toEqual({ status: "skipped_paid" });
+    expect(sendEmail).not.toHaveBeenCalled();
+    expect(await sql!`SELECT id FROM donor_reminder_sends WHERE pledge_id = ${id}`).toHaveLength(0);
+  });
+
+  it("skips a failed manual retry after bank confirmation", async () => {
+    const id = await pledge();
+    await occurrence(id);
+    sendEmail.mockResolvedValueOnce({ data: null, error: { statusCode: 422 } });
+    expect(await sender.sendDonorReminder(id, month, "10d", {
+      now: localDate(`${month}-10`), database: database!,
+    })).toMatchObject({ status: "failed" });
+    const [row] = await sql!`SELECT id FROM donor_reminder_sends WHERE pledge_id = ${id}`;
+    await confirm(id, "confirmado");
+    const calls = sendEmail.mock.calls.length;
+    expect(await sender.retryFailedDonorReminderSend(row.id, database!))
+      .toEqual({ status: "skipped_paid" });
+    expect(sendEmail).toHaveBeenCalledTimes(calls);
+  });
+
   it.each([true, false])("sends the actual QR independently of seal (%s)", async (seal) => {
     const id = await pledge();
     await occurrence(id);

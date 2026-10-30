@@ -93,6 +93,12 @@ describe("conditional donor submission", () => {
     const row = inserted[0].values as { id: string; recibo_path: string; dia_vencimento: null };
     expect(row).toMatchObject({ dia_vencimento: null, data_pagamento: "2026-10-26", recibo_nome: "receipt.pdf" });
     expect(row.recibo_path).toBe(`donors/${row.id}/recibo/receipt.pdf`);
+    expect(inserted[1].table).toBe(donorPaymentLedger);
+    expect(inserted[1].values).toMatchObject({
+      pledge_id: row.id, competencia: "2026-10", due_date: "2026-10-26",
+      expected_value: 80, receipt_path: row.recibo_path,
+      receipt_name: "receipt.pdf",
+    });
     expect(move).toHaveBeenCalledWith("pending/receipt.pdf", row.recibo_path);
     expect(sendDonorMonthlyInstructions).not.toHaveBeenCalled();
   });

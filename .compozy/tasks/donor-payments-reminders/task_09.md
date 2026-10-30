@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: Extend occurrence ledger for bank conference
 type: backend
 complexity: high
@@ -38,11 +38,11 @@ Extend the phase-2 monthly occurrence ledger with bank-confirmation fields witho
 </requirements>
 
 ## Subtasks
-- [ ] 9.1 Add bank fields, defaults, and constraints to the existing ledger.
-- [ ] 9.2 Backfill legacy one-time rows and retain monthly receipt metadata and coverage marker.
-- [ ] 9.3 Materialize bounded selected-month occurrences and new one-time rows with conflict safety.
-- [ ] 9.4 Synchronize eligible future open rows without rewriting receipt or reviewed history.
-- [ ] 9.5 Verify pledge insertion and legacy one-time evidence linkage.
+- [x] 9.1 Add bank fields, defaults, and constraints to the existing ledger.
+- [x] 9.2 Backfill legacy one-time rows and retain monthly receipt metadata and coverage marker.
+- [x] 9.3 Materialize bounded selected-month occurrences and new one-time rows with conflict safety.
+- [x] 9.4 Synchronize eligible future open rows without rewriting receipt or reviewed history.
+- [x] 9.5 Verify pledge insertion and legacy one-time evidence linkage.
 
 ## Implementation Details
 Follow TechSpec “Phase 3” and “Conference, Totals, and Export Contract.” Extend the table created by task 15; keep expected amount/due date and receipt metadata as snapshots/evidence.
@@ -69,13 +69,13 @@ Follow TechSpec “Phase 3” and “Conference, Totals, and Export Contract.”
 
 ## Tests
 - Unit tests:
-  - [ ] Existing phase-2 monthly occurrence and receipt fields survive the phase-3 migration unchanged; a missing monthly receipt remains `Comprovante pendente`.
-  - [ ] A one-time receipt produces one pending row and never a confirmed amount.
-  - [ ] Editing the due day changes eligible future open rows but not a row with receipt evidence, bank review, or past-due date.
+  - [x] Existing phase-2 monthly occurrence and receipt fields survive the phase-3 migration unchanged; a missing monthly receipt remains `Comprovante pendente`.
+  - [x] A one-time receipt produces one pending row and never a confirmed amount.
+  - [x] Editing the due day changes eligible future open rows but not a row with receipt evidence, bank review, or past-due date.
 - Integration tests:
-  - [ ] Two materializers for one pledge/month leave one row with the original expected snapshot and receipt path.
-  - [ ] Legacy monthly months before the phase-2 launch competence are not labeled overdue; existing one-time rows remain pending.
-  - [ ] A failed new one-time pledge transaction leaves neither pledge nor ledger row.
+  - [x] Two materializers for one pledge/month leave one row with the original expected snapshot and receipt path.
+  - [x] Legacy monthly months before the phase-2 launch competence are not labeled overdue; existing one-time rows remain pending.
+  - [x] A failed new one-time pledge transaction leaves neither pledge nor ledger row.
 - Test coverage target: >=80%
 - All tests must pass
 

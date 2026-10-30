@@ -70,6 +70,7 @@ async function context(
     columns: {
       id: true, due_date: true, expected_value: true,
       receipt_path: true, receipt_name: true, receipt_uploaded_at: true,
+      status: true, received_value: true,
     },
     where: and(
       eq(donorPaymentLedger.pledge_id, pledgeId),
@@ -80,10 +81,15 @@ async function context(
   return {
     pledge, occurrence, ledger,
     receiptUploaded: hasMonthlyReceipt(ledger),
+    paid: isBankConfirmed(ledger),
     scheduleEligible: Boolean(schedule && (mode === "daily"
       ? schedule.scheduledDate === saoPauloDate(now)
       : canRetryDonorReminder(occurrence, kind, now))),
   };
+}
+
+function isBankConfirmed(row: { status: string; received_value: number }) {
+  return (row.status === "confirmado" || row.status === "divergente") && row.received_value > 0;
 }
 
 /** A reservation abandoned before a provider call is not a delivery failure. */
@@ -177,6 +183,7 @@ export async function sendDonorReminder(
   if (!eligible) return { status: "expired" };
   let current = await database.query.donorReminderSends.findFirst({ where: key });
   if (current?.status === "sent") return knownResult(current);
+  if (eligible.paid) return { status: "skipped_paid" };
   if (eligible.receiptUploaded) return { status: "skipped_receipt" };
   if (!eligible.scheduleEligible) return { status: "expired" };
   if (current?.status === "uncertain") return knownResult(current);
@@ -267,6 +274,10 @@ export async function sendDonorReminder(
 
   // A consent/day edit or ledger change between selection and claim stops the send.
   const latest = await context(pledgeId, competence, kind, now, mode, database);
+  if (latest?.paid) {
+    await releaseForReceipt(database, reserved, current, token);
+    return { status: "skipped_paid" };
+  }
   if (latest?.receiptUploaded) {
     await releaseForReceipt(database, reserved, current, token);
     return { status: "skipped_receipt" };
@@ -290,10 +301,15 @@ export async function sendDonorReminder(
         and l.due_date = ${eligible.ledger.due_date}::date
         and l.receipt_path is null and l.receipt_name is null
         and l.receipt_uploaded_at is null
+        and not (l.status in ('confirmado', 'divergente') and l.received_value > 0)
     )`
   )).returning({ id: donorReminderSends.id });
   if (!started.length) {
     const latestAfterClaim = await context(pledgeId, competence, kind, now, mode, database);
+    if (latestAfterClaim?.paid) {
+      await releaseForReceipt(database, reserved, current, token);
+      return { status: "skipped_paid" };
+    }
     if (latestAfterClaim?.receiptUploaded) {
       await releaseForReceipt(database, reserved, current, token);
       return { status: "skipped_receipt" };
@@ -414,11 +430,13 @@ export async function runDailyDonorReminders(now = new Date(), database: typeof 
     selectScheduledDonorReminders(pledge, now).map((schedule) => ({ pledge, schedule }))
   );
   const uploaded = new Set<string>();
+  const paid = new Set<string>();
   if (scheduled.length) {
     const ledgers = await database.query.donorPaymentLedger.findMany({
       columns: {
         pledge_id: true, competencia: true,
         receipt_path: true, receipt_name: true, receipt_uploaded_at: true,
+        status: true, received_value: true,
       },
       where: and(
         inArray(donorPaymentLedger.pledge_id, [...new Set(scheduled.map(({ pledge }) => pledge.id))]),
@@ -428,13 +446,15 @@ export async function runDailyDonorReminders(now = new Date(), database: typeof 
     });
     for (const row of ledgers) {
       if (hasMonthlyReceipt(row)) uploaded.add(`${row.pledge_id}:${row.competencia}`);
+      if (isBankConfirmed(row)) paid.add(`${row.pledge_id}:${row.competencia}`);
     }
   }
   for (const pledge of pledges) {
     const all = selectScheduledDonorReminders(pledge, now);
     const eligible = selectScheduledDonorReminders(pledge, now,
-      (competence) => uploaded.has(`${pledge.id}:${competence}`));
-    counts.skipped_receipt += all.length - eligible.length;
+      (competence) => uploaded.has(`${pledge.id}:${competence}`) || paid.has(`${pledge.id}:${competence}`));
+    counts.skipped_paid += all.filter(({ occurrence }) => paid.has(`${pledge.id}:${occurrence.competence}`)).length;
+    counts.skipped_receipt += all.filter(({ occurrence }) => !paid.has(`${pledge.id}:${occurrence.competence}`) && uploaded.has(`${pledge.id}:${occurrence.competence}`)).length;
     for (const schedule of eligible) {
       counts.candidates++;
       try {

@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: Implement bank conference actions and totals
 type: backend
 complexity: high
@@ -30,10 +30,10 @@ Provide the authorized server operations that turn bank-statement checks into le
 </requirements>
 
 ## Subtasks
-- [ ] 10.1 Add authorized month and overdue queries with bounded materialization.
-- [ ] 10.2 Add confirm, correct, mark-not-identified, and reset actions.
-- [ ] 10.3 Add financial aggregation and deletion guard.
-- [ ] 10.4 Verify role, amount, date, divergence, and aging behavior.
+- [x] 10.1 Add authorized month and overdue queries with bounded materialization.
+- [x] 10.2 Add confirm, correct, mark-not-identified, and reset actions.
+- [x] 10.3 Add financial aggregation and deletion guard.
+- [x] 10.4 Verify role, amount, date, divergence, and aging behavior.
 
 ## Implementation Details
 Follow TechSpec “Conference, Totals, and Export Contract” and “API Endpoints.” Reuse the existing action and fake-DB conventions; use Postgres integration tests for constraints.
@@ -59,14 +59,14 @@ Follow TechSpec “Conference, Totals, and Export Contract” and “API Endpoin
 
 ## Tests
 - Unit tests:
-  - [ ] Expected 100/received 80 is divergent with outstanding 20; received 120 is divergent with outstanding 0.
-  - [ ] Marking `nao_identificado` requires a note and retains received 0; reset clears credit date and confirmer.
-  - [ ] Invalid `2026-13`, negative amount, sub-cent amount, and invalid credit date are rejected.
+  - [x] Expected 100/received 80 is divergent with outstanding 20; received 120 is divergent with outstanding 0.
+  - [x] Marking `nao_identificado` requires a note and retains received 0; reset clears credit date and confirmer.
+  - [x] Invalid `2026-13`, negative amount, sub-cent amount, and invalid credit date are rejected.
 - Integration tests:
-  - [ ] A direct Secretaria read/confirm/reset call is denied and writes nothing.
-  - [ ] A confirmed ledger row prevents donor deletion; deleting an unconfirmed donor removes its ledger rows and private monthly receipts through the documented cleanup path.
-  - [ ] An item due more than one local calendar month ago appears in overdue; a newer one does not.
-  - [ ] An overdue monthly item without a receipt is flagged as missing evidence independently of its bank-credit state; one with a receipt is not flagged.
+  - [x] A direct Secretaria read/confirm/reset call is denied and writes nothing.
+  - [x] A confirmed ledger row prevents donor deletion; deleting an unconfirmed donor removes its ledger rows and private monthly receipts through the documented cleanup path.
+  - [x] An item due more than one local calendar month ago appears in overdue; a newer one does not.
+  - [x] An overdue monthly item without a receipt is flagged as missing evidence independently of its bank-credit state; one with a receipt is not flagged.
 - Test coverage target: >=80%
 - All tests must pass
 

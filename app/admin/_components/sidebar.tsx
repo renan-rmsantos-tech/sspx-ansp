@@ -73,12 +73,15 @@ const NAV_SECTIONS = [
           </svg>
         ),
       },
+      { label: "Conferência de pagamentos", href: "/admin/conferencia-pagamentos", adminOnly: true, icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-[18px] shrink-0"><path d="M3 3v18h18" /><path d="m5 14 4 4 10-11" /></svg> },
       {
         label: "Relatórios",
         href: "/admin/relatorios",
         adminOnly: true,
         icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-[18px] shrink-0"><path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-5 5" /></svg>,
       },
+      { label: "Cadastros", href: "/admin/relatorios/cadastros", adminOnly: true, child: true, icon: null },
+      { label: "Financeiro", href: "/admin/relatorios/financeiro", adminOnly: true, child: true, icon: null },
     ],
   },
   {
@@ -240,7 +243,7 @@ export function Sidebar({ role = "admin" }: { role?: StaffRole }) {
                 </div>
                 <ul className="flex flex-col gap-0.5">
                   {items.map((item) => {
-                    const isActive = pathname.startsWith(item.href);
+                    const isActive = item.href === "/admin/relatorios" ? pathname === item.href : pathname.startsWith(item.href);
                     return (
                       <li key={item.href}>
                         <Link
@@ -248,6 +251,7 @@ export function Sidebar({ role = "admin" }: { role?: StaffRole }) {
                           onClick={() => setMobileOpen(false)}
                           className={cn(
                             "flex w-full items-center gap-2.5 rounded-[6px] px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-bg hover:text-fg",
+                            "child" in item && item.child && "ml-7 w-[calc(100%-1.75rem)] border-l border-border pl-4",
                             isActive && "bg-[oklch(94%_0.02_250)] font-semibold text-accent"
                           )}
                           aria-current={isActive ? "page" : undefined}

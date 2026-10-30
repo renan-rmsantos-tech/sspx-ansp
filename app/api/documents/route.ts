@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
         path.split("/").pop() || "documento"
       )}"`,
       "Cache-Control": "private, no-store",
+      "X-Content-Type-Options": "nosniff",
     },
   });
 }

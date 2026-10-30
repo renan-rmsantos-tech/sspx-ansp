@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: Chart expected and received amounts by month
 type: frontend
 complexity: medium
@@ -30,9 +30,9 @@ Let administrators compare planned and bank-confirmed contributions across month
 </requirements>
 
 ## Subtasks
-- [ ] 13.1 Add month-series aggregation from the ledger.
-- [ ] 13.2 Add chart and equivalent table near the conference view.
-- [ ] 13.3 Verify empty months, divergence, accessibility, and data parity.
+- [x] 13.1 Add month-series aggregation from the ledger.
+- [x] 13.2 Add chart and equivalent table near the conference view.
+- [x] 13.3 Verify empty months, divergence, accessibility, and data parity.
 
 ## Implementation Details
 Follow TechSpec “Conference, Totals, and Export Contract” and the current `/admin/relatorios` chart/table structure. Keep bank amounts and pledge counts conceptually separate from the existing geographic registration report.
@@ -56,13 +56,13 @@ Follow TechSpec “Conference, Totals, and Export Contract” and the current `/
 
 ## Tests
 - Unit tests:
-  - [ ] A month with no rows renders zero expected and received in both chart data and table.
-  - [ ] A divergent 100/80 row contributes 100 expected and 80 received, not 100 received.
-  - [ ] A bank-confirmed occurrence without a receipt contributes to received funds and the missing-receipt count independently.
-  - [ ] Twelve months ending 2026-12 include 2026-01 through 2026-12, clipped at coverage start.
+  - [x] A month with no rows renders zero expected and received in both chart data and table.
+  - [x] A divergent 100/80 row contributes 100 expected and 80 received, not 100 received.
+  - [x] A bank-confirmed occurrence without a receipt contributes to received funds and the missing-receipt count independently.
+  - [x] Twelve months ending 2026-12 include 2026-01 through 2026-12, clipped at coverage start.
 - Integration tests:
-  - [ ] For each selected month, chart values equal table cells and the underlying ledger aggregate.
-  - [ ] Chart props contain no donor-level identifiers or notes, and the table remains keyboard readable.
+  - [x] For each selected month, chart values equal table cells and the underlying ledger aggregate.
+  - [x] Chart props contain no donor-level identifiers or notes, and the table remains keyboard readable.
 - Test coverage target: >=80%
 - All tests must pass
 

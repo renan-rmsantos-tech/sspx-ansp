@@ -12,12 +12,12 @@
 | 06 | Manage reminder template, preview, test, and failed retries | frontend | completed | high | task_05 |
 | 07 | Show next due and last reminder in the donor list | frontend | completed | medium | task_05 |
 | 08 | Document and schedule the daily reminder job | other | completed | medium | task_05, task_06, task_07, task_17 |
-| 09 | Extend occurrence ledger for bank conference | backend | pending | high | task_08, task_15, task_18, task_19, task_20, task_21, task_22, task_23, task_24, task_25 |
-| 10 | Implement bank conference actions and totals | backend | pending | high | task_09 |
-| 11 | Build administrator payment conference screen | frontend | pending | high | task_10 |
-| 12 | Export selected payment conference as CSV | backend | pending | medium | task_10, task_11 |
-| 13 | Chart expected and received amounts by month | frontend | pending | medium | task_10, task_11 |
-| 14 | Suppress reminders for bank-confirmed credits | backend | pending | medium | task_09, task_10, task_11, task_12, task_13 |
+| 09 | Extend occurrence ledger for bank conference | backend | completed | high | task_08, task_15, task_18, task_19, task_20, task_21, task_22, task_23, task_24, task_25 |
+| 10 | Implement bank conference actions and totals | backend | completed | high | task_09 |
+| 11 | Build administrator payment conference screen | frontend | completed | high | task_10 |
+| 12 | Export selected payment conference as CSV | backend | completed | medium | task_10, task_11 |
+| 13 | Chart expected and received amounts by month | frontend | completed | medium | task_10, task_11 |
+| 14 | Suppress reminders for bank-confirmed credits | backend | completed | medium | task_09, task_10, task_11, task_12, task_13 |
 | 15 | Materialize minimal monthly payment occurrences for phase 2 | backend | completed | high | task_03 |
 | 16 | Sign receipt links and attach monthly evidence | backend | completed | high | task_15 |
 | 17 | Build the public monthly receipt page | frontend | completed | medium | task_16 |
@@ -29,6 +29,10 @@
 | 23 | Show monthly instructions status and manual send in donor list | frontend | completed | high | task_07, task_21, task_24 |
 | 24 | Track required monthly receipts and skip remaining reminders | backend | completed | high | task_05, task_15, task_16, task_18 |
 | 25 | Explain required receipts in donor and admin interfaces | frontend | completed | high | task_17, task_19, task_20, task_22, task_23, task_24 |
+| 26 | Generate receipt link for admin to copy | frontend | completed | high | task_16, task_24, task_11 |
+| 27 | Preview receipts inline in payment conference | frontend | completed | medium | task_11 |
+| 28 | Add financial report data, screen, and CSV | frontend | completed | high | task_10, task_13 |
+| 29 | Export financial report as PDF | backend | completed | medium | task_28 |
 
 ## Dependency Graph and Release Gates
 

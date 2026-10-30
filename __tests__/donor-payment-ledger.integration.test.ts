@@ -6,11 +6,12 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { afterAll, describe, expect, it, vi } from "vitest";
 import * as schema from "@/lib/db/schema";
 
-const { sendDonorWelcomeEmail, getSessionUser } = vi.hoisted(() => ({
-  sendDonorWelcomeEmail: vi.fn(), getSessionUser: vi.fn(),
+const { sendDonorWelcomeEmail, getSessionUser, moveReceipt } = vi.hoisted(() => ({
+  sendDonorWelcomeEmail: vi.fn(), getSessionUser: vi.fn(), moveReceipt: vi.fn(),
 }));
 vi.mock("@/lib/email/send-donor-welcome", () => ({ sendDonorWelcomeEmail }));
 vi.mock("@/lib/auth/session", () => ({ getSessionUser }));
+vi.mock("@/lib/storage", () => ({ getStorage: () => ({ move: moveReceipt }) }));
 
 const databaseUrl = process.env.DATABASE_URL_TEST;
 const integration = describe.skipIf(!databaseUrl);
@@ -66,6 +67,53 @@ integration("monthly payment ledger with PostgreSQL", () => {
     }
   });
 
+  it("migrates existing monthly evidence unchanged and backfills legacy one-time evidence as pending", async () => {
+    const isolated = `task09_${randomUUID().replaceAll("-", "")}`;
+    const monthly = randomUUID();
+    const oneTime = randomUUID();
+    try {
+      await sql!.unsafe(`CREATE SCHEMA "${isolated}"`);
+      await sql!.unsafe(`CREATE TABLE "${isolated}".admin_users (id uuid PRIMARY KEY)`);
+      await sql!.unsafe(`CREATE TABLE "${isolated}".donor_pledges (
+        id uuid PRIMARY KEY, created_at timestamptz NOT NULL, frequencia text NOT NULL,
+        duracao text, dia_vencimento integer, valor numeric(12,2) NOT NULL,
+        data_pagamento date, recibo_path text, recibo_nome text
+      )`);
+      await sql!.unsafe(`INSERT INTO "${isolated}".donor_pledges
+        (id, created_at, frequencia, duracao, dia_vencimento, valor, data_pagamento, recibo_path, recibo_nome)
+        VALUES ('${monthly}', now() - interval '45 days', 'mensal', 'indeterminado', 15, 80, NULL, NULL, NULL),
+          ('${oneTime}', now() - interval '45 days', 'unica', NULL, NULL, 90, current_date - 45,
+           'donors/test/legacy.pdf', 'legacy.pdf')`);
+      const phase2 = readFileSync(new URL("../drizzle/0011_donor_payment_ledger.sql", import.meta.url), "utf8")
+        .replaceAll('"public"."donor_pledges"', `"${isolated}"."donor_pledges"`);
+      const phase3 = readFileSync(new URL("../drizzle/0015_bank_conference_ledger.sql", import.meta.url), "utf8")
+        .replaceAll('REFERENCES "admin_users"', `REFERENCES "${isolated}"."admin_users"`);
+      await sql!.begin(async (tx) => {
+        await tx.unsafe(`SET LOCAL search_path TO "${isolated}"`);
+        for (const statement of phase2.split("--> statement-breakpoint")) {
+          if (statement.trim()) await tx.unsafe(statement);
+        }
+        await tx.unsafe(`UPDATE donor_payment_ledger SET receipt_path = 'donors/test/monthly.pdf',
+          receipt_name = 'monthly.pdf', receipt_uploaded_at = now() WHERE pledge_id = '${monthly}'`);
+        const [before] = await tx.unsafe(`SELECT id, competencia, due_date::text, expected_value::text,
+          receipt_path, receipt_name, receipt_uploaded_at FROM donor_payment_ledger WHERE pledge_id = '${monthly}'`);
+        for (const statement of phase3.split("--> statement-breakpoint")) {
+          if (statement.trim()) await tx.unsafe(statement);
+        }
+        const [after] = await tx.unsafe(`SELECT id, competencia, due_date::text, expected_value::text,
+          receipt_path, receipt_name, receipt_uploaded_at FROM donor_payment_ledger WHERE pledge_id = '${monthly}'`);
+        expect(after).toEqual(before);
+        const [legacy] = await tx.unsafe(`SELECT status, received_value::text, receipt_path, receipt_name,
+          receipt_uploaded_at FROM donor_payment_ledger WHERE pledge_id = '${oneTime}'`);
+        expect(legacy).toMatchObject({ status: 'pendente', received_value: '0.00',
+          receipt_path: 'donors/test/legacy.pdf', receipt_name: 'legacy.pdf' });
+        expect(legacy.receipt_uploaded_at).not.toBeNull();
+      });
+    } finally {
+      await sql!.unsafe(`DROP SCHEMA IF EXISTS "${isolated}" CASCADE`);
+    }
+  });
+
   it("keeps one original value snapshot under concurrent materializers and ignores one-time pledges", async () => {
     const { materializeMonthlyPaymentsForMonth } = await import("@/lib/donor-payment-ledger");
     const [settings] = await sql!`SELECT launch_competencia FROM donor_ledger_settings`;
@@ -87,11 +135,18 @@ integration("monthly payment ledger with PostgreSQL", () => {
     const beforeEdit = await sql!`SELECT pledge_id, competencia, expected_value::text AS expected_value
       FROM donor_payment_ledger WHERE pledge_id IN (${monthlyId}, ${oneTimeId})`;
     expect(beforeEdit).toEqual([{ pledge_id: monthlyId, competencia: month, expected_value: "80.00" }]);
+    await sql!`UPDATE donor_payment_ledger SET receipt_path = 'donors/test/original.pdf',
+      receipt_name = 'original.pdf', receipt_uploaded_at = now()
+      WHERE pledge_id = ${monthlyId} AND competencia = ${month}`;
     await sql!`UPDATE donor_pledges SET valor = 99 WHERE id = ${monthlyId}`;
     await materializeMonthlyPaymentsForMonth(month, database!);
     const rows = await sql!`SELECT pledge_id, competencia, expected_value::text AS expected_value
       FROM donor_payment_ledger WHERE pledge_id IN (${monthlyId}, ${oneTimeId})`;
     expect(rows).toEqual(beforeEdit);
+    const [receipt] = await sql!`SELECT receipt_path, receipt_name, status,
+      received_value::text AS received_value FROM donor_payment_ledger WHERE pledge_id = ${monthlyId}`;
+    expect(receipt).toMatchObject({ receipt_path: 'donors/test/original.pdf',
+      receipt_name: 'original.pdf', status: 'pendente', received_value: '0.00' });
   });
 
   it("rolls back a new monthly pledge when its initial occurrence cannot be inserted", async () => {
@@ -115,6 +170,31 @@ integration("monthly payment ledger with PostgreSQL", () => {
     } finally {
       errorLog.mockRestore();
       await sql!`ALTER TABLE donor_payment_ledger DROP CONSTRAINT task15_reject_test_value`;
+    }
+  });
+
+  it("rolls back a one-time pledge and restores receipt when its ledger insert fails", async () => {
+    const { registerDonorPledge } = await import("@/app/benfeitor/_actions/donor-actions");
+    const email = `${randomUUID()}@example.test`;
+    moveReceipt.mockResolvedValue(undefined);
+    await sql!`ALTER TABLE donor_payment_ledger
+      ADD CONSTRAINT task09_reject_test_value CHECK (expected_value <> 123456.78)`;
+    const errorLog = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const result = await registerDonorPledge({
+        nome: "Teste transação", cpf: "529.982.247-25", email,
+        telefone: "11999999999", endereco: "Rua A, 1", cep: "13250000",
+        residence_city: "Campinas", residence_state: "SP", residence_confirmed: true,
+        priorado_capela: "nenhuma", frequencia: "unica", valor: 123456.78,
+        data_pagamento: "2026-10-26", recibo_path: "pending/task09.pdf", recibo_nome: "task09.pdf",
+      });
+      expect(result.success).toBe(false);
+      expect(await sql!`SELECT id FROM donor_pledges WHERE email = ${email}`).toHaveLength(0);
+      expect(moveReceipt).toHaveBeenCalledTimes(2);
+    } finally {
+      errorLog.mockRestore();
+      moveReceipt.mockReset();
+      await sql!`ALTER TABLE donor_payment_ledger DROP CONSTRAINT task09_reject_test_value`;
     }
   });
 
@@ -199,5 +279,24 @@ integration("monthly payment ledger with PostgreSQL", () => {
     const rows = await sql!`SELECT due_date::text AS due_date FROM donor_payment_ledger
       WHERE pledge_id = ${id} AND competencia = ${month}`;
     expect(rows).toEqual([{ due_date: `${month}-12` }]);
+  });
+
+  it("keeps a one-time receipt pending and rejects invalid bank confirmation metadata", async () => {
+    const id = randomUUID();
+    pledgeIds.push(id);
+    await sql!`INSERT INTO donor_pledges
+      (id, nome, cpf, email, frequencia, valor, data_pagamento, recibo_path, recibo_nome)
+      VALUES (${id}, 'Teste único', '000.000.000-00', ${`${id}@example.test`},
+        'unica', 80, '2026-10-26', 'donors/test/proof.pdf', 'proof.pdf')`;
+    await sql!`INSERT INTO donor_payment_ledger
+      (pledge_id, competencia, due_date, expected_value, receipt_path, receipt_name, receipt_uploaded_at)
+      VALUES (${id}, '2026-10', '2026-10-26', 80, 'donors/test/proof.pdf', 'proof.pdf', now())`;
+    const [row] = await sql!`SELECT status, received_value::text AS received_value, receipt_path
+      FROM donor_payment_ledger WHERE pledge_id = ${id}`;
+    expect(row).toMatchObject({ status: 'pendente', received_value: '0.00', receipt_path: 'donors/test/proof.pdf' });
+    await expect(sql!`UPDATE donor_payment_ledger SET status = 'confirmado', received_value = 80
+      WHERE pledge_id = ${id}`).rejects.toMatchObject({ code: '23514' });
+    await expect(sql!`UPDATE donor_payment_ledger SET received_value = -1
+      WHERE pledge_id = ${id}`).rejects.toMatchObject({ code: '23514' });
   });
 });

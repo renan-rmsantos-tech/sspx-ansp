@@ -407,6 +407,15 @@ export const donorPaymentLedger = pgTable(
       scale: 2,
       mode: "number",
     }).notNull(),
+    received_value: numeric("received_value", { precision: 12, scale: 2, mode: "number" }).notNull().default(0),
+    credit_date: date("credit_date", { mode: "string" }),
+    status: text("status").notNull().default("pendente"),
+    confirmed_by: uuid("confirmed_by").references(() => adminUsers.id),
+    confirmed_at: timestamp("confirmed_at", { withTimezone: true, mode: "string" }),
+    note: text("note"),
+    receipt_link_generated_by: uuid("receipt_link_generated_by").references(() => adminUsers.id),
+    receipt_link_generated_actor: text("receipt_link_generated_actor"),
+    receipt_link_generated_at: timestamp("receipt_link_generated_at", { withTimezone: true, mode: "string" }),
     receipt_path: text("receipt_path"),
     receipt_name: text("receipt_name"),
     receipt_uploaded_at: timestamp("receipt_uploaded_at", {
@@ -427,6 +436,8 @@ export const donorPaymentLedger = pgTable(
     check("donor_payment_ledger_due_month_check", sql`to_char(${t.due_date}, 'YYYY-MM') = ${t.competencia}`),
     check("donor_payment_ledger_due_day_check", sql`extract(day from ${t.due_date}) between 1 and 31`),
     check("donor_payment_ledger_expected_value_check", sql`${t.expected_value} > 0`),
+    check("donor_payment_ledger_received_value_check", sql`${t.received_value} >= 0`),
+    check("donor_payment_ledger_bank_state_check", sql`(${t.status} = 'pendente' and ${t.received_value} = 0 and ${t.credit_date} is null and ${t.confirmed_by} is null and ${t.confirmed_at} is null) or (${t.status} = 'nao_identificado' and ${t.received_value} = 0 and ${t.credit_date} is null and ${t.confirmed_by} is not null and ${t.confirmed_at} is not null) or (${t.status} in ('confirmado', 'divergente') and ${t.received_value} > 0 and ${t.credit_date} is not null and ${t.confirmed_by} is not null and ${t.confirmed_at} is not null)`),
     check("donor_payment_ledger_receipt_check", sql`(${t.receipt_path} is null and ${t.receipt_name} is null and ${t.receipt_uploaded_at} is null) or (${t.receipt_path} is not null and ${t.receipt_name} is not null and ${t.receipt_uploaded_at} is not null)`),
   ]
 );

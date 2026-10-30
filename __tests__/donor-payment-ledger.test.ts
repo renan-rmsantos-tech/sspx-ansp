@@ -101,6 +101,8 @@ describe("future due-day reconciliation", () => {
       .toEqual({ kind: "update", dueDate: "2026-11-12" });
     expect(dueSnapshotDecision(edited, snapshot, "2026-11-06"))
       .toEqual({ kind: "keep" });
+    expect(dueSnapshotDecision(edited, snapshot, "2026-11-05"))
+      .toEqual({ kind: "keep" });
     expect(dueSnapshotDecision(edited, { ...snapshot, receipt_path: "private/file" }, "2026-10-26"))
       .toEqual({ kind: "keep" });
     expect(dueSnapshotDecision(edited, { ...snapshot, receipt_uploaded_at: "2026-10-27T12:00:00Z" }, "2026-10-26"))
@@ -123,6 +125,14 @@ describe("future due-day reconciliation", () => {
     expect(dueSnapshotDecision(dayThirtyOne, { ...april, receipt_path: "private/file" }, "2028-03-01"))
       .toEqual({ kind: "keep" });
     expect(dueSnapshotDecision(dayThirtyOne, april, "2028-05-01"))
+      .toEqual({ kind: "keep" });
+  });
+  it("protects bank-reviewed and confirmed snapshots even without receipt evidence", () => {
+    expect(dueSnapshotDecision(edited, { ...snapshot, status: "nao_identificado" }, "2026-10-26"))
+      .toEqual({ kind: "keep" });
+    expect(dueSnapshotDecision(edited, { ...snapshot, status: "confirmado" }, "2026-10-26"))
+      .toEqual({ kind: "keep" });
+    expect(dueSnapshotDecision(edited, { ...snapshot, confirmed_by: "admin" }, "2026-10-26"))
       .toEqual({ kind: "keep" });
   });
 });

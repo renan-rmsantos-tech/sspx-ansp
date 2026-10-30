@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: Suppress reminders for bank-confirmed credits
 type: backend
 complexity: medium
@@ -33,10 +33,10 @@ Connect the reminder sender to the now-available bank conference fields so benef
 </requirements>
 
 ## Subtasks
-- [ ] 14.1 Add ledger-based paid-occurrence checks to automatic and manual sender paths.
-- [ ] 14.2 Add an integration test covering a credit recorded between selection and send.
-- [ ] 14.3 Verify no regression to phase-2 opt-in, lease, and retry behavior.
-- [ ] 14.4 Run phase-3 tests/build and confirm coverage of conference, export, and report.
+- [x] 14.1 Add ledger-based paid-occurrence checks to automatic and manual sender paths.
+- [x] 14.2 Add an integration test covering a credit recorded between selection and send.
+- [x] 14.3 Verify no regression to phase-2 opt-in, lease, and retry behavior.
+- [x] 14.4 Run phase-3 tests/build and confirm coverage of conference, export, and report.
 
 ## Implementation Details
 Follow TechSpec “Reminder Reservation and Send Flow” and “Conference, Totals, and Export Contract.” Keep the paid check narrow so no personal ledger detail enters operational logs.
@@ -62,12 +62,12 @@ Follow TechSpec “Reminder Reservation and Send Flow” and “Conference, Tota
 
 ## Tests
 - Unit tests:
-  - [ ] `confirmado` and positive-credit `divergente` suppress both kinds; `pendente` and `nao_identificado` are eligible only when their receipt is pending, while an uploaded receipt suppresses the remaining kind.
-  - [ ] A sent 10-day row stays sent when a later credit is recorded; 5-day selection is skipped.
+  - [x] `confirmado` and positive-credit `divergente` suppress both kinds; `pendente` and `nao_identificado` are eligible only when their receipt is pending, while an uploaded receipt suppresses the remaining kind.
+  - [x] A sent 10-day row stays sent when a later credit is recorded; 5-day selection is skipped.
 - Integration tests:
-  - [ ] A bank credit committed after candidate selection but before provider call prevents send.
-  - [ ] Manual retry of a failed row after confirmation returns skipped-paid and makes no provider call.
-  - [ ] `npm test` and `npm run build` pass with the phase-3 conference, CSV, and report enabled.
+  - [x] A bank credit committed after candidate selection but before provider call prevents send.
+  - [x] Manual retry of a failed row after confirmation returns skipped-paid and makes no provider call.
+  - [x] `npm test` and `npm run build` pass with the phase-3 conference, CSV, and report enabled.
 - Test coverage target: >=80%
 - All tests must pass
 

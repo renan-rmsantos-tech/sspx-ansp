@@ -1,6 +1,6 @@
 "use server";
 
-import { and, asc, desc, eq, gte, inArray, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, gt, gte, inArray, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { loadDocumentHeader, persistDocumentHeader, HEADER_LOAD_ERROR } from "@/lib/documents/document-header-store";
 import { institutionalFooterError, type DocumentHeaderData } from "@/lib/documents/document-header";
@@ -327,7 +327,7 @@ export async function updateDonorDueDay(
       const snapshots = await tx.query.donorPaymentLedger.findMany({
         where: and(
           eq(donorPaymentLedger.pledge_id, id),
-          gte(donorPaymentLedger.due_date, today)
+          gt(donorPaymentLedger.due_date, today)
         ),
       });
       for (const snapshot of snapshots) {
@@ -335,10 +335,13 @@ export async function updateDonorDueDay(
         if (decision.kind === "keep") continue;
         const eligible = and(
           eq(donorPaymentLedger.id, snapshot.id),
-          gte(donorPaymentLedger.due_date, today),
+          gt(donorPaymentLedger.due_date, today),
           isNull(donorPaymentLedger.receipt_path),
           isNull(donorPaymentLedger.receipt_name),
-          isNull(donorPaymentLedger.receipt_uploaded_at)
+          isNull(donorPaymentLedger.receipt_uploaded_at),
+          eq(donorPaymentLedger.status, "pendente"),
+          isNull(donorPaymentLedger.confirmed_by),
+          isNull(donorPaymentLedger.confirmed_at)
         );
         if (decision.kind === "update") {
           await tx.update(donorPaymentLedger)
@@ -374,12 +377,19 @@ export async function updateDonorDueDay(
 }
 
 export async function deleteDonorPledge(id: string): Promise<ActionResult> {
-  await requireAuth();
+  await requireAdmin();
 
   const donor = await db.query.donorPledges.findFirst({
     columns: { recibo_path: true },
     where: eq(donorPledges.id, id),
   });
+  const payments = await db.query.donorPaymentLedger.findMany({
+    columns: { status: true, receipt_path: true },
+    where: eq(donorPaymentLedger.pledge_id, id),
+  });
+  if (payments.some(payment => payment.status === "confirmado" || payment.status === "divergente")) {
+    return { success: false, error: "Há créditos confirmados no extrato. O benfeitor não pode ser excluído." };
+  }
 
   try {
     await db.delete(donorPledges).where(eq(donorPledges.id, id));
@@ -391,6 +401,9 @@ export async function deleteDonorPledge(id: string): Promise<ActionResult> {
   // arquivo deixaria o comprovante retido sem referência no banco.
   if (donor?.recibo_path) {
     await getStorage().remove(donor.recibo_path);
+  }
+  for (const path of new Set(payments.map(payment => payment.receipt_path).filter((path): path is string => !!path && path !== donor?.recibo_path))) {
+    await getStorage().remove(path);
   }
 
   return { success: true };

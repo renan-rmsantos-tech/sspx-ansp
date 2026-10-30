@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: Export selected payment conference as CSV
 type: backend
 complexity: medium
@@ -30,9 +30,9 @@ Provide a spreadsheet-friendly copy of the selected conference month for adminis
 </requirements>
 
 ## Subtasks
-- [ ] 12.1 Add a guarded CSV export using the conference month query.
-- [ ] 12.2 Add a download control to the conference screen.
-- [ ] 12.3 Verify encoding, safe columns, month match, and formula escaping.
+- [x] 12.1 Add a guarded CSV export using the conference month query.
+- [x] 12.2 Add a download control to the conference screen.
+- [x] 12.3 Verify encoding, safe columns, month match, and formula escaping.
 
 ## Implementation Details
 Follow TechSpec “Conference, Totals, and Export Contract.” Keep the export query aligned with task 10 and avoid a separate financial calculation path.
@@ -56,12 +56,12 @@ Follow TechSpec “Conference, Totals, and Export Contract.” Keep the export q
 
 ## Tests
 - Unit tests:
-  - [ ] A donor name beginning `=SUM(1,1)` is exported as inert text; embedded comma, quote, and newline round-trip correctly.
-  - [ ] A 100.00 expected/80.00 received row exports 20.00 outstanding, matching the screen.
-  - [ ] Header and rows contain no CPF, email, address, phone, note, receipt URL, or provider error.
-  - [ ] A pending-receipt row and an uploaded-receipt row export different evidence labels while `Confirmado no extrato`, `Divergente`, and `Não identificado` remain separate bank labels.
+  - [x] A donor name beginning `=SUM(1,1)` is exported as inert text; embedded comma, quote, and newline round-trip correctly.
+  - [x] A 100.00 expected/80.00 received row exports 20.00 outstanding, matching the screen.
+  - [x] Header and rows contain no CPF, email, address, phone, note, receipt URL, or provider error.
+  - [x] A pending-receipt row and an uploaded-receipt row export different evidence labels while `Confirmado no extrato`, `Divergente`, and `Não identificado` remain separate bank labels.
 - Integration tests:
-  - [ ] Secretaria direct export call is denied; administrator receives only rows from the chosen month.
+  - [x] Secretaria direct export call is denied; administrator receives only rows from the chosen month.
 - Test coverage target: >=80%
 - All tests must pass
 

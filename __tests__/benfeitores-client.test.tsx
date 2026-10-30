@@ -5,6 +5,7 @@ const { updateDonorDueDay } = vi.hoisted(() => ({ updateDonorDueDay: vi.fn() }))
 vi.mock("@/app/admin/_actions/admin-actions", () => ({ deleteDonorPledge: vi.fn(), updateDonorDueDay }));
 const { retryDonorWelcomeEmail, markDonorWelcomeEmailSent, unmarkDonorWelcomeEmailSent } = vi.hoisted(() => ({ retryDonorWelcomeEmail: vi.fn(), markDonorWelcomeEmailSent: vi.fn(), unmarkDonorWelcomeEmailSent: vi.fn() }));
 vi.mock("@/app/admin/_actions/donor-email-actions", () => ({ retryDonorWelcomeEmail, markDonorWelcomeEmailSent, unmarkDonorWelcomeEmailSent }));
+vi.mock("@/app/admin/_actions/donor-receipt-actions", () => ({ issueDonorReceiptRecoveryLink: vi.fn() }));
 vi.mock("@/app/admin/_actions/donor-monthly-instructions-actions", () => ({
   sendManualDonorMonthlyInstructionsAction: vi.fn(),
   resolveUncertainDonorMonthlyInstructionsAction: vi.fn(),
@@ -77,6 +78,10 @@ describe("BenfeitoresClient", () => {
     created_at: "2026-10-26T12:00:00Z",
   };
 
+  it("shows link generation only when the current monthly receipt is pending", () => {
+    render(<BenfeitoresClient initialDonors={[{ ...monthlyDonor, current_receipt: { competencia: "2026-10", status: "Comprovante pendente" } }, { ...monthlyDonor, id: "sent", nome: "Bruna", current_receipt: { competencia: "2026-10", status: "Comprovante enviado – aguardando conferência" } }]} />);
+    expect(screen.getAllByRole("button", { name: "Gerar link de comprovante" })).toHaveLength(1);
+  });
   it("shows monthly instructions only for monthly donors", () => {
     render(<BenfeitoresClient initialDonors={[
       monthlyDonor,

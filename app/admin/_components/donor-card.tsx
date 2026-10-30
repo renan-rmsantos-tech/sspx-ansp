@@ -7,6 +7,7 @@ import {
   getDocumentUrl,
   updateDonorDueDay,
 } from "../_actions/admin-actions";
+import { ReceiptLinkControl } from "./receipt-link-control";
 import { PdfPreviewModal } from "./pdf-preview-modal";
 import { prioradoCapelaLabel } from "@/lib/data/priorados-capelas";
 import { formatDonorDate } from "@/lib/donor-date";
@@ -409,6 +410,7 @@ export function DonorCard({ donor, onDelete, onWelcomeSent, onDueDayUpdated, onI
             </div>
           )}
 
+          {donor.frequencia === "mensal" && donor.current_receipt?.status === "Comprovante pendente" && <ReceiptLinkControl pledgeId={donor.id} competencia={donor.current_receipt.competencia} />}
           {donor.frequencia === "mensal" && (
             <DonorMonthlyInstructions
               pledgeId={donor.id}

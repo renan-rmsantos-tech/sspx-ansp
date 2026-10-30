@@ -1,5 +1,5 @@
 ---
-status: pending
+status: completed
 title: Build administrator payment conference screen
 type: frontend
 complexity: high
@@ -31,11 +31,11 @@ Give Administrador a month-by-month workspace for checking expected contribution
 </requirements>
 
 ## Subtasks
-- [ ] 11.1 Add the protected conference route and sidebar entry.
-- [ ] 11.2 Add month selector, totals, expected rows, and overdue section.
-- [ ] 11.3 Add confirm/correct/reset/not-identified interactions and receipt access.
-- [ ] 11.4 Show monthly receipt evidence and preserve the distinct bank status after administrator review.
-- [ ] 11.5 Verify role denial, mobile, keyboard, and clear state copy.
+- [x] 11.1 Add the protected conference route and sidebar entry.
+- [x] 11.2 Add month selector, totals, expected rows, and overdue section.
+- [x] 11.3 Add confirm/correct/reset/not-identified interactions and receipt access.
+- [x] 11.4 Show monthly receipt evidence and preserve the distinct bank status after administrator review.
+- [x] 11.5 Verify role denial, mobile, keyboard, and clear state copy.
 
 ## Implementation Details
 Follow TechSpec “Conference, Totals, and Export Contract” and existing report style. Read `PRODUCT.md`, `DESIGN.md`, and `COPY.md` before UI/copy changes.
@@ -61,15 +61,15 @@ Follow TechSpec “Conference, Totals, and Export Contract” and existing repor
 
 ## Tests
 - Unit tests:
-  - [ ] One-time pending row displays “Aguardando conferência” and a receipt control but zero received.
-  - [ ] Monthly pending row with a receipt displays “Comprovante enviado – aguardando conferência”; reviewed rows retain evidence but show their bank state first.
-  - [ ] Monthly row without a receipt displays “Comprovante pendente”; overdue missing-receipt rows remain visibly flagged even if the bank credit was confirmed.
-  - [ ] A confirmed amount/date shows confirmer/time; underpayment shows “Divergente” and positive outstanding.
-  - [ ] Month change updates list and totals, while failed save preserves entered fields and announces an error.
+  - [x] One-time pending row displays “Aguardando conferência” and a receipt control but zero received.
+  - [x] Monthly pending row with a receipt displays “Comprovante enviado – aguardando conferência”; reviewed rows retain evidence but show their bank state first.
+  - [x] Monthly row without a receipt displays “Comprovante pendente”; overdue missing-receipt rows remain visibly flagged even if the bank credit was confirmed.
+  - [x] A confirmed amount/date shows confirmer/time; underpayment shows “Divergente” and positive outstanding.
+  - [x] Month change updates list and totals, while failed save preserves entered fields and announces an error.
 - Integration tests:
-  - [ ] Secretaria cannot render the page or call the conference actions directly.
-  - [ ] Only Administrador can obtain a monthly receipt download ticket by ledger row ID; the public reminder link cannot download the file.
-  - [ ] Keyboard users can filter, inspect receipt, confirm credit, and reach the overdue list.
+  - [x] Secretaria cannot render the page or call the conference actions directly.
+  - [x] Only Administrador can obtain a monthly receipt download ticket by ledger row ID; the public reminder link cannot download the file.
+  - [x] Keyboard users can filter, inspect receipt, confirm credit, and reach the overdue list.
 - Test coverage target: >=80%
 - All tests must pass
 

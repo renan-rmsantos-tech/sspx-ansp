@@ -3,19 +3,20 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth/authorization";
+import { BYPASS_USER, isAuthBypass } from "@/lib/auth/bypass";
 import { db } from "@/lib/db";
 import { donorPaymentLedger, donorPledges } from "@/lib/db/schema";
 import { hasMonthlyReceipt } from "@/lib/donor-payment-ledger";
-import { createDonorReceiptRecoveryLink, receiptExpiry } from "@/lib/donor-receipts/tickets";
+import { createDonorReceiptRecoveryLink } from "@/lib/donor-receipts/tickets";
 
 const target = z.object({
   pledgeId: z.uuid(),
   competencia: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/),
 });
 
-/** An explicit admin issue for one overdue, receipt-pending monthly occurrence. */
+/** An explicit admin issue for one receipt-pending monthly occurrence. */
 export async function issueDonorReceiptRecoveryLink(pledgeId: string, competencia: string) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const parsed = target.safeParse({ pledgeId, competencia });
   if (!parsed.success) return { status: "unavailable" as const };
   const pledge = await db.query.donorPledges.findFirst({
@@ -34,15 +35,13 @@ export async function issueDonorReceiptRecoveryLink(pledgeId: string, competenci
   });
   if (!row || hasMonthlyReceipt(row)) return { status: "unavailable" as const };
   const now = new Date();
-  if (receiptExpiry(row.due_date) >= Math.floor(now.getTime() / 1000)) {
-    return { status: "not_expired" as const };
-  }
   const host = process.env.APP_HOST?.trim();
   if (!host || /[/:?#@\s]/.test(host)) return { status: "configuration" as const };
-  return {
-    status: "issued" as const,
-    link: createDonorReceiptRecoveryLink(
-      `https://${host}`, parsed.data.pledgeId, parsed.data.competencia, now
-    ),
-  };
+  const link = createDonorReceiptRecoveryLink(`https://${host}`, parsed.data.pledgeId, parsed.data.competencia, now);
+  await db.update(donorPaymentLedger).set({
+    receipt_link_generated_by: isAuthBypass() && admin.id === BYPASS_USER.id ? null : admin.id,
+    receipt_link_generated_actor: admin.email,
+    receipt_link_generated_at: now.toISOString(),
+  }).where(and(eq(donorPaymentLedger.pledge_id, parsed.data.pledgeId), eq(donorPaymentLedger.competencia, parsed.data.competencia)));
+  return { status: "issued" as const, link, expiresAt: new Date(now.getTime() + 14 * 86400_000).toISOString() };
 }
