@@ -1,3 +1,10 @@
+// Gerado pelo shadcn (estilo base-nova) com um ajuste local nas variantes
+// `outline` e `ghost`: o shadcn usa `hover:bg-muted`, mas neste projeto
+// `--color-muted` (app/globals.css, @theme) é a cor do texto secundário, e
+// `bg-muted` resolve para ela — não para a `--muted` (fundo creme) que o
+// shadcn espera. Por isso o hover/aria-expanded dessas variantes usa `bg-bg`
+// (fundo da página). Nenhuma outra variante muda; ao reinstalar o componente
+// pela CLI, reaplicar este ajuste.
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
 
@@ -10,11 +17,11 @@ const buttonVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/80",
         outline:
-          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+          "border-border bg-background hover:bg-bg hover:text-foreground aria-expanded:bg-bg aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:
-          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
+          "hover:bg-bg hover:text-foreground aria-expanded:bg-bg aria-expanded:text-foreground dark:hover:bg-bg/50",
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",

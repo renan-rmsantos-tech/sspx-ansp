@@ -9,6 +9,22 @@ if (!isProduction) pageExtensions.push("proto.tsx");
 
 const nextConfig: NextConfig = {
   pageExtensions,
+  // Rotas antigas do painel (redesenho de 2026-10): redirect permanente para
+  // as páginas novas e com abas. Parâmetros de consulta (ex.: `?month=`) são
+  // repassados. O proxy.ts continua exigindo sessão antes do redirect.
+  async redirects() {
+    return [
+      { source: "/admin/conferencia-pagamentos", destination: "/admin/pagamentos", permanent: true },
+      { source: "/admin/conferencia-pagamentos/export", destination: "/admin/pagamentos/export", permanent: true },
+      { source: "/admin/relatorios/cadastros", destination: "/admin/relatorios?aba=cadastros", permanent: true },
+      { source: "/admin/relatorios/financeiro", destination: "/admin/relatorios?aba=financeiro", permanent: true },
+      { source: "/admin/email-benfeitores", destination: "/admin/emails", permanent: true },
+      { source: "/admin/instrucoes-benfeitores", destination: "/admin/emails?aba=instrucoes", permanent: true },
+      { source: "/admin/lembretes-benfeitores", destination: "/admin/emails?aba=lembretes", permanent: true },
+      { source: "/admin/textos", destination: "/admin/modelos", permanent: true },
+      { source: "/admin/contrato", destination: "/admin/modelos?aba=contrato", permanent: true },
+    ];
+  },
   async headers() {
     return [{
       source: "/benfeitor/comprovante",

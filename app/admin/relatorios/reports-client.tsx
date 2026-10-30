@@ -1,25 +1,69 @@
 "use client";
 
-import { useId, useState, useTransition, type FormEvent } from "react";
-import { getDonorReports, type DonorReportCategory, type DonorReportFilters, type DonorReports } from "../_actions/donor-report-actions";
+import { useState, useTransition, type FormEvent } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import {
+  getDonorReports,
+  type DonorReportCategory,
+  type DonorReportFilters,
+  type DonorReports,
+} from "../_actions/donor-report-actions";
+import { Field } from "../_components/field";
+import { Notice } from "../_components/notice";
+import { Section } from "../_components/section";
 import { DonorReportCharts } from "./reports-charts";
 
-function ReportSeries({ title, description, categories, chart = true }: { title: string; description: string; categories: DonorReportCategory[]; chart?: boolean }) {
-  const headingId = useId();
+const INPUT_CLASS = "h-10 bg-surface";
+const SELECT_CLASS = "w-full [&>select]:h-10 [&>select]:bg-surface";
+const CARD_CLASS = "gap-4 rounded-lg border border-border bg-surface p-5 ring-0";
+
+function ReportSeries({
+  title,
+  description,
+  categories,
+  chart = true,
+}: {
+  title: string;
+  description: string;
+  categories: DonorReportCategory[];
+  chart?: boolean;
+}) {
   return (
-    <section className="rounded-lg border border-border bg-surface p-4" aria-labelledby={headingId}>
-      <h2 id={headingId} className="font-heading text-lg font-semibold">{title}</h2>
-      <p className="mt-1 text-sm text-muted">{description}</p>
-      {chart && <div className="mt-4"><DonorReportCharts categories={categories} label={title} /></div>}
-      <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[280px] border-collapse text-left text-sm">
-          <caption className="sr-only">{title}: quantidade de cadastros por categoria</caption>
-          <thead><tr className="border-b border-border text-muted"><th scope="col" className="py-2 pr-3 font-medium">Categoria</th><th scope="col" className="py-2 text-right font-medium">Cadastros</th></tr></thead>
-          <tbody>{categories.map((category) => <tr key={category.key} className="border-b border-border last:border-0"><th scope="row" className="py-2 pr-3 font-normal">{category.label}</th><td className="py-2 text-right tabular-nums">{category.count}</td></tr>)}</tbody>
-          <tfoot><tr className="font-semibold"><th scope="row" className="pt-3 pr-3">Total de cadastros</th><td className="pt-3 text-right tabular-nums">{categories.reduce((sum, category) => sum + category.count, 0)}</td></tr></tfoot>
-        </table>
-      </div>
-    </section>
+    <Section title={title} description={description}>
+      <Card className={CARD_CLASS}>
+        {chart && <DonorReportCharts categories={categories} label={title} />}
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[280px] border-collapse text-left text-sm">
+            <caption className="sr-only">{title}: quantidade de cadastros por categoria</caption>
+            <thead>
+              <tr className="border-b border-border text-xs font-medium uppercase tracking-wide text-muted">
+                <th scope="col" className="py-2 pr-3 font-medium">Categoria</th>
+                <th scope="col" className="py-2 text-right font-medium">Cadastros</th>
+              </tr>
+            </thead>
+            <tbody>
+              {categories.map((category) => (
+                <tr key={category.key} className="border-b border-border/60 last:border-0">
+                  <th scope="row" className="py-2 pr-3 font-normal text-fg">{category.label}</th>
+                  <td className="py-2 text-right tabular-nums">{category.count}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="font-semibold">
+                <th scope="row" className="border-t border-border pt-3 pr-3">Total de cadastros</th>
+                <td className="border-t border-border pt-3 text-right tabular-nums">
+                  {categories.reduce((sum, category) => sum + category.count, 0)}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </Card>
+    </Section>
   );
 }
 
@@ -47,18 +91,53 @@ export function DonorReportsClient({ initialReports }: { initialReports: DonorRe
   }
 
   return (
-    <div className="mt-6 space-y-6">
-      <form onSubmit={submit} className="grid gap-4 rounded-lg border border-border bg-surface p-4 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end">
-        <label className="flex flex-col gap-1.5 text-sm font-medium">Data inicial<input type="date" name="from" defaultValue={reports.filters.from ?? ""} className="min-h-10 rounded-md border border-border bg-bg px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent" /></label>
-        <label className="flex flex-col gap-1.5 text-sm font-medium">Data final<input type="date" name="to" defaultValue={reports.filters.to ?? ""} className="min-h-10 rounded-md border border-border bg-bg px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent" /></label>
-        <label className="flex flex-col gap-1.5 text-sm font-medium">Frequência<select name="frequency" defaultValue={reports.filters.frequency ?? ""} className="min-h-10 rounded-md border border-border bg-bg px-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"><option value="">Todas</option><option value="mensal">Mensal</option><option value="unica">Única</option></select></label>
-        <button type="submit" disabled={pending} className="min-h-10 rounded-md bg-accent px-4 text-sm font-semibold text-white hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-60">{pending ? "Atualizando…" : "Aplicar filtros"}</button>
-      </form>
-      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-      <p aria-live="polite" className="rounded-md border border-border bg-surface px-4 py-3 text-sm">População selecionada: <strong>{reports.total} cadastros</strong></p>
-      <div className="grid gap-5 xl:grid-cols-2">
-        <ReportSeries title="Estado de residência" description="Local de residência informado no cadastro." categories={reports.residenceByState} />
-        <ReportSeries title="Priorado ou capela" description="Vínculo selecionado pelo benfeitor." chart={false} categories={[...reports.prioryOrChapel].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "pt-BR"))} />
+    <div className="space-y-6">
+      <Card className={CARD_CLASS}>
+        <form onSubmit={submit} className="grid gap-4 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end">
+          <Field label="Data inicial">
+            {(a11y) => (
+              <Input {...a11y} type="date" name="from" defaultValue={reports.filters.from ?? ""} className={INPUT_CLASS} />
+            )}
+          </Field>
+          <Field label="Data final">
+            {(a11y) => (
+              <Input {...a11y} type="date" name="to" defaultValue={reports.filters.to ?? ""} className={INPUT_CLASS} />
+            )}
+          </Field>
+          <Field label="Frequência">
+            {(a11y) => (
+              <NativeSelect {...a11y} name="frequency" defaultValue={reports.filters.frequency ?? ""} className={SELECT_CLASS}>
+                <NativeSelectOption value="">Todas</NativeSelectOption>
+                <NativeSelectOption value="mensal">Mensal</NativeSelectOption>
+                <NativeSelectOption value="unica">Doação única</NativeSelectOption>
+              </NativeSelect>
+            )}
+          </Field>
+          <Button type="submit" size="lg" disabled={pending}>
+            {pending ? "Atualizando…" : "Aplicar filtros"}
+          </Button>
+        </form>
+        <p aria-live="polite" className="border-t border-border pt-4 text-sm text-muted">
+          População selecionada: <strong className="text-fg">{reports.total} cadastros</strong>
+        </p>
+      </Card>
+
+      {error && <Notice tone="danger">{error}</Notice>}
+
+      <div className="grid gap-6 xl:grid-cols-2">
+        <ReportSeries
+          title="Estado de residência"
+          description="Local de residência informado no cadastro."
+          categories={reports.residenceByState}
+        />
+        <ReportSeries
+          title="Priorado ou capela"
+          description="Vínculo selecionado pelo benfeitor."
+          chart={false}
+          categories={[...reports.prioryOrChapel].sort(
+            (a, b) => b.count - a.count || a.label.localeCompare(b.label, "pt-BR")
+          )}
+        />
       </div>
     </div>
   );

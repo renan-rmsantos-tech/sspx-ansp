@@ -20,12 +20,10 @@ const INVALID = "Credenciais inválidas. Verifique seu email e senha.";
 const LOCKED =
   "Muitas tentativas de login. Aguarde alguns minutos e tente novamente.";
 
-// Destino do login. Aponta para a página final, e não para /admin: aquela rota
-// só redireciona para cá, e um redirect encadeado dentro de uma Server Action
-// faz o Next seguir o Location no fetch e devolver HTML onde o roteador espera
-// um payload RSC — a navegação quebra com "An unexpected response was received
-// from the server", mesmo com a sessão já criada.
-const AFTER_LOGIN = "/admin/solicitacoes";
+// Destino do login: a página Início. `/admin` renderiza conteúdo próprio
+// (não redireciona mais), então não há redirect encadeado dentro da Server
+// Action — o cenário que antes devolvia HTML onde o roteador esperava RSC.
+const AFTER_LOGIN = "/admin";
 
 async function startSession(userId: string, email: string) {
   const session = await getSession();

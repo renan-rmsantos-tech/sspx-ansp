@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 const { conference } = vi.hoisted(() => ({ conference: vi.fn() }));
 vi.mock("@/app/admin/_actions/donor-payment-conference-actions", () => ({ getDonorPaymentConference: conference }));
-import { GET } from "@/app/admin/conferencia-pagamentos/export/route";
-const request = (month: string) => new NextRequest(`http://localhost/admin/conferencia-pagamentos/export?month=${month}`);
+import { GET } from "@/app/admin/pagamentos/export/route";
+const request = (month: string) => new NextRequest(`http://localhost/admin/pagamentos/export?month=${month}`);
 describe("conference CSV route", () => {
   it("denies unauthenticated and Secretariat requests", async () => {
     for (const error of ["Não autorizado", "Você não tem permissão"]) {

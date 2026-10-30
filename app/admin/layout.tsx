@@ -1,6 +1,6 @@
-import { Topbar } from "./_components/topbar";
-import { Sidebar } from "./_components/sidebar";
 import { requireStaff } from "@/lib/auth/authorization";
+import { getAdminHomeSummary } from "./_actions/admin-home-actions";
+import { AdminShell } from "./_components/admin-shell";
 
 export default async function AdminLayout({
   children,
@@ -8,15 +8,15 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const staff = await requireStaff();
+  // Contadores do menu. Uma falha de leitura só omite os badges.
+  const { data } = await getAdminHomeSummary();
+  const counts = data
+    ? { pendingApplications: data.applications.pendente, pendingWelcome: data.donors.pendingWelcome }
+    : null;
+
   return (
-    <div className="min-h-screen bg-bg">
-      <Topbar />
-      <div className="flex">
-        <Sidebar role={staff.role} />
-        <main className="flex-1 p-8 max-md:p-4 max-md:pb-12">
-          <div className="max-w-[900px]">{children}</div>
-        </main>
-      </div>
-    </div>
+    <AdminShell staff={{ email: staff.email, role: staff.role }} counts={counts}>
+      {children}
+    </AdminShell>
   );
 }

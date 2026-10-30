@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, fireEvent, cleanup, act, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup, act } from "@testing-library/react";
 
 const {
   mockToggleSchoolYear,
@@ -47,7 +47,7 @@ describe("SchoolYearList", () => {
 
     const badges = screen.getAllByTestId("status-badge");
     expect(badges[0].textContent).toBe("Ativo");
-    expect(badges[1].textContent).toBe("Inativo");
+    expect(badges[1].textContent).toBe("Encerrado");
     expect(screen.getByText("2026")).toBeDefined();
     expect(screen.getByText("2025")).toBeDefined();
   });
@@ -63,8 +63,36 @@ describe("SchoolYearList", () => {
     render(<SchoolYearList years={years} onYearsChange={onChange} />);
 
     fireEvent.click(screen.getByTestId("toggle-button"));
-    expect(screen.getByTestId("confirm-dialog")).toBeDefined();
-    expect(screen.getByText(/Desativar ano letivo/)).toBeDefined();
+    const dialog = screen.getByTestId("confirm-dialog");
+    expect(dialog).toHaveTextContent("Desativar este ano letivo?");
+    expect(screen.getByTestId("confirm-ok")).toHaveTextContent("Sim, desativar");
+    expect(screen.getByTestId("confirm-cancel")).toHaveTextContent("Não");
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(mockToggleSchoolYear).not.toHaveBeenCalled();
+  });
+
+  it("deactivates the active year after inline confirmation", async () => {
+    const years = [makeYear({ ativo: true })];
+    const onChange = vi.fn();
+    mockToggleSchoolYear.mockResolvedValueOnce({ success: true });
+    render(<SchoolYearList years={years} onYearsChange={onChange} />);
+
+    fireEvent.click(screen.getByTestId("toggle-button"));
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("confirm-ok"));
+    });
+
+    expect(mockToggleSchoolYear).toHaveBeenCalledWith("y-1");
+    expect(onChange).toHaveBeenCalledWith([{ ...years[0], ativo: false }]);
+    expect(screen.queryByTestId("confirm-dialog")).toBeNull();
+  });
+
+  it("hides the delete action on the active year", () => {
+    const years = [makeYear({ id: "y-1", ativo: true }), makeYear({ id: "y-2", ativo: false })];
+    render(<SchoolYearList years={years} onYearsChange={vi.fn()} />);
+
+    expect(screen.getAllByTestId("delete-button")).toHaveLength(1);
+    expect(screen.getAllByTestId("toggle-button").map((b) => b.textContent)).toEqual(["Desativar", "Tornar ativo"]);
   });
 
   it("activates inactive year without confirmation", async () => {
@@ -86,8 +114,11 @@ describe("SchoolYearList", () => {
     render(<SchoolYearList years={years} onYearsChange={vi.fn()} />);
 
     fireEvent.click(screen.getByTestId("delete-button"));
-    expect(screen.getByTestId("confirm-dialog")).toBeDefined();
-    expect(screen.getByText(/Excluir ano letivo/)).toBeDefined();
+    const dialog = screen.getByTestId("confirm-dialog");
+    expect(dialog).toHaveTextContent("Excluir este ano letivo?");
+    expect(screen.getByTestId("confirm-ok")).toHaveTextContent("Sim, excluir");
+    expect(screen.getByTestId("confirm-cancel")).toHaveTextContent("Não");
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
   it("deletes year after confirmation", async () => {
@@ -166,6 +197,14 @@ describe("SchoolYearForm", () => {
     expect(onCreated).not.toHaveBeenCalled();
   });
 
+  it("labels the submit button and offers cancel when requested", () => {
+    const onCancel = vi.fn();
+    render(<SchoolYearForm onCreated={vi.fn()} onCancel={onCancel} />);
+    expect(screen.getByTestId("submit-button")).toHaveTextContent("Criar ano letivo");
+    fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
   it("submits valid form and calls onCreated", async () => {
     const onCreated = vi.fn();
     mockCreateSchoolYear.mockResolvedValueOnce({
@@ -222,7 +261,13 @@ describe("AnoLetivoClient integration", () => {
 
     render(<AnoLetivoClient initialYears={[]} />);
 
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Ano letivo");
     expect(screen.getByText(/Nenhum ano letivo cadastrado/)).toBeDefined();
+    expect(screen.queryByTestId("school-year-form")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Novo ano letivo" }));
+    expect(screen.getByTestId("school-year-form")).toBeDefined();
+    expect(screen.queryByRole("button", { name: "Novo ano letivo" })).toBeNull();
 
     fireEvent.change(screen.getByTestId("input-nome"), {
       target: { value: "2027" },
@@ -240,6 +285,16 @@ describe("AnoLetivoClient integration", () => {
 
     expect(screen.getByText("2027")).toBeDefined();
     expect(screen.queryByText(/Nenhum ano letivo cadastrado/)).toBeNull();
+    expect(screen.queryByTestId("school-year-form")).toBeNull();
+    expect(screen.getByRole("button", { name: "Novo ano letivo" })).toBeDefined();
+  });
+
+  it("cancelling the form hides it without creating anything", () => {
+    render(<AnoLetivoClient initialYears={[]} />);
+    fireEvent.click(screen.getByRole("button", { name: "Novo ano letivo" }));
+    fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+    expect(screen.queryByTestId("school-year-form")).toBeNull();
+    expect(mockCreateSchoolYear).not.toHaveBeenCalled();
   });
 
   it("activating a year deactivates the previously active year", async () => {
@@ -258,7 +313,7 @@ describe("AnoLetivoClient integration", () => {
     });
 
     const badges = screen.getAllByTestId("status-badge");
-    expect(badges[0].textContent).toBe("Inativo");
+    expect(badges[0].textContent).toBe("Encerrado");
     expect(badges[1].textContent).toBe("Ativo");
   });
 

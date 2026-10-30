@@ -32,10 +32,10 @@ export function TemplatePreview({
 
   return (
     <div
-      className="rounded-lg border border-border bg-cream p-6"
+      className="rounded-lg border border-border bg-cream/60 p-6"
       data-testid="template-preview"
     >
-      <h3 className="mb-3 text-sm font-semibold text-fg">
+      <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-muted">
         Pré-visualização
       </h3>
       <div className="whitespace-pre-wrap font-body text-sm leading-relaxed text-fg">

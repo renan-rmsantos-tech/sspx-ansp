@@ -11,6 +11,13 @@ const { getSessionUser, sendEmail, revalidatePath } = vi.hoisted(() => ({
 vi.mock("@/lib/auth/session", () => ({ getSessionUser }));
 vi.mock("resend", () => ({ Resend: class { emails = { send: sendEmail }; } }));
 vi.mock("next/cache", () => ({ revalidatePath }));
+// A página /admin/emails tem abas sincronizadas com `?aba=`; fora do App
+// Router, `useSearchParams`/`useRouter` precisam de um duplo.
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => new URLSearchParams("aba=lembretes"),
+  useRouter: () => ({ replace: vi.fn() }),
+  usePathname: () => "/admin/emails",
+}));
 
 const databaseUrl = process.env.DATABASE_URL_TEST;
 const integration = describe.skipIf(!databaseUrl);
@@ -27,7 +34,7 @@ integration("administrator reminder recovery with PostgreSQL", () => {
   let db: typeof import("@/lib/db").db;
   let schema: typeof import("@/lib/db/schema");
   let actions: typeof import("@/app/admin/_actions/donor-reminder-actions");
-  let page: typeof import("@/app/admin/lembretes-benfeitores/page").default;
+  let page: typeof import("@/app/admin/emails/page").default;
 
   beforeAll(async () => {
     await baseSql!.unsafe(`CREATE SCHEMA "${isolatedSchema}"`);
@@ -50,7 +57,7 @@ integration("administrator reminder recovery with PostgreSQL", () => {
     if (current_schema !== isolatedSchema) throw new Error("Task 06 test schema was not selected");
     schema = await import("@/lib/db/schema");
     actions = await import("@/app/admin/_actions/donor-reminder-actions");
-    ({ default: page } = await import("@/app/admin/lembretes-benfeitores/page"));
+    ({ default: page } = await import("@/app/admin/emails/page"));
     await db.insert(schema.adminUsers).values([
       { id: adminId, email: `${adminId}@example.test`, password_hash: "test", role: "admin" },
       { id: secretariatId, email: `${secretariatId}@example.test`, password_hash: "test", role: "secretaria" },

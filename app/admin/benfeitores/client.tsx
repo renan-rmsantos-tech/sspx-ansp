@@ -1,24 +1,27 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
-import { DonorCard, type DonorPledge } from "../_components/donor-card";
+import { useState, useMemo, useCallback, type ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import {
+  DonorCard,
+  DonorContactSection,
+  DonorContributionSection,
+  DonorFrequencyPill,
+  DonorRowMeta,
+  type DonorPledge,
+  type DonorSummary,
+} from "../_components/donor-card";
+import { EmptyState } from "../_components/empty-state";
+import { PageHeader } from "../_components/page-header";
+import { RecordRow } from "../_components/record-row";
+import { SearchInput } from "../_components/search-input";
+import { SegmentedFilter } from "../_components/segmented-filter";
 import { prioradoCapelaLabel } from "@/lib/data/priorados-capelas";
 
 type FrequenciaFilter = "todos" | "mensal" | "unica";
-type WelcomeFilter = "todos" | "pendentes" | "enviados";
 type SortKey = "data_desc" | "data_asc" | "nome" | "valor_desc";
-
-const FILTER_OPTIONS: { value: FrequenciaFilter; label: string }[] = [
-  { value: "todos", label: "Todos" },
-  { value: "mensal", label: "Mensal" },
-  { value: "unica", label: "Única" },
-];
-
-const WELCOME_FILTER_OPTIONS: { value: WelcomeFilter; label: string }[] = [
-  { value: "todos", label: "Todos os e-mails" },
-  { value: "pendentes", label: "Boas-vindas pendentes" },
-  { value: "enviados", label: "Boas-vindas aceitos" },
-];
 
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "data_desc", label: "Mais recentes" },
@@ -29,11 +32,9 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 
 const ALL_PRIORADOS = "__todos__";
 const NOT_INFORMED = "__nao_informado__";
+const SELECT_CLASS = "w-full [&>select]:h-10 [&>select]:bg-surface";
 
-function matchesPriorado(
-  donor: { priorado_capela?: string | null },
-  selected: string
-): boolean {
+function matchesPriorado(donor: { priorado_capela?: string | null }, selected: string): boolean {
   if (selected === ALL_PRIORADOS) return true;
   if (selected === NOT_INFORMED) return !donor.priorado_capela;
   return donor.priorado_capela === selected;
@@ -62,55 +63,47 @@ function PrioradoCapelaSelect({
       prioradoCapelaLabel(a).localeCompare(prioradoCapelaLabel(b), "pt-BR")
     );
   }, [donors, value]);
-  const hasNotInformed =
-    value === NOT_INFORMED || donors.some((donor) => !donor.priorado_capela);
+  const hasNotInformed = value === NOT_INFORMED || donors.some((donor) => !donor.priorado_capela);
 
   return (
-    <div className="min-w-0 flex-1 basis-56 sm:max-w-72">
-      <label htmlFor={id} className="mb-1 block text-sm text-muted">
-        Priorado/Capela
+    <div className="sm:w-72">
+      <label htmlFor={id} className="sr-only">
+        Priorado ou capela
       </label>
-      <select
+      <NativeSelect
         id={id}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+        className={SELECT_CLASS}
         data-testid="donor-priorado-filter"
       >
-        <option value={ALL_PRIORADOS}>Todos os priorados e capelas</option>
+        <NativeSelectOption value={ALL_PRIORADOS}>Todos os priorados e capelas</NativeSelectOption>
         {options.map((priorado) => (
-          <option key={priorado} value={priorado}>
+          <NativeSelectOption key={priorado} value={priorado}>
             {prioradoCapelaLabel(priorado)}
-          </option>
+          </NativeSelectOption>
         ))}
-        {hasNotInformed && (
-          <option value={NOT_INFORMED}>Não informado</option>
-        )}
-      </select>
+        {hasNotInformed && <NativeSelectOption value={NOT_INFORMED}>Não informado</NativeSelectOption>}
+      </NativeSelect>
     </div>
   );
 }
-
-const currency = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-});
 
 function normalizeSearch(value: string): string {
   return value.trim().toLowerCase();
 }
 
-function matchesSearch(donor: DonorPledge, query: string): boolean {
+function matchesSearch(donor: DonorSummary, query: string): boolean {
   if (!query) return true;
   // Inclui o CPF só com dígitos para permitir busca sem pontuação.
-  const cpfDigits = donor.cpf.replace(/\D/g, "");
-  return [donor.nome, donor.email, donor.telefone ?? "", donor.cpf, cpfDigits]
+  const cpfDigits = (donor.cpf ?? "").replace(/\D/g, "");
+  return [donor.nome, donor.email, donor.telefone ?? "", donor.cpf ?? "", cpfDigits]
     .join(" ")
     .toLowerCase()
     .includes(query);
 }
 
-function sortDonors(donors: DonorPledge[], sort: SortKey): DonorPledge[] {
+function sortDonors<T extends DonorSummary>(donors: T[], sort: SortKey): T[] {
   const sorted = [...donors];
   sorted.sort((a, b) => {
     switch (sort) {
@@ -128,22 +121,101 @@ function sortDonors(donors: DonorPledge[], sort: SortKey): DonorPledge[] {
   return sorted;
 }
 
-interface StatCardProps {
-  label: string;
-  value: string;
-}
+/** Segmento de frequência + busca + priorado + controles + contagem + lista, compartilhado pelos dois papéis. */
+function DonorsList<T extends DonorSummary>({
+  donors,
+  filter,
+  onFilterChange,
+  search,
+  onSearchChange,
+  priorado,
+  onPrioradoChange,
+  prioradoId,
+  controls,
+  extra,
+  visible,
+  renderRow,
+}: {
+  donors: T[];
+  filter: FrequenciaFilter;
+  onFilterChange: (filter: FrequenciaFilter) => void;
+  search: string;
+  onSearchChange: (search: string) => void;
+  priorado: string;
+  onPrioradoChange: (value: string) => void;
+  prioradoId: string;
+  controls?: ReactNode;
+  extra?: ReactNode;
+  visible: T[];
+  renderRow: (donor: T, index: number) => ReactNode;
+}) {
+  const count = (frequencia: "mensal" | "unica") => donors.filter((d) => d.frequencia === frequencia).length;
+  const query = search.trim();
 
-function StatCard({ label, value }: StatCardProps) {
   return (
-    <div className="rounded-lg border border-border bg-surface px-4 py-3">
-      <div className="text-xs font-medium text-muted">{label}</div>
-      <div className="mt-1 text-xl font-semibold text-fg">{value}</div>
-    </div>
-  );
-}
+    <>
+      <div className="flex flex-col gap-3">
+        <SegmentedFilter<FrequenciaFilter>
+          label="Filtrar por frequência"
+          value={filter}
+          onChange={onFilterChange}
+          testIdPrefix="donor-filter"
+          options={[
+            { value: "todos", label: "Todos", count: donors.length },
+            { value: "mensal", label: "Mensais", count: count("mensal") },
+            { value: "unica", label: "Doação única", count: count("unica") },
+          ]}
+        />
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <SearchInput
+            value={search}
+            onChange={onSearchChange}
+            label="Buscar benfeitores"
+            placeholder="Buscar nome, CPF, e-mail ou telefone"
+            className="sm:w-80"
+            data-testid="donor-search-input"
+          />
+          <PrioradoCapelaSelect id={prioradoId} donors={donors} value={priorado} onChange={onPrioradoChange} />
+          {controls}
+        </div>
+        {extra}
+      </div>
 
-interface BenfeitoresClientProps {
-  initialDonors: DonorPledge[];
+      <p className="text-sm text-muted" aria-live="polite" data-testid="donor-results-count">
+        {visible.length} {visible.length === 1 ? "benfeitor" : "benfeitores"}
+        {query ? ` · busca por “${query}”` : ""}
+      </p>
+
+      <div className="space-y-3" data-testid="donor-list">
+        {visible.length > 0 ? (
+          visible.map(renderRow)
+        ) : donors.length === 0 ? (
+          <EmptyState
+            title="Nenhum benfeitor cadastrado"
+            description="Quando alguém se cadastrar pela página pública, o registro aparece aqui."
+          />
+        ) : (
+          <EmptyState
+            title="Nenhum benfeitor com esses filtros"
+            description="Mude o filtro ou limpe a busca para ver outros cadastros."
+            action={
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => {
+                  onFilterChange("todos");
+                  onSearchChange("");
+                  onPrioradoChange(ALL_PRIORADOS);
+                }}
+              >
+                Limpar filtros
+              </Button>
+            }
+          />
+        )}
+      </div>
+    </>
+  );
 }
 
 export interface SecretariatDonorPledge {
@@ -163,254 +235,160 @@ export interface SecretariatDonorPledge {
 }
 
 export function SecretariatDonorsClient({ initialDonors }: { initialDonors: SecretariatDonorPledge[] }) {
+  const [filter, setFilter] = useState<FrequenciaFilter>("todos");
   const [search, setSearch] = useState("");
   const [priorado, setPriorado] = useState(ALL_PRIORADOS);
   const query = normalizeSearch(search);
-  const donors = initialDonors.filter(
+  const visible = initialDonors.filter(
     (donor) =>
-      [donor.nome, donor.email, donor.telefone ?? ""]
-        .join(" ")
-        .toLowerCase()
-        .includes(query) && matchesPriorado(donor, priorado)
+      (filter === "todos" || donor.frequencia === filter) &&
+      matchesSearch(donor, query) &&
+      matchesPriorado(donor, priorado)
   );
 
   return (
-    <>
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="min-w-0 flex-1 basis-60 sm:max-w-xs">
-          <label htmlFor="secretariat-donor-search" className="sr-only">
-            Buscar benfeitores
-          </label>
-          <input
-            id="secretariat-donor-search"
-            type="search"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Buscar por nome, e-mail ou telefone..."
-            className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg placeholder:text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-          />
-        </div>
-        <PrioradoCapelaSelect
-          id="secretariat-donor-priorado"
-          donors={initialDonors}
-          value={priorado}
-          onChange={setPriorado}
-        />
-      </div>
-      <div className="mt-4 space-y-3">
-        {donors.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted">
-            {initialDonors.length === 0
-              ? "Nenhum benfeitor cadastrado ainda."
-              : "Nenhum benfeitor corresponde aos filtros."}
-          </p>
-        ) : (
-          donors.map((donor) => (
-            <article
-              key={donor.id}
-              className="rounded-lg border border-border bg-surface p-4"
-            >
-              <h2 className="font-semibold text-fg">{donor.nome}</h2>
-              <p className="mt-1 text-sm text-muted">
-                {donor.email}
-                {donor.telefone ? ` · ${donor.telefone}` : ""}
-              </p>
-              <p className="mt-2 text-sm text-muted">
-                {donor.frequencia === "mensal" ? "Mensal" : "Única"} ·{" "}
-                {currency.format(donor.valor)}
-                {donor.duracao
-                  ? ` · ${donor.duracao === "um_ano" ? "por um ano" : "indeterminado"}`
-                  : ""}
-              </p>
-              <p className="mt-1 text-sm text-muted">
-                Pagamento: {donor.meio_pagamento ?? "não informado"}
-                {donor.data_pagamento ? ` · dia ${donor.data_pagamento}` : ""}
-                {donor.lembrete_canal
-                  ? ` · lembrete por ${donor.lembrete_canal}`
-                  : ""}
-              </p>
-              {donor.priorado_capela && (
-                <p className="mt-1 text-sm text-muted">
-                  Priorado/Capela: {prioradoCapelaLabel(donor.priorado_capela)}
-                </p>
-              )}
-              {donor.observacoes && (
-                <p className="mt-2 text-sm text-muted">
-                  Observações: {donor.observacoes}
-                </p>
-              )}
-            </article>
-          ))
+    <div className="space-y-6">
+      <PageHeader
+        title="Benfeitores"
+        description="Cadastros recebidos pela página pública. Abra um registro para ver contato e contribuição."
+      />
+      <DonorsList
+        donors={initialDonors}
+        filter={filter}
+        onFilterChange={setFilter}
+        search={search}
+        onSearchChange={setSearch}
+        priorado={priorado}
+        onPrioradoChange={setPriorado}
+        prioradoId="secretariat-donor-priorado"
+        visible={visible}
+        renderRow={(donor) => (
+          <RecordRow
+            key={donor.id}
+            data-testid={`donor-card-${donor.id}`}
+            title={donor.nome}
+            meta={<DonorRowMeta donor={donor} />}
+            status={<DonorFrequencyPill frequencia={donor.frequencia} />}
+          >
+            <div className="grid gap-6 lg:grid-cols-2">
+              <DonorContactSection donor={donor} />
+              <DonorContributionSection donor={donor} />
+            </div>
+          </RecordRow>
         )}
-      </div>
-    </>
+      />
+    </div>
   );
 }
 
-export function BenfeitoresClient({ initialDonors }: BenfeitoresClientProps) {
+interface BenfeitoresClientProps {
+  initialDonors: DonorPledge[];
+  /** Vem de `?boas-vindas=pendentes`. */
+  initialWelcomePendingOnly?: boolean;
+}
+
+export function BenfeitoresClient({ initialDonors, initialWelcomePendingOnly = false }: BenfeitoresClientProps) {
   const [donors, setDonors] = useState<DonorPledge[]>(initialDonors);
   const [filter, setFilter] = useState<FrequenciaFilter>("todos");
-  const [welcomeFilter, setWelcomeFilter] = useState<WelcomeFilter>("todos");
+  const [welcomePendingOnly, setWelcomePendingOnly] = useState(initialWelcomePendingOnly);
   const [priorado, setPriorado] = useState(ALL_PRIORADOS);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortKey>("data_desc");
 
-  const stats = useMemo(() => {
-    const mensais = donors.filter((d) => d.frequencia === "mensal");
-    const unicas = donors.filter((d) => d.frequencia === "unica");
-    return {
-      total: donors.length,
-      mensalTotal: mensais.reduce((sum, d) => sum + d.valor, 0),
-      mensalCount: mensais.length,
-      unicaCount: unicas.length,
-    };
-  }, [donors]);
+  const pendingWelcome = donors.filter((donor) => !donor.welcome_email_sent_at).length;
+  // O checkbox some quando ninguém está pendente; o filtro deixa de valer junto com ele.
+  const pendingOnly = welcomePendingOnly && pendingWelcome > 0;
 
-  const filtered = useMemo(() => {
+  const visible = useMemo(() => {
     const query = normalizeSearch(search);
-    let list = donors.filter((d) => matchesSearch(d, query));
-    if (welcomeFilter === "pendentes") {
-      list = list.filter((donor) => !donor.welcome_email_sent_at);
-    } else if (welcomeFilter === "enviados") {
-      list = list.filter((donor) => Boolean(donor.welcome_email_sent_at));
-    }
-    if (filter !== "todos") {
-      list = list.filter((d) => d.frequencia === filter);
-    }
-    list = list.filter((d) => matchesPriorado(d, priorado));
+    const list = donors.filter(
+      (donor) =>
+        matchesSearch(donor, query) &&
+        (!pendingOnly || !donor.welcome_email_sent_at) &&
+        (filter === "todos" || donor.frequencia === filter) &&
+        matchesPriorado(donor, priorado)
+    );
     return sortDonors(list, sort);
-  }, [donors, filter, priorado, search, sort, welcomeFilter]);
+  }, [donors, filter, priorado, search, sort, pendingOnly]);
 
   const handleDelete = useCallback((id: string) => {
     setDonors((prev) => prev.filter((d) => d.id !== id));
   }, []);
 
   return (
-    <>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard label="Benfeitores" value={String(stats.total)} />
-        <StatCard label="Doações mensais" value={String(stats.mensalCount)} />
-        <StatCard label="Doações únicas" value={String(stats.unicaCount)} />
-        <StatCard
-          label="Total mensal"
-          value={currency.format(stats.mensalTotal)}
-        />
-      </div>
-
-      <div className="mt-6 flex flex-wrap items-end gap-3">
-        <div className="relative min-w-0 flex-1 basis-60 sm:max-w-xs">
-          <label htmlFor="search-donors" className="sr-only">
-            Buscar benfeitores
-          </label>
-          <input
-            id="search-donors"
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nome, CPF, e-mail ou telefone..."
-            className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg placeholder:text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-            data-testid="donor-search-input"
+    <div className="space-y-6">
+      <PageHeader
+        title="Benfeitores"
+        description="Cadastros recebidos pela página pública. Abra um registro para ver contato, contribuição, e-mails e comprovantes."
+      />
+      <DonorsList
+        donors={donors}
+        filter={filter}
+        onFilterChange={setFilter}
+        search={search}
+        onSearchChange={setSearch}
+        priorado={priorado}
+        onPrioradoChange={setPriorado}
+        prioradoId="admin-donor-priorado"
+        visible={visible}
+        controls={
+          <div className="sm:w-48">
+            <label htmlFor="sort-donors" className="sr-only">
+              Ordenar
+            </label>
+            <NativeSelect
+              id="sort-donors"
+              value={sort}
+              onChange={(event) => setSort(event.target.value as SortKey)}
+              className={SELECT_CLASS}
+              data-testid="donor-sort-select"
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <NativeSelectOption key={opt.value} value={opt.value}>
+                  {opt.label}
+                </NativeSelectOption>
+              ))}
+            </NativeSelect>
+          </div>
+        }
+        extra={
+          pendingWelcome > 0 && (
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="donor-welcome-pending-only"
+                checked={welcomePendingOnly}
+                onCheckedChange={(checked) => setWelcomePendingOnly(checked === true)}
+                data-testid="donor-welcome-pending-only"
+              />
+              <label htmlFor="donor-welcome-pending-only" className="cursor-pointer text-sm text-fg">
+                Mostrar só quem ainda não recebeu boas-vindas ({pendingWelcome})
+              </label>
+            </div>
+          )
+        }
+        renderRow={(donor) => (
+          <DonorCard
+            key={donor.id}
+            donor={donor}
+            onDelete={handleDelete}
+            onDueDayUpdated={(id, day, nextDueDate) =>
+              setDonors((current) =>
+                current.map((item) => (item.id === id ? { ...item, dia_vencimento: day, next_due_date: nextDueDate } : item))
+              )
+            }
+            onInstructionsUpdated={(id, latest) =>
+              setDonors((current) => current.map((item) => (item.id === id ? { ...item, latest_instructions: latest } : item)))
+            }
+            onWelcomeSent={(id, sentAt) =>
+              setDonors((current) =>
+                current.map((item) =>
+                  item.id === id ? { ...item, welcome_email_sent_at: sentAt, welcome_email_in_progress: false } : item
+                )
+              )
+            }
           />
-        </div>
-        <PrioradoCapelaSelect
-          id="admin-donor-priorado"
-          donors={donors}
-          value={priorado}
-          onChange={setPriorado}
-        />
-        <div className="flex items-center gap-2 sm:ml-auto">
-          <label htmlFor="sort-donors" className="text-sm text-muted">
-            Ordenar
-          </label>
-          <select
-            id="sort-donors"
-            value={sort}
-            onChange={(e) => setSort(e.target.value as SortKey)}
-            className="rounded-md border border-border bg-surface px-2 py-1.5 text-sm text-fg focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-            data-testid="donor-sort-select"
-          >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="mt-4 flex flex-wrap gap-2" data-testid="donor-filters">
-        {FILTER_OPTIONS.map((opt) => {
-          const count =
-            opt.value === "todos"
-              ? donors.length
-              : donors.filter((d) => d.frequencia === opt.value).length;
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => setFilter(opt.value)}
-              className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
-                filter === opt.value
-                  ? "bg-accent text-white"
-                  : "border border-border text-muted hover:bg-bg"
-              }`}
-              data-testid={`donor-filter-${opt.value}`}
-              aria-pressed={filter === opt.value}
-            >
-              {opt.label} ({count})
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="mt-3 flex flex-wrap gap-2" data-testid="donor-welcome-filters">
-        {WELCOME_FILTER_OPTIONS.map((option) => {
-          const count = option.value === "todos"
-            ? donors.length
-            : donors.filter((donor) => option.value === "pendentes"
-              ? !donor.welcome_email_sent_at
-              : Boolean(donor.welcome_email_sent_at)).length;
-          return (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => setWelcomeFilter(option.value)}
-              className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
-                welcomeFilter === option.value
-                  ? "bg-accent text-white"
-                  : "border border-border text-muted hover:bg-bg"
-              }`}
-              data-testid={`donor-welcome-filter-${option.value}`}
-              aria-pressed={welcomeFilter === option.value}
-            >
-              {option.label} ({count})
-            </button>
-          );
-        })}
-      </div>
-
-      <p className="mt-3 text-sm text-muted" data-testid="donor-results-count" aria-live="polite">
-        {filtered.length}{" "}
-        {filtered.length === 1 ? "benfeitor" : "benfeitores"}
-        {search.trim() ? ` para "${search.trim()}"` : ""}
-      </p>
-
-      <div className="mt-3 space-y-3" data-testid="donor-list">
-        {filtered.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted">
-            {donors.length === 0
-              ? "Nenhum benfeitor cadastrado ainda."
-              : "Nenhum benfeitor corresponde aos filtros."}
-          </p>
-        ) : (
-          filtered.map((donor) => (
-            <DonorCard key={donor.id} donor={donor} onDelete={handleDelete}
-              onDueDayUpdated={(id, day, nextDueDate) => setDonors((current) => current.map((item) => item.id === id ? { ...item, dia_vencimento: day, next_due_date: nextDueDate } : item))}
-              onInstructionsUpdated={(id, latest) => setDonors((current) => current.map((item) => item.id === id ? { ...item, latest_instructions: latest } : item))}
-              onWelcomeSent={(id, sentAt) => setDonors((current) => current.map((item) => item.id === id ? { ...item, welcome_email_sent_at: sentAt, welcome_email_in_progress: false } : item))} />
-          ))
         )}
-      </div>
-    </>
+      />
+    </div>
   );
 }

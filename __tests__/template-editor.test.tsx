@@ -29,17 +29,11 @@ describe("TemplateEditor", () => {
   afterEach(cleanup);
   beforeEach(() => vi.clearAllMocks());
 
-  it("renders two tabs (Aprovação/Rejeição)", () => {
-    render(<TemplateEditor initialTemplates={[]} />);
-    expect(screen.getByTestId("tab-aprovacao")).toBeDefined();
-    expect(screen.getByTestId("tab-rejeicao")).toBeDefined();
-    expect(screen.getByTestId("tab-aprovacao").textContent).toBe("Aprovação");
-    expect(screen.getByTestId("tab-rejeicao").textContent).toBe("Rejeição");
-  });
-
+  // As abas Aprovação/Rejeição vivem em ModelosTabs (modelos-tabs.test.tsx);
+  // o editor recebe um único `tipo`.
   it("displays all three sections (cabeçalho, corpo, rodapé) per template", () => {
     const templates = [makeTemplate()];
-    render(<TemplateEditor initialTemplates={templates} />);
+    render(<TemplateEditor initialTemplates={templates} tipo="aprovacao" />);
 
     expect(screen.getByTestId("field-cabecalho")).toBeDefined();
     expect(screen.getByTestId("field-corpo")).toBeDefined();
@@ -55,28 +49,33 @@ describe("TemplateEditor", () => {
         rodape: "Footer A",
       }),
     ];
-    render(<TemplateEditor initialTemplates={templates} />);
+    render(<TemplateEditor initialTemplates={templates} tipo="aprovacao" />);
 
     expect((screen.getByTestId("field-cabecalho") as HTMLTextAreaElement).value).toBe("Header A");
     expect((screen.getByTestId("field-corpo") as HTMLTextAreaElement).value).toBe("Body A");
     expect((screen.getByTestId("field-rodape") as HTMLTextAreaElement).value).toBe("Footer A");
   });
 
-  it("switches tabs and shows different template data", () => {
+  it("edits only the template of the requested tipo", async () => {
+    mockSaveTemplate.mockResolvedValueOnce({ success: true });
     const templates = [
       makeTemplate({ tipo: "aprovacao", cabecalho: "Aprovação Header" }),
       makeTemplate({ id: "t-2", tipo: "rejeicao", cabecalho: "Rejeição Header" }),
     ];
-    render(<TemplateEditor initialTemplates={templates} />);
+    render(<TemplateEditor initialTemplates={templates} tipo="rejeicao" />);
 
-    expect((screen.getByTestId("field-cabecalho") as HTMLTextAreaElement).value).toBe("Aprovação Header");
-
-    fireEvent.click(screen.getByTestId("tab-rejeicao"));
     expect((screen.getByTestId("field-cabecalho") as HTMLTextAreaElement).value).toBe("Rejeição Header");
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId("save-button"));
+    });
+    expect(mockSaveTemplate).toHaveBeenCalledWith(
+      expect.objectContaining({ tipo: "rejeicao", cabecalho: "Rejeição Header" })
+    );
   });
 
   it("displays all 8 available tokens", () => {
-    render(<TemplateEditor initialTemplates={[]} />);
+    render(<TemplateEditor initialTemplates={[]} tipo="aprovacao" />);
 
     const tokens = screen.getAllByTestId("token-item");
     expect(tokens).toHaveLength(8);
@@ -96,7 +95,7 @@ describe("TemplateEditor", () => {
     mockSaveTemplate.mockResolvedValueOnce({ success: true });
     const templates = [makeTemplate()];
 
-    render(<TemplateEditor initialTemplates={templates} />);
+    render(<TemplateEditor initialTemplates={templates} tipo="aprovacao" />);
 
     await act(async () => {
       fireEvent.click(screen.getByTestId("save-button"));
@@ -119,7 +118,7 @@ describe("TemplateEditor", () => {
       error: "Erro ao salvar modelo.",
     });
 
-    render(<TemplateEditor initialTemplates={[makeTemplate()]} />);
+    render(<TemplateEditor initialTemplates={[makeTemplate()]} tipo="aprovacao" />);
 
     await act(async () => {
       fireEvent.click(screen.getByTestId("save-button"));
@@ -134,7 +133,7 @@ describe("TemplateEditor", () => {
     mockSaveTemplate.mockResolvedValueOnce({ success: true });
     const templates = [makeTemplate({ cabecalho: "Olá {nome_pai}" })];
 
-    render(<TemplateEditor initialTemplates={templates} />);
+    render(<TemplateEditor initialTemplates={templates} tipo="aprovacao" />);
 
     fireEvent.change(screen.getByTestId("field-cabecalho"), {
       target: { value: "Prezado {nome_pai}" },

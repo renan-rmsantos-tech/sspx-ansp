@@ -52,9 +52,9 @@ describe.skipIf(!databaseUrl)("bank conference with PostgreSQL", () => {
   });
 
   it("denies Secretaria reads and writes, then reconciles exact balances as admin", async () => {
-    const { GET } = await import("@/app/admin/conferencia-pagamentos/export/route");
+    const { GET } = await import("@/app/admin/pagamentos/export/route");
     const { NextRequest } = await import("next/server");
-    const exportRequest = (month: string) => new NextRequest(`http://localhost/admin/conferencia-pagamentos/export?month=${month}`);
+    const exportRequest = (month: string) => new NextRequest(`http://localhost/admin/pagamentos/export?month=${month}`);
     const { confirmDonorPayment, getDonorPaymentConference, resetDonorPayment } = await import("@/app/admin/_actions/donor-payment-conference-actions");
     await sql!`INSERT INTO admin_users (id,email,password_hash,role) VALUES
       (${adminId},${email(adminId)},'test','admin'),

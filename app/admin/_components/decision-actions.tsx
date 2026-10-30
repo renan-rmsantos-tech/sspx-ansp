@@ -1,23 +1,37 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import {
-  approveApplication,
-  rejectApplication,
-} from "../_actions/admin-actions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { DataGrid, DataItem } from "./data-grid";
+import { Field } from "./field";
+import { Notice } from "./notice";
+import type { DecisionHandler } from "./application-card";
+import { approveApplication, rejectApplication } from "../_actions/admin-actions";
 
 interface DecisionActionsProps {
   applicationId: string;
   requestedDiscount: number;
-  onDecision: (id: string, status: string, desconto_concedido?: number | null) => void;
-  embedded?: boolean;
+  /** Soma das rendas declaradas (quando o detalhe já carregou). */
+  familyIncome?: number;
+  /** Soma das mensalidades dos alunos. */
+  monthlyTuition?: number;
+  onDecision: DecisionHandler;
+}
+
+const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
+
+function formatCurrency(value?: number): string {
+  return value == null ? "—" : currency.format(value);
 }
 
 export function DecisionActions({
   applicationId,
   requestedDiscount,
+  familyIncome,
+  monthlyTuition,
   onDecision,
-  embedded = false,
 }: DecisionActionsProps) {
   const [mode, setMode] = useState<"idle" | "approve" | "reject">("idle");
   const [discount, setDiscount] = useState(String(requestedDiscount));
@@ -25,13 +39,10 @@ export function DecisionActions({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const discountId = `discount-${applicationId}`;
-  const reasonId = `reason-${applicationId}`;
-  const outerClass = embedded ? "" : "mt-4";
-
-  const handleApprove = useCallback(async () => {
+  const submit = useCallback(async () => {
+    const approving = mode === "approve";
     const discountNum = Number(discount);
-    if (isNaN(discountNum) || discountNum < 0 || discountNum > 100) {
+    if (approving && (discount.trim() === "" || isNaN(discountNum) || discountNum < 0 || discountNum > 100)) {
       setError("Desconto deve estar entre 0 e 100.");
       return;
     }
@@ -39,154 +50,131 @@ export function DecisionActions({
     setSubmitting(true);
     setError(null);
 
-    // A lista só é atualizada após o servidor confirmar: o update otimista
-    // anterior deixava desconto e data de decisão fantasmas quando a action
-    // falhava.
+    // A lista só é atualizada após o servidor confirmar: um update otimista
+    // deixaria desconto e data de decisão fantasmas quando a action falha.
     try {
-      const result = await approveApplication(
-        applicationId,
-        discountNum,
-        reason || undefined
-      );
+      const result = approving
+        ? await approveApplication(applicationId, discountNum, reason || undefined)
+        : await rejectApplication(applicationId, reason || undefined);
       if (result.success) {
-        onDecision(applicationId, "aprovada", discountNum);
+        onDecision(applicationId, approving ? "aprovada" : "rejeitada", approving ? discountNum : null, reason || null);
       } else {
-        setError(result.error ?? "Erro ao aprovar.");
+        setError(result.error ?? (approving ? "Erro ao aprovar." : "Erro ao rejeitar."));
       }
     } catch {
       setError("Erro de conexão. Tente novamente.");
     } finally {
       setSubmitting(false);
     }
-  }, [applicationId, discount, reason, onDecision]);
-
-  const handleReject = useCallback(async () => {
-    setSubmitting(true);
-    setError(null);
-
-    try {
-      const result = await rejectApplication(applicationId, reason || undefined);
-      if (result.success) {
-        onDecision(applicationId, "rejeitada");
-      } else {
-        setError(result.error ?? "Erro ao rejeitar.");
-      }
-    } catch {
-      setError("Erro de conexão. Tente novamente.");
-    } finally {
-      setSubmitting(false);
-    }
-  }, [applicationId, reason, onDecision]);
+  }, [mode, applicationId, discount, reason, onDecision]);
 
   if (mode === "idle") {
     return (
-      <div className={`${outerClass} flex flex-wrap gap-2`} data-testid="decision-actions">
-        <p className="mb-1 w-full text-sm text-muted">
-          Analise os documentos e dados financeiros antes de decidir.
-        </p>
-        <button
-          type="button"
-          onClick={() => setMode("approve")}
-          className="rounded-md bg-success px-4 py-2 text-sm font-medium text-white hover:bg-success/90"
-          data-testid="approve-trigger"
-        >
-          Aprovar
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode("reject")}
-          className="rounded-md bg-danger px-4 py-2 text-sm font-medium text-white hover:bg-danger/90"
-          data-testid="reject-trigger"
-        >
-          Rejeitar
-        </button>
+      <div className="space-y-4" data-testid="decision-actions">
+        <DataGrid cols={3}>
+          <DataItem label="Desconto solicitado" value={`${requestedDiscount}%`} />
+          <DataItem label="Renda familiar" value={formatCurrency(familyIncome)} />
+          <DataItem label="Mensalidades" value={formatCurrency(monthlyTuition)} />
+        </DataGrid>
+        <Notice>
+          Confira os documentos e a renda antes de decidir. A família recebe a carta com o texto configurado em
+          Modelos de documentos.
+        </Notice>
+        <div className="flex flex-wrap gap-2">
+          <Button size="lg" onClick={() => setMode("approve")} data-testid="approve-trigger">
+            Aprovar solicitação
+          </Button>
+          <Button size="lg" variant="destructive" onClick={() => setMode("reject")} data-testid="reject-trigger">
+            Rejeitar
+          </Button>
+        </div>
       </div>
     );
   }
 
+  const approving = mode === "approve";
+
   return (
-    <div
-      className={`${outerClass} rounded-lg border border-border bg-cream p-4`}
-      data-testid={mode === "approve" ? "approve-form" : "reject-form"}
+    <form
+      className="max-w-xl space-y-4 rounded-lg border border-border bg-cream/50 p-5"
+      data-testid={approving ? "approve-form" : "reject-form"}
+      noValidate
+      onSubmit={(event) => {
+        event.preventDefault();
+        void submit();
+      }}
     >
-      <h4 className="text-sm font-semibold text-fg">
-        {mode === "approve" ? "Aprovar Solicitação" : "Rejeitar Solicitação"}
-      </h4>
-
-      {mode === "reject" && (
-        <p className="mt-2 text-sm text-danger">
-          Esta ação é definitiva. A família será notificada da rejeição.
+      <div>
+        <h3 className="font-heading text-lg font-semibold text-fg">
+          {approving ? "Aprovar solicitação" : "Rejeitar solicitação"}
+        </h3>
+        <p className="mt-1 text-sm text-muted">
+          {approving
+            ? "Informe o percentual concedido. Ele aparece na carta e no contrato."
+            : "Esta ação é definitiva e a família será informada."}
         </p>
-      )}
-
-      {mode === "approve" && (
-        <div className="mt-3">
-          <label htmlFor={discountId} className="block text-sm text-muted">
-            Desconto (%)
-          </label>
-          <input
-            id={discountId}
-            type="number"
-            min="0"
-            max="100"
-            value={discount}
-            onChange={(e) => setDiscount(e.target.value)}
-            className="mt-1 w-24 rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-fg"
-            data-testid="discount-input"
-          />
-        </div>
-      )}
-
-      <div className="mt-3">
-        <label htmlFor={reasonId} className="block text-sm text-muted">
-          Motivo (opcional)
-        </label>
-        <textarea
-          id={reasonId}
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          rows={2}
-          className="mt-1 w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-fg"
-          data-testid="reason-input"
-        />
       </div>
 
-      {error && (
-        <p className="mt-2 text-sm text-danger" data-testid="decision-error">
-          {error}
-        </p>
+      {approving && (
+        <Field label="Desconto concedido (%)" hint={`Solicitado: ${requestedDiscount}%`} className="max-w-52">
+          {(a11y) => (
+            <Input
+              {...a11y}
+              type="number"
+              min={0}
+              max={100}
+              value={discount}
+              onChange={(event) => setDiscount(event.target.value)}
+              className="h-10 bg-surface"
+              data-testid="discount-input"
+            />
+          )}
+        </Field>
       )}
 
-      <div className="mt-3 flex gap-2">
-        <button
-          type="button"
-          onClick={mode === "approve" ? handleApprove : handleReject}
+      <Field label="Motivo (opcional)" hint="Aparece na carta de decisão quando preenchido.">
+        {(a11y) => (
+          <Textarea
+            {...a11y}
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+            rows={3}
+            className="bg-surface"
+            data-testid="reason-input"
+          />
+        )}
+      </Field>
+
+      {error && (
+        <Notice tone="danger" data-testid="decision-error">
+          {error}
+        </Notice>
+      )}
+
+      <div className="flex flex-wrap gap-2">
+        <Button
+          type="submit"
+          size="lg"
+          variant={approving ? "default" : "destructive"}
           disabled={submitting}
-          className={`rounded-md px-4 py-2 text-sm font-medium text-white disabled:opacity-50 ${
-            mode === "approve"
-              ? "bg-success hover:bg-success/90"
-              : "bg-danger hover:bg-danger/90"
-          }`}
           data-testid="confirm-decision"
         >
-          {submitting
-            ? "Processando..."
-            : mode === "approve"
-              ? "Confirmar aprovação"
-              : "Confirmar rejeição"}
-        </button>
-        <button
+          {submitting ? "Registrando…" : approving ? "Confirmar aprovação" : "Confirmar rejeição"}
+        </Button>
+        <Button
           type="button"
+          size="lg"
+          variant="ghost"
+          disabled={submitting}
           onClick={() => {
             setMode("idle");
             setError(null);
           }}
-          className="rounded-md border border-border px-4 py-2 text-sm text-muted hover:bg-bg"
           data-testid="cancel-decision"
         >
-          Cancelar
-        </button>
+          Voltar
+        </Button>
       </div>
-    </div>
+    </form>
   );
 }

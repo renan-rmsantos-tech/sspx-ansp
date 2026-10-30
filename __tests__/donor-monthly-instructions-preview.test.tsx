@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
-import { DonorMonthlyInstructionsClient } from "@/app/admin/instrucoes-benfeitores/client";
+import { DonorMonthlyInstructionsClient } from "@/app/admin/emails/_clients/monthly-instructions";
 import { DEFAULT_DOCUMENT_HEADER } from "@/lib/documents/document-header";
 import {
   DONOR_MONTHLY_INSTRUCTIONS_BODY,

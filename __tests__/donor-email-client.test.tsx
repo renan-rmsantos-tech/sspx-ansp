@@ -13,7 +13,7 @@ vi.mock("@/app/admin/_actions/donor-email-actions", () => ({
   sendDonorTestEmail,
 }));
 
-import { DonorEmailClient } from "@/app/admin/email-benfeitores/client";
+import { DonorEmailClient } from "@/app/admin/emails/_clients/welcome";
 
 afterEach(() => {
   cleanup();

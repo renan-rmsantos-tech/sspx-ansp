@@ -48,11 +48,9 @@ describe("login", () => {
       ativo: true,
     });
 
-    // Precisa ser a página final, não /admin: aquela rota redireciona de novo,
-    // e um redirect encadeado dentro de uma Server Action devolve HTML onde o
-    // roteador do Next espera RSC, quebrando a navegação pós-login.
+    // UT-101: o destino é a página Início, que renderiza conteúdo próprio.
     await expect(login("admin@test.com", "password123")).rejects.toThrow(
-      "REDIRECT:/admin/solicitacoes"
+      "REDIRECT:/admin"
     );
 
     expect(mockSession.userId).toBe("admin-1");
@@ -110,7 +108,7 @@ describe("login with AUTH_BYPASS", () => {
 
   it("accepts the fixed credentials without querying the database", async () => {
     await expect(login("admin@admin.com", "admin123")).rejects.toThrow(
-      "REDIRECT:/admin/solicitacoes"
+      "REDIRECT:/admin"
     );
 
     expect(mockSession.save).toHaveBeenCalled();

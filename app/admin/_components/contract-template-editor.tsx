@@ -1,6 +1,10 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
+import { ArrowDown, ArrowUp, Plus, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { saveContractTemplate, type ContractTemplate } from "../_actions/admin-actions";
 import {
   AVAILABLE_CONTRACT_TOKENS,
@@ -8,6 +12,9 @@ import {
   SAMPLE_CONTRACT_DATA,
   type ContractClause,
 } from "@/lib/templates/contract-tokens";
+import { Field } from "./field";
+import { Notice } from "./notice";
+import { TokenReference } from "./token-reference";
 
 interface ContractTemplateEditorProps {
   initialTemplate: ContractTemplate | null;
@@ -19,6 +26,8 @@ const EMPTY = {
   clausulas: [] as ContractClause[],
   rodape: "",
 };
+
+const FIELD_CLASS = "bg-surface font-mono text-sm";
 
 export function ContractTemplateEditor({
   initialTemplate,
@@ -109,192 +118,143 @@ export function ContractTemplateEditor({
     };
   }, [titulo, cabecalho, clausulas, rodape]);
 
-  const fieldClass =
-    "w-full rounded-md border border-border bg-bg px-3 py-2 font-mono text-sm text-fg placeholder:text-muted/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent";
-  const labelClass = "mb-1 block text-xs font-medium text-muted";
-
   return (
-    <div data-testid="contract-template-editor">
-      {/* Token reference */}
-      <div
-        className="mb-4 rounded-lg border border-border bg-cream p-4"
-        data-testid="contract-token-reference"
-      >
-        <h3 className="mb-2 text-sm font-medium text-muted">
-          Tokens disponíveis
-        </h3>
-        <p className="mb-3 text-xs text-muted">
-          Serão substituídos pelos dados da família ao gerar o contrato em PDF.
-        </p>
-        <ul className="grid gap-2 sm:grid-cols-2">
-          {AVAILABLE_CONTRACT_TOKENS.map((t) => (
-            <li
-              key={t.token}
-              className="flex items-start gap-2 rounded-md bg-bg px-2 py-1.5 text-xs"
-              data-testid="contract-token-item"
-            >
-              <code className="shrink-0 font-mono text-fg">{t.token}</code>
-              <span className="text-muted">{t.desc}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Editor */}
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="ct-titulo" className={labelClass}>
-              Título
-            </label>
-            <input
-              id="ct-titulo"
+    <div data-testid="contract-template-editor" className="grid gap-6 lg:grid-cols-[1fr_minmax(0,18rem)]">
+      <div className="space-y-5">
+        <Field label="Título">
+          {(a11y) => (
+            <Input
+              {...a11y}
               value={titulo}
               onChange={(e) => {
                 setTitulo(e.target.value);
                 clearMessage();
               }}
-              className={fieldClass}
+              className={`h-10 ${FIELD_CLASS}`}
               data-testid="field-titulo"
             />
-          </div>
+          )}
+        </Field>
 
-          <div>
-            <label htmlFor="ct-cabecalho" className={labelClass}>
-              Cabeçalho (partes)
-            </label>
-            <textarea
-              id="ct-cabecalho"
+        <Field label="Cabeçalho (partes)">
+          {(a11y) => (
+            <Textarea
+              {...a11y}
               value={cabecalho}
               onChange={(e) => {
                 setCabecalho(e.target.value);
                 clearMessage();
               }}
               rows={6}
-              className={fieldClass}
+              className={FIELD_CLASS}
               data-testid="field-cabecalho"
             />
-          </div>
+          )}
+        </Field>
 
-          {/* Clauses */}
-          <div>
-            <div className="mb-1 flex items-center justify-between">
-              <span className={labelClass + " mb-0"}>Cláusulas</span>
-              <button
-                type="button"
-                onClick={addClause}
-                className="rounded-md border border-border px-2 py-1 text-xs font-medium text-accent hover:bg-bg"
-                data-testid="add-clause"
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm font-medium text-fg">Cláusulas</span>
+            <Button variant="outline" size="sm" onClick={addClause} data-testid="add-clause">
+              <Plus aria-hidden="true" />
+              Adicionar cláusula
+            </Button>
+          </div>
+          <div className="space-y-3" data-testid="clauses-list">
+            {clausulas.length === 0 && (
+              <p className="text-sm text-muted">Nenhuma cláusula adicionada.</p>
+            )}
+            {clausulas.map((clause, i) => (
+              <div
+                key={i}
+                className="space-y-2 rounded-lg border border-border bg-surface p-3"
+                data-testid={`clause-${i}`}
               >
-                + Adicionar cláusula
-              </button>
-            </div>
-            <div className="space-y-3" data-testid="clauses-list">
-              {clausulas.length === 0 && (
-                <p className="text-sm text-muted">Nenhuma cláusula adicionada.</p>
-              )}
-              {clausulas.map((clause, i) => (
-                <div
-                  key={i}
-                  className="rounded-md border border-border bg-surface p-3"
-                  data-testid={`clause-${i}`}
-                >
-                  <div className="mb-2 flex items-center gap-1">
-                    <input
-                      value={clause.titulo}
-                      onChange={(e) => updateClause(i, "titulo", e.target.value)}
-                      placeholder="Título da cláusula"
-                      className={fieldClass + " flex-1"}
-                      data-testid={`clause-titulo-${i}`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => moveClause(i, -1)}
-                      disabled={i === 0}
-                      className="rounded border border-border px-2 py-1 text-xs text-muted hover:bg-bg disabled:opacity-30"
-                      aria-label="Mover para cima"
-                    >
-                      ↑
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => moveClause(i, 1)}
-                      disabled={i === clausulas.length - 1}
-                      className="rounded border border-border px-2 py-1 text-xs text-muted hover:bg-bg disabled:opacity-30"
-                      aria-label="Mover para baixo"
-                    >
-                      ↓
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeClause(i)}
-                      className="rounded border border-border px-2 py-1 text-xs text-danger hover:bg-bg"
-                      data-testid={`remove-clause-${i}`}
-                      aria-label="Remover cláusula"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                  <textarea
-                    value={clause.corpo}
-                    onChange={(e) => updateClause(i, "corpo", e.target.value)}
-                    placeholder="Texto da cláusula"
-                    rows={4}
-                    className={fieldClass}
-                    data-testid={`clause-corpo-${i}`}
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    value={clause.titulo}
+                    onChange={(e) => updateClause(i, "titulo", e.target.value)}
+                    placeholder="Título da cláusula"
+                    aria-label={`Título da cláusula ${i + 1}`}
+                    className={`h-9 flex-1 ${FIELD_CLASS}`}
+                    data-testid={`clause-titulo-${i}`}
                   />
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    onClick={() => moveClause(i, -1)}
+                    disabled={i === 0}
+                    aria-label="Mover para cima"
+                  >
+                    <ArrowUp aria-hidden="true" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon-sm"
+                    onClick={() => moveClause(i, 1)}
+                    disabled={i === clausulas.length - 1}
+                    aria-label="Mover para baixo"
+                  >
+                    <ArrowDown aria-hidden="true" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-danger hover:text-danger"
+                    onClick={() => removeClause(i)}
+                    data-testid={`remove-clause-${i}`}
+                    aria-label="Remover cláusula"
+                  >
+                    <X aria-hidden="true" />
+                  </Button>
                 </div>
-              ))}
-            </div>
+                <Textarea
+                  value={clause.corpo}
+                  onChange={(e) => updateClause(i, "corpo", e.target.value)}
+                  placeholder="Texto da cláusula"
+                  aria-label={`Texto da cláusula ${i + 1}`}
+                  rows={4}
+                  className={FIELD_CLASS}
+                  data-testid={`clause-corpo-${i}`}
+                />
+              </div>
+            ))}
           </div>
+        </div>
 
-          <div>
-            <label htmlFor="ct-rodape" className={labelClass}>
-              Rodapé (fecho e assinaturas)
-            </label>
-            <textarea
-              id="ct-rodape"
+        <Field label="Rodapé (fecho e assinaturas)">
+          {(a11y) => (
+            <Textarea
+              {...a11y}
               value={rodape}
               onChange={(e) => {
                 setRodape(e.target.value);
                 clearMessage();
               }}
               rows={6}
-              className={fieldClass}
+              className={FIELD_CLASS}
               data-testid="field-rodape"
             />
-          </div>
-
-          {message && (
-            <p
-              className={`text-sm ${
-                message.type === "success" ? "text-success" : "text-danger"
-              }`}
-              data-testid="contract-save-message"
-            >
-              {message.text}
-            </p>
           )}
+        </Field>
 
-          <div className="flex justify-end">
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={saving}
-              className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50"
-              data-testid="save-contract-button"
-            >
-              {saving ? "Salvando..." : "Salvar Modelo"}
-            </button>
-          </div>
+        {message && (
+          <Notice tone={message.type === "success" ? "success" : "danger"} data-testid="contract-save-message">
+            {message.text}
+          </Notice>
+        )}
+
+        <div className="flex flex-wrap gap-2">
+          <Button size="lg" onClick={() => void handleSave()} disabled={saving} data-testid="save-contract-button">
+            {saving ? "Salvando…" : "Salvar modelo"}
+          </Button>
         </div>
 
-        {/* Preview */}
         <div
-          className="rounded-lg border border-border bg-cream p-6"
+          className="rounded-lg border border-border bg-cream/60 p-6"
           data-testid="contract-preview"
         >
-          <h3 className="mb-3 text-sm font-semibold text-fg">
+          <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-muted">
             Pré-visualização
           </h3>
           <div className="text-sm leading-relaxed text-fg">
@@ -312,6 +272,13 @@ export function ContractTemplateEditor({
           </div>
         </div>
       </div>
+
+      <TokenReference
+        tokens={AVAILABLE_CONTRACT_TOKENS}
+        description="Clique para copiar e cole no texto. Cada campo é substituído pelos dados da família ao gerar o contrato em PDF."
+        data-testid="contract-token-reference"
+        itemTestId="contract-token-item"
+      />
     </div>
   );
 }

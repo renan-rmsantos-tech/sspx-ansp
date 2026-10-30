@@ -1,14 +1,30 @@
-import Link from "next/link";
+import { Suspense } from "react";
 import { requireAdmin } from "@/lib/auth/authorization";
+import { saoPauloDate } from "@/lib/donor-recurrence";
+import { getDonorFinancialReport } from "../_actions/donor-financial-report-actions";
+import { getDonorReports } from "../_actions/donor-report-actions";
+import { PageHeader } from "../_components/page-header";
+import { RelatoriosTabs } from "./relatorios-tabs";
+
 export const dynamic = "force-dynamic";
+
 export default async function ReportsPage() {
   await requireAdmin();
-  return <div className="space-y-5">
-    <h1 className="font-heading text-[22px] font-semibold">Relatórios</h1>
-    <p className="text-sm text-muted">Escolha o relatório que deseja consultar.</p>
-    <div className="grid gap-4 sm:grid-cols-2">
-      <Link href="/admin/relatorios/cadastros" className="rounded-lg border border-border bg-surface p-5 hover:border-accent focus-visible:outline-2 focus-visible:outline-accent"><h2 className="font-heading text-lg font-semibold">Cadastros de benfeitores</h2><p className="mt-1 text-sm text-muted">Distribuição por residência e priorado ou capela.</p></Link>
-      <Link href="/admin/relatorios/financeiro" className="rounded-lg border border-border bg-surface p-5 hover:border-accent focus-visible:outline-2 focus-visible:outline-accent"><h2 className="font-heading text-lg font-semibold">Relatório financeiro</h2><p className="mt-1 text-sm text-muted">Valores previstos, recebidos e em aberto.</p></Link>
+  const month = saoPauloDate(new Date()).slice(0, 7);
+  const [reports, financial] = await Promise.all([
+    getDonorReports(),
+    getDonorFinancialReport({ from: month, to: month }),
+  ]);
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Relatórios"
+        description="Consultas sobre os cadastros de benfeitores e sobre o movimento financeiro conferido no extrato."
+      />
+      <Suspense fallback={null}>
+        <RelatoriosTabs reports={reports} financial={financial} />
+      </Suspense>
     </div>
-  </div>;
+  );
 }
