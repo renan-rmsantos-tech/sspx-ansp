@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq, gte, lte } from "drizzle-orm";
 import { requireStaff } from "@/lib/auth/authorization";
 import { db } from "@/lib/db";
 import { donorPaymentLedger, schoolYears } from "@/lib/db/schema";
@@ -41,7 +41,7 @@ export async function getAdminHomeSummary(): Promise<{ data: AdminHomeSummary | 
     const [schoolYear, applications, donors, ledger] = await Promise.all([
       db.query.schoolYears.findFirst({
         columns: { nome: true },
-        where: eq(schoolYears.ativo, true),
+        where: and(lte(schoolYears.data_inicio, saoPauloDate(new Date())), gte(schoolYears.data_fim, saoPauloDate(new Date()))),
       }),
       db.query.applications.findMany({ columns: { status: true } }),
       db.query.donorPledges.findMany({

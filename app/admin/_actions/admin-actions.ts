@@ -601,6 +601,12 @@ export async function createSchoolYear(input: {
   await requireAuth();
 
   try {
+    const existingYears = await db.query.schoolYears.findMany({
+      columns: { data_inicio: true, data_fim: true },
+    });
+    if (existingYears.some((year) => year.data_inicio <= input.data_fim && year.data_fim >= input.data_inicio)) {
+      return { success: false, error: "O período se sobrepõe ao de outro ano letivo." };
+    }
     // Devolve a linha criada: o cliente precisa do ID real para ativar ou
     // excluir o ano letivo sem recarregar a página.
     const [created] = await db

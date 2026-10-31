@@ -3,7 +3,7 @@
 import { Fragment, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { toggleSchoolYear, deleteSchoolYear } from "../_actions/admin-actions";
+import { deleteSchoolYear } from "../_actions/admin-actions";
 import { EmptyState } from "./empty-state";
 import { InlineConfirm } from "./inline-confirm";
 import { StatusPill } from "./status-pill";
@@ -21,7 +21,7 @@ interface SchoolYearListProps {
   onYearsChange: (years: SchoolYear[]) => void;
 }
 
-type ConfirmAction = { type: "toggle" | "delete"; id: string };
+type ConfirmAction = { type: "delete"; id: string };
 
 function formatDate(iso: string): string {
   return new Date(iso + "T12:00:00").toLocaleDateString("pt-BR");
@@ -33,39 +33,12 @@ export function SchoolYearList({ years, onYearsChange }: SchoolYearListProps) {
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleToggle = useCallback(
-    async (id: string, currentlyActive: boolean) => {
-      if (currentlyActive) {
-        setConfirmAction({ type: "toggle", id });
-        return;
-      }
-      setLoading(true);
-      const result = await toggleSchoolYear(id);
-      if (result.success) {
-        onYearsChange(years.map((y) => ({ ...y, ativo: y.id === id })));
-      }
-      setLoading(false);
-    },
-    [years, onYearsChange]
-  );
-
   const confirmAndExecute = useCallback(async () => {
     if (!confirmAction) return;
     setLoading(true);
 
-    if (confirmAction.type === "toggle") {
-      const result = await toggleSchoolYear(confirmAction.id);
-      if (result.success) {
-        onYearsChange(
-          years.map((y) => ({ ...y, ativo: y.id === confirmAction.id ? false : y.ativo }))
-        );
-      }
-    } else {
-      const result = await deleteSchoolYear(confirmAction.id);
-      if (result.success) {
-        onYearsChange(years.filter((y) => y.id !== confirmAction.id));
-      }
-    }
+    const result = await deleteSchoolYear(confirmAction.id);
+    if (result.success) onYearsChange(years.filter((y) => y.id !== confirmAction.id));
 
     setConfirmAction(null);
     setLoading(false);
@@ -96,6 +69,8 @@ export function SchoolYearList({ years, onYearsChange }: SchoolYearListProps) {
           </thead>
           <tbody>
             {years.map((year) => {
+              const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+              const status = today < year.data_inicio ? "Não iniciado" : today > year.data_fim ? "Encerrado" : "Ativo";
               const confirming = confirmAction?.id === year.id ? confirmAction : null;
               return (
                 <Fragment key={year.id}>
@@ -108,23 +83,13 @@ export function SchoolYearList({ years, onYearsChange }: SchoolYearListProps) {
                       {formatDate(year.data_inicio)} a {formatDate(year.data_fim)}
                     </td>
                     <td className="px-5 py-3">
-                      <StatusPill tone={year.ativo ? "success" : "neutral"} data-testid="status-badge">
-                        {year.ativo ? "Ativo" : "Encerrado"}
+                      <StatusPill tone={status === "Ativo" ? "success" : "neutral"} data-testid="status-badge">
+                        {status}
                       </StatusPill>
                     </td>
                     <td className="px-5 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant={year.ativo ? "ghost" : "outline"}
-                          onClick={() => void handleToggle(year.id, year.ativo)}
-                          disabled={loading || confirmAction !== null}
-                          data-testid="toggle-button"
-                        >
-                          {year.ativo ? "Desativar" : "Tornar ativo"}
-                        </Button>
-                        {!year.ativo && (
+                        {status !== "Ativo" && (
                           <Button
                             type="button"
                             size="sm"
@@ -144,12 +109,8 @@ export function SchoolYearList({ years, onYearsChange }: SchoolYearListProps) {
                     <tr className="border-b border-border/60 last:border-0">
                       <td colSpan={4} className="px-5 pb-4 pt-1">
                         <InlineConfirm
-                          question={
-                            confirming.type === "delete"
-                              ? "Excluir este ano letivo?"
-                              : "Desativar este ano letivo?"
-                          }
-                          confirmLabel={confirming.type === "delete" ? "Sim, excluir" : "Sim, desativar"}
+                          question="Excluir este ano letivo?"
+                          confirmLabel="Sim, excluir"
                           cancelLabel="Não"
                           onConfirm={() => void confirmAndExecute()}
                           onCancel={() => setConfirmAction(null)}

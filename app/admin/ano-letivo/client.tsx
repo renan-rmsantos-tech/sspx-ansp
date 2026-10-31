@@ -29,7 +29,7 @@ export function AnoLetivoClient({ initialYears }: AnoLetivoClientProps) {
     <div className="space-y-6">
       <PageHeader
         title="Ano letivo"
-        description="O ano ativo é o que aparece no formulário público e nos documentos. Só um ano pode estar ativo."
+        description="O período de inscrições abre e encerra automaticamente nas datas cadastradas."
         action={
           !creating && (
             <Button type="button" size="lg" onClick={() => setCreating(true)}>

@@ -1,7 +1,7 @@
 "use server";
 
 import { randomUUID } from "crypto";
-import { asc, eq, gt } from "drizzle-orm";
+import { and, asc, eq, gt, lte, gte } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   applications,
@@ -78,7 +78,8 @@ export async function getActiveSchoolYear(): Promise<{
   upcomingYear?: SchoolYear;
 }> {
   const year = await db.query.schoolYears.findFirst({
-    where: eq(schoolYears.ativo, true),
+    where: and(lte(schoolYears.data_inicio, todayInSaoPaulo()), gte(schoolYears.data_fim, todayInSaoPaulo())),
+    orderBy: [asc(schoolYears.data_inicio), asc(schoolYears.id)],
   });
 
   if (year && isWithinWindow(year)) {
@@ -143,7 +144,8 @@ export async function submitApplication(
 
   const activeYear = await db.query.schoolYears.findFirst({
     columns: { id: true, data_inicio: true, data_fim: true },
-    where: eq(schoolYears.ativo, true),
+    where: and(lte(schoolYears.data_inicio, todayInSaoPaulo()), gte(schoolYears.data_fim, todayInSaoPaulo())),
+    orderBy: [asc(schoolYears.data_inicio), asc(schoolYears.id)],
   });
 
   // Revalida a janela aqui: a Server Action pode ser chamada diretamente,
