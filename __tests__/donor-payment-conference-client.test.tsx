@@ -206,7 +206,7 @@ describe("payment conference UI", () => {
     const trigger = screen.getByRole("button", { name: "Ver comprovante" });
     fireEvent.click(trigger);
     const panel = await screen.findByRole("region", { name: "Prévia do comprovante" });
-    expect(screen.getByRole("button", { name: "Fechar prévia" })).toHaveFocus();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Fechar prévia" })).toHaveFocus());
     if (type.startsWith("image/")) expect(panel.querySelector("img")).toBeTruthy();
     else if (type === "application/pdf") expect(screen.getByTitle("Comprovante de Maria")).toBeInTheDocument();
     else expect(screen.getByRole("link", { name: "Abrir em nova aba" })).toHaveAttribute("rel", "noopener noreferrer");
