@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, fireEvent, cleanup, act, within } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup, act, within, waitFor } from "@testing-library/react";
 
 const {
   mockGetApplicationDetail,
@@ -593,7 +593,7 @@ describe("SecretariatApplicationsClient", () => {
       expect(mockAddApplicationObservation).toHaveBeenCalledWith("app-1", "Ligar para a família.");
     });
     expect(await screen.findByText("Ligar para a família.")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Registrar observação interna")).toHaveValue("");
+    await waitFor(() => expect(screen.getByPlaceholderText("Registrar observação interna")).toHaveValue(""));
   });
 
   it("filtra, pré-seleciona ?situacao= e mostra vazio", () => {
