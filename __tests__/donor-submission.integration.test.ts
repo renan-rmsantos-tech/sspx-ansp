@@ -32,7 +32,7 @@ beforeEach(() => {
 });
 
 describe("conditional donor submission", () => {
-  it("persists monthly day, duration and email opt-in while discarding a forged receipt", async () => {
+  it("persists monthly day, duration and automatic email reminders while discarding a forged receipt", async () => {
     const result = await registerDonorPledge({
       ...base, frequencia: "mensal", duracao: "um_ano", dia_vencimento: 30,
       lembrete_canal: "email", recibo_path: "pending/forged.pdf", recibo_nome: "forged.pdf",
@@ -56,7 +56,7 @@ describe("conditional donor submission", () => {
     expect(move).not.toHaveBeenCalled();
   });
 
-  it("sends monthly instructions for opt-out too and keeps success when delivery fails", async () => {
+  it("enables reminders despite a null channel and keeps success when delivery fails", async () => {
     sendDonorMonthlyInstructions.mockRejectedValueOnce(new Error("private provider detail"));
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
     try {
@@ -65,7 +65,7 @@ describe("conditional donor submission", () => {
         lembrete_canal: null,
       });
       expect(result).toEqual({ success: true });
-      expect((inserted[0].values as { lembrete_canal: string | null }).lembrete_canal).toBeNull();
+      expect((inserted[0].values as { lembrete_canal: string | null }).lembrete_canal).toBe("email");
       expect(sendDonorMonthlyInstructions).toHaveBeenCalledTimes(1);
       expect(sendDonorWelcomeEmail).toHaveBeenCalledTimes(1);
       expect(log.mock.calls.flat().join(" ")).not.toContain("private provider detail");

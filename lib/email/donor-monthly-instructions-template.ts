@@ -162,7 +162,7 @@ export function renderDonorMonthlyInstructions(input: {
     input.dia_vencimento >= 30
       ? `Quando o mês não tiver o dia ${input.dia_vencimento}, o vencimento será no último dia daquele mês (em fevereiro, passa para 28 ou 29).`
       : "",
-    "Os lembretes por e-mail são enviados somente a quem optou por recebê-los, 10 e 5 dias antes do vencimento real, enquanto o comprovante da parcela estiver pendente e apenas se as datas previstas não forem anteriores ao cadastro.",
+    "Os lembretes por e-mail são enviados automaticamente 10 e 5 dias antes do vencimento real, enquanto o comprovante da parcela estiver pendente e apenas se as datas previstas não forem anteriores ao cadastro.",
     input.link_comprovante === DONOR_MONTHLY_INSTRUCTIONS_SAMPLE_LINK
       ? "Link ilustrativo sem validade: não permite enviar comprovantes."
       : "",

@@ -83,7 +83,7 @@ export async function registerDonorPledge(
       meio_pagamento: null,
       data_pagamento: isUnica ? data.data_pagamento || null : null,
       lembrete_canal:
-        data.frequencia === "mensal" && data.lembrete_canal === "email"
+        data.frequencia === "mensal"
           ? "email"
           : null,
       recibo_path: finalReciboPath,

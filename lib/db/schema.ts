@@ -455,7 +455,7 @@ export const donorReminderTemplates = pgTable(
   () => [uniqueIndex("donor_reminder_templates_singleton_idx").on(sql`(true)`)]
 );
 
-/** Modelo independente das boas-vindas e dos lembretes optativos. */
+/** Modelo independente das boas-vindas e dos lembretes automáticos. */
 export const donorMonthlyInstructionTemplates = pgTable(
   "donor_monthly_instruction_templates",
   {

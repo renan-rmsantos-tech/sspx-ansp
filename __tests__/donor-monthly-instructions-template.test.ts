@@ -46,7 +46,7 @@ describe("monthly instructions template", () => {
     expect(rendered.text).toContain("10 e 5 dias");
     expect(rendered.text).toContain("comprovante é obrigatório para cada pagamento mensal");
     expect(rendered.text).toContain("não confirma o crédito");
-    expect(rendered.text).toContain("optou por recebê-los");
+    expect(rendered.text).toContain("enviados automaticamente");
     const leapYear = renderDonorMonthlyInstructions({
       ...values,
       data_primeiro_vencimento: "2028-02-29",
@@ -83,7 +83,7 @@ describe("monthly instructions template", () => {
     expect(rendered.text).toContain("comprovante é obrigatório");
     expect(rendered.text).toContain("conferência no extrato bancário");
     expect(rendered.text).toContain("último dia daquele mês");
-    expect(rendered.text).toContain("enviados somente a quem optou");
+    expect(rendered.text).toContain("enviados automaticamente");
     const day15 = renderDonorMonthlyInstructions({ ...values, dia_vencimento: 15 });
     expect(day15.text).not.toContain("último dia daquele mês");
   });

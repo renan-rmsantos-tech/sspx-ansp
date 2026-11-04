@@ -162,17 +162,15 @@ describe("DonorForm", () => {
     expect(screen.queryByText("Selecione um dia de pagamento: 1, 10, 15, 20 ou 30.")).not.toBeInTheDocument();
   });
 
-  it("explains the monthly email, receipt obligation, day 30, and opt-in reminders without on-screen Pix", () => {
+  it("explains the monthly email, receipt obligation, day 30, and automatic reminders without on-screen Pix", () => {
     render(<DonorForm />);
     expect(screen.queryByRole("heading", { name: "Faça sua contribuição por Pix" })).not.toBeInTheDocument();
     expect(screen.queryByTestId("upload-area")).not.toBeInTheDocument();
     expect(screen.getByText("Você receberá por e-mail as instruções para pagar por Pix. Não é preciso pagar agora. Cada pagamento mensal exige o envio do comprovante pelo link que enviaremos.")).toBeInTheDocument();
     expect(screen.getByText("Se escolher o dia 30, em fevereiro o vencimento será no último dia do mês.")).toBeInTheDocument();
     expect(screen.getByRole("group", { name: "Dia do pagamento mensal" })).toHaveAccessibleDescription("Se escolher o dia 30, em fevereiro o vencimento será no último dia do mês.");
-    expect(screen.getByText("Avisaremos 10 e 5 dias antes de cada vencimento, com o link para enviar o comprovante.")).toBeInTheDocument();
-    const reminder = screen.getByRole("checkbox", { name: "Receber lembrete por e-mail" });
-    expect(reminder).toHaveAccessibleDescription("Avisaremos 10 e 5 dias antes de cada vencimento, com o link para enviar o comprovante.");
-    expect(reminder).not.toBeChecked();
+    expect(screen.getByText(/Você receberá automaticamente lembretes por e-mail 10 e 5 dias/)).toBeInTheDocument();
+    expect(screen.queryByRole("checkbox", { name: "Receber lembrete por e-mail" })).not.toBeInTheDocument();
   });
 
   it.each([1, 10, 15, 20, 30])("submits monthly day %i without a receipt", async (day) => {
@@ -180,7 +178,6 @@ describe("DonorForm", () => {
     render(<DonorForm />);
     fillDonorDetails();
     fireEvent.click(screen.getByRole("radio", { name: `Dia ${day}` }));
-    fireEvent.click(screen.getByTestId("donor-lembrete-email"));
     expect(screen.queryByTestId("upload-area")).not.toBeInTheDocument();
     expect(screen.getByText(/Não é preciso pagar agora/)).toBeInTheDocument();
     fireEvent.click(screen.getByTestId("donor-submit"));

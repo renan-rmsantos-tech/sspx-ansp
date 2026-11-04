@@ -87,7 +87,6 @@ export function DonorForm() {
   const [valorOutro, setValorOutro] = useState("");
   const [dataPagamento, setDataPagamento] = useState("");
   const [diaVencimento, setDiaVencimento] = useState("");
-  const [lembreteEmail, setLembreteEmail] = useState(false);
   const [nome, setNome] = useState("");
   const [cpf, setCpf] = useState("");
   const [email, setEmail] = useState("");
@@ -211,7 +210,7 @@ export function DonorForm() {
       valor,
       data_pagamento: frequencia === "unica" ? dataPagamento : undefined,
       lembrete_canal:
-        frequencia === "mensal" && lembreteEmail ? "email" : null,
+        frequencia === "mensal" ? "email" : null,
       recibo_path: frequencia === "unica" ? reciboOk?.path : undefined,
       recibo_nome: frequencia === "unica" ? reciboOk?.name : undefined,
       observacoes: observacoes.trim() || undefined,
@@ -252,7 +251,6 @@ export function DonorForm() {
     diaVencimento,
     valor,
     dataPagamento,
-    lembreteEmail,
     recibo,
     observacoes,
   ]);
@@ -461,25 +459,9 @@ export function DonorForm() {
         )}
 
         {frequencia === "mensal" && (
-          <div>
-            <label className="flex cursor-pointer items-start gap-2.5">
-              <input
-                type="checkbox"
-                checked={lembreteEmail}
-                onChange={(e) => setLembreteEmail(e.target.checked)}
-                className="mt-1"
-                data-testid="donor-lembrete-email"
-                aria-labelledby="donor-lembrete-email-label"
-                aria-describedby="donor-lembrete-email-help"
-              />
-              <span className="text-sm text-fg">
-                <span id="donor-lembrete-email-label">Receber lembrete por e-mail</span>
-                <span id="donor-lembrete-email-help" className="mt-0.5 block text-muted">
-                  Avisaremos 10 e 5 dias antes de cada vencimento, com o link para enviar o comprovante.
-                </span>
-              </span>
-            </label>
-          </div>
+          <p className="text-sm text-muted">
+            Você receberá automaticamente lembretes por e-mail 10 e 5 dias antes de cada vencimento escolhido, com o link para enviar o comprovante, enquanto ele estiver pendente.
+          </p>
         )}
 
         <hr className="border-border" />
