@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/auth/authorization";
 
 export default async function AnoLetivoPage() {
   await requireAdmin();
-  const { data: years } = await getSchoolYears();
+  const { data: years, error } = await getSchoolYears();
 
-  return <AnoLetivoClient initialYears={years ?? []} />;
+  return <AnoLetivoClient initialYears={years ?? []} error={error ?? undefined} />;
 }

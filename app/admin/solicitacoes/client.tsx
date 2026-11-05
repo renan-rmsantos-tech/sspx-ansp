@@ -6,9 +6,12 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { ApplicationCard, type ApplicationSummary } from "../_components/application-card";
+import type { DetailTab } from "../_components/application-detail";
+import type { DecisionMode } from "../_components/decision-actions";
 import { DataGrid, DataItem } from "../_components/data-grid";
 import { EmptyState } from "../_components/empty-state";
 import { Field } from "../_components/field";
+import { Notice } from "../_components/notice";
 import { PageHeader } from "../_components/page-header";
 import { RecordRow } from "../_components/record-row";
 import { SearchInput } from "../_components/search-input";
@@ -52,6 +55,15 @@ function sortApplications(apps: ApplicationSummary[], sort: SortKey): Applicatio
 
 function formatDate(value: string | null | undefined): string {
   return value ? new Date(value).toLocaleDateString("pt-BR") : "—";
+}
+
+/** A lista não carregou: um aviso no lugar de uma lista vazia enganosa. */
+function LoadError({ error }: { error: string }) {
+  return (
+    <Notice tone="danger" title="Não foi possível carregar as solicitações" data-testid="applications-error">
+      {error} Recarregue a página em alguns instantes.
+    </Notice>
+  );
 }
 
 /** Segmento de situação + busca + contagem + lista, compartilhado pelos dois papéis. */
@@ -145,9 +157,20 @@ function ApplicationsList<T extends Filterable>({
 export function SolicitacoesClient({
   initialApplications,
   initialStatus,
+  error,
+  initialOpenId,
+  initialTab,
+  initialDecision,
 }: {
   initialApplications: ApplicationSummary[];
   initialStatus?: ApplicationStatus;
+  /** Falha ao buscar a lista; substitui a lista por um aviso. */
+  error?: string;
+  /** Registro aberto na montagem; o padrão é a primeira solicitação pendente visível. */
+  initialOpenId?: string;
+  /** Aba e formulário de decisão iniciais do registro aberto. */
+  initialTab?: DetailTab;
+  initialDecision?: DecisionMode;
 }) {
   const [applications, setApplications] = useState<ApplicationSummary[]>(initialApplications);
   const [filter, setFilter] = useState<StatusFilter>(initialStatus ?? "todas");
@@ -158,7 +181,7 @@ export function SolicitacoesClient({
     () => sortApplications(filterApplications(applications, filter, search), sort),
     [applications, filter, search, sort]
   );
-  const firstPendingId = visible.find((app) => app.status === "pendente")?.id;
+  const openId = initialOpenId ?? visible.find((app) => app.status === "pendente")?.id;
 
   const handleDecision = useCallback(
     (id: string, status: ApplicationStatus, desconto_concedido?: number | null, motivo?: string | null) => {
@@ -185,40 +208,46 @@ export function SolicitacoesClient({
         title="Solicitações de bolsa"
         description="Analise cada solicitação, confira os documentos e registre a decisão. Os PDFs ficam disponíveis dentro de cada registro."
       />
-      <ApplicationsList
-        applications={applications}
-        filter={filter}
-        onFilterChange={setFilter}
-        search={search}
-        onSearchChange={setSearch}
-        visible={visible}
-        controls={
-          <div className="sm:w-48">
-            <label htmlFor="sort-applications" className="sr-only">
-              Ordenar
-            </label>
-            <NativeSelect
-              id="sort-applications"
-              value={sort}
-              onChange={(event) => setSort(event.target.value as SortKey)}
-              data-testid="sort-select"
-              className="w-full [&>select]:h-10 [&>select]:bg-surface"
-            >
-              <NativeSelectOption value="recentes">Mais recentes</NativeSelectOption>
-              <NativeSelectOption value="antigas">Mais antigas</NativeSelectOption>
-              <NativeSelectOption value="familia">Nome da família</NativeSelectOption>
-            </NativeSelect>
-          </div>
-        }
-        renderRow={(app) => (
-          <ApplicationCard
-            key={app.id}
-            application={app}
-            onDecision={handleDecision}
-            defaultOpen={app.id === firstPendingId}
-          />
-        )}
-      />
+      {error ? (
+        <LoadError error={error} />
+      ) : (
+        <ApplicationsList
+          applications={applications}
+          filter={filter}
+          onFilterChange={setFilter}
+          search={search}
+          onSearchChange={setSearch}
+          visible={visible}
+          controls={
+            <div className="sm:w-48">
+              <label htmlFor="sort-applications" className="sr-only">
+                Ordenar
+              </label>
+              <NativeSelect
+                id="sort-applications"
+                value={sort}
+                onChange={(event) => setSort(event.target.value as SortKey)}
+                data-testid="sort-select"
+                className="w-full [&>select]:h-10 [&>select]:bg-surface"
+              >
+                <NativeSelectOption value="recentes">Mais recentes</NativeSelectOption>
+                <NativeSelectOption value="antigas">Mais antigas</NativeSelectOption>
+                <NativeSelectOption value="familia">Nome da família</NativeSelectOption>
+              </NativeSelect>
+            </div>
+          }
+          renderRow={(app) => (
+            <ApplicationCard
+              key={app.id}
+              application={app}
+              onDecision={handleDecision}
+              defaultOpen={app.id === openId}
+              defaultTab={app.id === openId ? initialTab : undefined}
+              defaultDecisionMode={app.id === openId ? initialDecision : undefined}
+            />
+          )}
+        />
+      )}
     </div>
   );
 }
@@ -238,9 +267,17 @@ export interface SecretariatApplicationSummary {
 export function SecretariatApplicationsClient({
   initialApplications,
   initialStatus,
+  error,
+  initialOpenId,
+  initialTab,
 }: {
   initialApplications: SecretariatApplicationSummary[];
   initialStatus?: ApplicationStatus;
+  /** Falha ao buscar a lista; substitui a lista por um aviso. */
+  error?: string;
+  /** Registro aberto na montagem (por padrão, todos fechados) e a aba inicial dele. */
+  initialOpenId?: string;
+  initialTab?: SecretariatTab;
 }) {
   const [filter, setFilter] = useState<StatusFilter>(initialStatus ?? "todas");
   const [search, setSearch] = useState("");
@@ -255,30 +292,49 @@ export function SecretariatApplicationsClient({
         title="Solicitações de bolsa"
         description="Acompanhamento das famílias: contato, alunos, documentos finais e observações internas."
       />
-      <ApplicationsList
-        applications={initialApplications}
-        filter={filter}
-        onFilterChange={setFilter}
-        search={search}
-        onSearchChange={setSearch}
-        visible={visible}
-        renderRow={(app) => <SecretariatApplicationCard key={app.id} application={app} />}
-      />
+      {error ? (
+        <LoadError error={error} />
+      ) : (
+        <ApplicationsList
+          applications={initialApplications}
+          filter={filter}
+          onFilterChange={setFilter}
+          search={search}
+          onSearchChange={setSearch}
+          visible={visible}
+          renderRow={(app) => (
+            <SecretariatApplicationCard
+              key={app.id}
+              application={app}
+              defaultOpen={app.id === initialOpenId}
+              defaultTab={app.id === initialOpenId ? initialTab : undefined}
+            />
+          )}
+        />
+      )}
     </div>
   );
 }
 
-type SecretariatTab = "resumo" | "documentos-finais" | "observacoes";
+export type SecretariatTab = "resumo" | "documentos-finais" | "observacoes";
 type Observation = { id: string; body: string; created_at: string; author_user?: { email: string } | null };
 type IssuedDocument = { id: string; kind: "decision" | "contract"; version: number };
 
-function SecretariatApplicationCard({ application }: { application: SecretariatApplicationSummary }) {
+function SecretariatApplicationCard({
+  application,
+  defaultOpen = false,
+  defaultTab = "resumo",
+}: {
+  application: SecretariatApplicationSummary;
+  defaultOpen?: boolean;
+  defaultTab?: SecretariatTab;
+}) {
   const addApplicationObservation = useServerAction("addApplicationObservation");
   const getApplicationObservations = useServerAction("getApplicationObservations");
   const getCurrentIssuedDocuments = useServerAction("getCurrentIssuedDocuments");
   const getIssuedDocumentUrl = useServerAction("getIssuedDocumentUrl");
-  const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState<SecretariatTab>("resumo");
+  const [open, setOpen] = useState(defaultOpen);
+  const [tab, setTab] = useState<SecretariatTab>(defaultTab);
   const [note, setNote] = useState("");
   const [notes, setNotes] = useState<Observation[]>([]);
   const [documents, setDocuments] = useState<IssuedDocument[]>([]);

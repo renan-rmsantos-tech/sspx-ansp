@@ -18,7 +18,11 @@ interface DecisionActionsProps {
   /** Soma das mensalidades dos alunos. */
   monthlyTuition?: number;
   onDecision: DecisionHandler;
+  /** Formulário aberto na montagem; o padrão mostra os botões de decisão. */
+  defaultMode?: DecisionMode;
 }
+
+export type DecisionMode = "idle" | "approve" | "reject";
 
 const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -32,10 +36,11 @@ export function DecisionActions({
   familyIncome,
   monthlyTuition,
   onDecision,
+  defaultMode = "idle",
 }: DecisionActionsProps) {
   const approveApplication = useServerAction("approveApplication");
   const rejectApplication = useServerAction("rejectApplication");
-  const [mode, setMode] = useState<"idle" | "approve" | "reject">("idle");
+  const [mode, setMode] = useState<DecisionMode>(defaultMode);
   const [discount, setDiscount] = useState(String(requestedDiscount));
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
