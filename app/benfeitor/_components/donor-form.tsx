@@ -80,11 +80,24 @@ function ErrorText({ msg }: { msg?: string }) {
   return <p className="mt-1 text-xs text-danger">{msg}</p>;
 }
 
-export function DonorForm() {
+type DonorFormProps = {
+  /** Frequência escolhida ao abrir; o padrão é mensal. */
+  initialFrequencia?: Frequencia;
+  /** Erros de validação já exibidos ao abrir (protótipos). */
+  initialErrors?: Record<string, string>;
+  /** Abre na confirmação de cadastro enviado (protótipos). */
+  initialDone?: boolean;
+};
+
+export function DonorForm({
+  initialFrequencia = "mensal",
+  initialErrors = {},
+  initialDone = false,
+}: DonorFormProps = {}) {
   const registerDonorPledge = useServerAction("registerDonorPledge");
-  const [frequencia, setFrequencia] = useState<Frequencia>("mensal");
+  const [frequencia, setFrequencia] = useState<Frequencia>(initialFrequencia);
   const [duracao, setDuracao] = useState<Duracao | null>("um_ano");
-  const [valorPreset, setValorPreset] = useState<ValorPreset>(80);
+  const [valorPreset, setValorPreset] = useState<ValorPreset>(VALOR_PRESETS[initialFrequencia][0].valor);
   const [valorOutro, setValorOutro] = useState("");
   const [dataPagamento, setDataPagamento] = useState("");
   const [diaVencimento, setDiaVencimento] = useState("");
@@ -105,9 +118,9 @@ export function DonorForm() {
   const [recibo, setRecibo] = useState<UploadedFile[]>([]);
   const [observacoes, setObservacoes] = useState("");
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>(initialErrors);
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
+  const [done, setDone] = useState(initialDone);
   const submittingRef = useRef(false);
 
   const valor = useMemo(() => {

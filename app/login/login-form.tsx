@@ -9,19 +9,20 @@ type LoginFormProps = {
   showCredentialsHint?: boolean;
   hintEmail?: string;
   hintPassword?: string;
+  /** Erro exibido antes do primeiro envio (protótipos); o padrão é nenhum. */
+  initialError?: string | null;
 };
-
-const initialState: LoginState = { error: null };
 
 export function LoginForm({
   showCredentialsHint = false,
   hintEmail,
   hintPassword,
+  initialError = null,
 }: LoginFormProps) {
   const loginAction = useServerAction("loginAction");
-  const [state, formAction, isPending] = useActionState(
+  const [state, formAction, isPending] = useActionState<LoginState, FormData>(
     loginAction,
-    initialState
+    { error: initialError }
   );
 
   return (
