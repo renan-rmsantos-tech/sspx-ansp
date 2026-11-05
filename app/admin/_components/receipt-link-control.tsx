@@ -4,14 +4,15 @@ import { useState } from "react";
 import { Copy, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { issueDonorReceiptRecoveryLink } from "../_actions/donor-receipt-actions";
 import { Field } from "./field";
+import { useServerAction } from "@/components/server-actions";
 
 /**
  * Gera, para o administrador, o link pelo qual o benfeitor envia o comprovante
  * mensal pendente. O link aparece no lugar, com validade, para copiar.
  */
 export function ReceiptLinkControl({ pledgeId, competencia }: { pledgeId: string; competencia: string }) {
+  const issueDonorReceiptRecoveryLink = useServerAction("issueDonorReceiptRecoveryLink");
   const [result, setResult] = useState<{ link: string; expiresAt: string } | null>(null);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);

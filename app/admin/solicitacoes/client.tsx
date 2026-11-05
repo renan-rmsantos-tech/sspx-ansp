@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { addApplicationObservation, getApplicationObservations } from "../_actions/observation-actions";
-import { getCurrentIssuedDocuments, getIssuedDocumentUrl } from "../_actions/admin-actions";
 import { ApplicationCard, type ApplicationSummary } from "../_components/application-card";
 import { DataGrid, DataItem } from "../_components/data-grid";
 import { EmptyState } from "../_components/empty-state";
@@ -18,6 +16,7 @@ import { SegmentedFilter } from "../_components/segmented-filter";
 import { STATUS_LABELS, STATUS_TONES, type ApplicationStatus } from "../_components/status-labels";
 import { StatusPill } from "../_components/status-pill";
 import { PAGE_TABS_LIST_CLASS, PAGE_TABS_TRIGGER_CLASS } from "../_components/url-tabs";
+import { useServerAction } from "@/components/server-actions";
 
 type StatusFilter = "todas" | ApplicationStatus;
 type SortKey = "recentes" | "antigas" | "familia";
@@ -274,6 +273,10 @@ type Observation = { id: string; body: string; created_at: string; author_user?:
 type IssuedDocument = { id: string; kind: "decision" | "contract"; version: number };
 
 function SecretariatApplicationCard({ application }: { application: SecretariatApplicationSummary }) {
+  const addApplicationObservation = useServerAction("addApplicationObservation");
+  const getApplicationObservations = useServerAction("getApplicationObservations");
+  const getCurrentIssuedDocuments = useServerAction("getCurrentIssuedDocuments");
+  const getIssuedDocumentUrl = useServerAction("getIssuedDocumentUrl");
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<SecretariatTab>("resumo");
   const [note, setNote] = useState("");
@@ -288,7 +291,7 @@ function SecretariatApplicationCard({ application }: { application: SecretariatA
         setDocuments(current as IssuedDocument[]);
       }
     );
-  }, [application.id, open]);
+  }, [application.id, getApplicationObservations, getCurrentIssuedDocuments, open]);
 
   async function saveNote() {
     const result = await addApplicationObservation(application.id, note);

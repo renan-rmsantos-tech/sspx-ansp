@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import type { DonorReports } from "@/app/admin/_actions/donor-report-actions";
 
 const { getDonorReports } = vi.hoisted(() => ({ getDonorReports: vi.fn() }));
@@ -10,6 +10,10 @@ vi.mock("recharts", () => {
 });
 
 import { DonorReportsClient } from "@/app/admin/relatorios/reports-client";
+import * as donorReportActions from "@/app/admin/_actions/donor-report-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(donorReportActions);
 
 const initial: DonorReports = {
   filters: {}, total: 3,

@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/react";
+import { screen, fireEvent, waitFor, cleanup } from "@testing-library/react";
 import { LoginForm } from "@/app/login/login-form";
+import * as authActions from "@/app/login/_actions/auth-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(authActions);
 
 const mockLoginAction = vi.fn();
 

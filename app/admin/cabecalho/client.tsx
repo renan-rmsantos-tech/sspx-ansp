@@ -14,12 +14,12 @@ import {
   resolveDocumentHeader,
   type DocumentHeaderData,
 } from "@/lib/documents/document-header";
-import { saveDocumentHeader } from "../_actions/admin-actions";
 import { DocumentFooterPreview } from "../_components/document-footer-preview";
 import { DocumentHeaderPreview } from "../_components/document-header-preview";
 import { Field } from "../_components/field";
 import { Notice } from "../_components/notice";
 import { PageHeader } from "../_components/page-header";
+import { useServerAction } from "@/components/server-actions";
 
 type HeaderForm = DocumentHeaderData;
 
@@ -31,6 +31,7 @@ interface CabecalhoClientProps {
 }
 
 export function CabecalhoClient({ initialHeader }: CabecalhoClientProps) {
+  const saveDocumentHeader = useServerAction("saveDocumentHeader");
   const [form, setForm] = useState<HeaderForm>(resolveDocumentHeader(initialHeader));
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<"idle" | "saved" | "error">("idle");
@@ -65,7 +66,7 @@ export function CabecalhoClient({ initialHeader }: CabecalhoClientProps) {
     } finally {
       setSaving(false);
     }
-  }, [form]);
+  }, [form, saveDocumentHeader]);
 
   return (
     <div className="space-y-6">

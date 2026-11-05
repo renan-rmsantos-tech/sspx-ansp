@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { registerDonorPledge } from "@/app/benfeitor/_actions/donor-actions";
 import { DonorForm } from "@/app/benfeitor/_components/donor-form";
+import { createUploadUrl } from "@/app/form/_actions/form-actions";
+import { ServerActionsProvider } from "@/components/server-actions";
 import { SealLogo } from "@/components/ui/seal-logo";
 
 export const metadata: Metadata = {
@@ -21,7 +24,9 @@ export default function SejaUmBenfeitorPage() {
           <h1 className="mt-2 font-display text-[28px] font-semibold text-fg">Seja um benfeitor</h1>
           <p className="mx-auto mt-3 max-w-[56ch] text-muted">Sua colaboração sustenta a formação católica e ajuda famílias que precisam de apoio para a educação de seus filhos.</p>
         </header>
-        <DonorForm />
+        <ServerActionsProvider actions={{ createUploadUrl, registerDonorPledge }}>
+          <DonorForm />
+        </ServerActionsProvider>
       </main>
     </div>
   );

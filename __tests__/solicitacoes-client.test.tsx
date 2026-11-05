@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, fireEvent, cleanup, act, within, waitFor } from "@testing-library/react";
+import { screen, fireEvent, cleanup, act, within, waitFor } from "@testing-library/react";
 
 const {
   mockGetApplicationDetail,
@@ -56,6 +56,11 @@ vi.mock("@/app/admin/_actions/observation-actions", () => ({
 
 import { SecretariatApplicationsClient, SolicitacoesClient } from "@/app/admin/solicitacoes/client";
 import type { ApplicationSummary } from "@/app/admin/_components/application-card";
+import * as adminActions from "@/app/admin/_actions/admin-actions";
+import * as observationActions from "@/app/admin/_actions/observation-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(adminActions, observationActions);
 
 function makeApp(overrides: Partial<ApplicationSummary> = {}): ApplicationSummary {
   return {

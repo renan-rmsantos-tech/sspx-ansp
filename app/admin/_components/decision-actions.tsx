@@ -8,7 +8,7 @@ import { DataGrid, DataItem } from "./data-grid";
 import { Field } from "./field";
 import { Notice } from "./notice";
 import type { DecisionHandler } from "./application-card";
-import { approveApplication, rejectApplication } from "../_actions/admin-actions";
+import { useServerAction } from "@/components/server-actions";
 
 interface DecisionActionsProps {
   applicationId: string;
@@ -33,6 +33,8 @@ export function DecisionActions({
   monthlyTuition,
   onDecision,
 }: DecisionActionsProps) {
+  const approveApplication = useServerAction("approveApplication");
+  const rejectApplication = useServerAction("rejectApplication");
   const [mode, setMode] = useState<"idle" | "approve" | "reject">("idle");
   const [discount, setDiscount] = useState(String(requestedDiscount));
   const [reason, setReason] = useState("");
@@ -66,7 +68,7 @@ export function DecisionActions({
     } finally {
       setSubmitting(false);
     }
-  }, [mode, applicationId, discount, reason, onDecision]);
+  }, [mode, discount, approveApplication, applicationId, reason, rejectApplication, onDecision]);
 
   if (mode === "idle") {
     return (

@@ -1,6 +1,7 @@
-import { getActiveSchoolYear } from "@/app/form/_actions/form-actions";
+import { createUploadUrl, getActiveSchoolYear, submitApplication } from "@/app/form/_actions/form-actions";
 import { FormUnavailableMessage } from "@/app/form/_components/form-unavailable-message";
 import { ScholarshipForm } from "@/app/form/_components/scholarship-form";
+import { ServerActionsProvider } from "@/components/server-actions";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -12,5 +13,10 @@ export const dynamic = "force-dynamic";
 
 export default async function SolicitarBolsaPage() {
   const result = await getActiveSchoolYear();
-  return result.open ? <ScholarshipForm /> : <FormUnavailableMessage year={result.upcomingYear} />;
+  if (!result.open) return <FormUnavailableMessage year={result.upcomingYear} />;
+  return (
+    <ServerActionsProvider actions={{ createUploadUrl, submitApplication }}>
+      <ScholarshipForm />
+    </ServerActionsProvider>
+  );
 }

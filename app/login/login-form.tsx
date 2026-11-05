@@ -1,8 +1,9 @@
 "use client";
 
 import { useActionState } from "react";
-import { loginAction, type LoginState } from "./_actions/auth-actions";
+import type { LoginState } from "./_actions/auth-actions";
 import { SealLogo } from "@/components/ui/seal-logo";
+import { useServerAction } from "@/components/server-actions";
 
 type LoginFormProps = {
   showCredentialsHint?: boolean;
@@ -17,6 +18,7 @@ export function LoginForm({
   hintEmail,
   hintPassword,
 }: LoginFormProps) {
+  const loginAction = useServerAction("loginAction");
   const [state, formAction, isPending] = useActionState(
     loginAction,
     initialState

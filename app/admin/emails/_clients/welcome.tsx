@@ -9,13 +9,9 @@ import { Field } from "../../_components/field";
 import { InstitutionalEmailPreview } from "../../_components/institutional-email-preview";
 import { Notice } from "../../_components/notice";
 import { Section } from "../../_components/section";
-import {
-  retryDonorWelcomeEmail,
-  saveDonorEmailTemplate,
-  sendDonorTestEmail,
-} from "../../_actions/donor-email-actions";
 import { renderDonorWelcomeEmail } from "@/lib/email/donor-welcome-template";
 import type { DocumentHeaderData } from "@/lib/documents/document-header";
+import { useServerAction } from "@/components/server-actions";
 
 interface EmailTemplate {
   assunto: string;
@@ -44,6 +40,9 @@ export function DonorEmailClient({
   header: DocumentHeaderData;
   resendConfigured: boolean;
 }) {
+  const retryDonorWelcomeEmail = useServerAction("retryDonorWelcomeEmail");
+  const saveDonorEmailTemplate = useServerAction("saveDonorEmailTemplate");
+  const sendDonorTestEmail = useServerAction("sendDonorTestEmail");
   const [template, setTemplate] = useState(initialTemplate);
   const [saved, setSaved] = useState(initialTemplate);
   const [pending, setPending] = useState(initialPending);

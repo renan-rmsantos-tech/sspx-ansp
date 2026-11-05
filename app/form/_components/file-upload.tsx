@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { createUploadUrl } from "../_actions/form-actions";
+import { useServerAction } from "@/components/server-actions";
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
@@ -45,6 +45,7 @@ export function FileUpload({
   required,
   error,
 }: FileUploadProps) {
+  const createUploadUrl = useServerAction("createUploadUrl");
   const inputRef = useRef<HTMLInputElement>(null);
   const inputId = useId();
   const errorId = useId();
@@ -126,7 +127,7 @@ export function FileUpload({
         }
       }
     },
-    [category, multiple, patchFiles]
+    [category, createUploadUrl, multiple, patchFiles]
   );
 
   const handleDrop = useCallback(

@@ -3,10 +3,10 @@
 import { Fragment, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { deleteSchoolYear } from "../_actions/admin-actions";
 import { EmptyState } from "./empty-state";
 import { InlineConfirm } from "./inline-confirm";
 import { StatusPill } from "./status-pill";
+import { useServerAction } from "@/components/server-actions";
 
 export interface SchoolYear {
   id: string;
@@ -30,6 +30,7 @@ function formatDate(iso: string): string {
 const TH_CLASS = "px-5 py-3 font-medium";
 
 export function SchoolYearList({ years, onYearsChange }: SchoolYearListProps) {
+  const deleteSchoolYear = useServerAction("deleteSchoolYear");
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -42,7 +43,7 @@ export function SchoolYearList({ years, onYearsChange }: SchoolYearListProps) {
 
     setConfirmAction(null);
     setLoading(false);
-  }, [confirmAction, years, onYearsChange]);
+  }, [confirmAction, deleteSchoolYear, onYearsChange, years]);
 
   if (years.length === 0) {
     return (

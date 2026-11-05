@@ -9,16 +9,10 @@ import { Field } from "../../_components/field";
 import { InstitutionalEmailPreview } from "../../_components/institutional-email-preview";
 import { Notice } from "../../_components/notice";
 import { Section } from "../../_components/section";
-import {
-  getDonorReminderDashboard,
-  previewDonorReminderTemplate,
-  resolveUncertainDonorReminder,
-  retryFailedDonorReminder,
-  saveDonorReminderTemplate,
-  sendDonorReminderTest,
-} from "../../_actions/donor-reminder-actions";
+import type { getDonorReminderDashboard } from "../../_actions/donor-reminder-actions";
 import { DONOR_REMINDER_SAMPLE_LINK } from "@/lib/email/donor-reminder-template";
 import type { DocumentHeaderData } from "@/lib/documents/document-header";
+import { useServerAction } from "@/components/server-actions";
 
 type Template = { assunto: string; corpo: string };
 type Preview = { assunto: string; bodyHtml: string };
@@ -80,6 +74,12 @@ export function DonorReminderClient({
   header: DocumentHeaderData;
   resendConfigured: boolean;
 }) {
+  const getDonorReminderDashboard = useServerAction("getDonorReminderDashboard");
+  const previewDonorReminderTemplate = useServerAction("previewDonorReminderTemplate");
+  const resolveUncertainDonorReminder = useServerAction("resolveUncertainDonorReminder");
+  const retryFailedDonorReminder = useServerAction("retryFailedDonorReminder");
+  const saveDonorReminderTemplate = useServerAction("saveDonorReminderTemplate");
+  const sendDonorReminderTest = useServerAction("sendDonorReminderTest");
   const [template, setTemplate] = useState(initialTemplate);
   const [saved, setSaved] = useState(initialTemplate);
   const [preview, setPreview] = useState(initialPreview);

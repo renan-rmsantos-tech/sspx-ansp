@@ -40,9 +40,27 @@ O app é Next; a galeria compila com `vite.config.ts`, que o `next build` e o Vi
 não leem. `next/link`, `next/image` e `next/navigation` são trocados pelas versões de
 `proto/next/`: links não navegam e `usePathname()` devolve o `meta.route` do
 protótipo. Componentes de servidor (`async`, `next/headers`) e server actions não
-rodam na galeria: a página busca os dados e passa por props para a view, e callbacks
-como `onLogout` chegam por prop.
+rodam na galeria: a página busca os dados e passa por props para a view.
+
+## Server actions nas views
+
+Views de cliente não importam `_actions/`. Elas pedem a action ao contexto com
+`useServerAction("nome")` (`components/server-actions.tsx`), e quem está no servidor
+entrega as actions reais com `ServerActionsProvider`: `app/admin/layout.tsx` para o
+painel inteiro; as páginas `/solicitar-bolsa`, `/seja-um-benfeitor` e `/login` para
+as públicas. Uma action nova chamada por uma view precisa entrar nesse provider.
+
+Na galeria, o `Canvas` fornece `fixtureActions()` (`proto/server-actions.fixtures.ts`):
+toda action resolve `{ success: true }`. O protótipo sobrepõe as que seus estados
+precisam, por exemplo
+`<ServerActionsProvider actions={fixtureActions({ getApplicationDetail: async () => detail })}>`.
+Nos testes, `withServerActions(...)` (`__tests__/helpers/server-actions.tsx`) devolve um
+`render` que entrega os módulos trocados por `vi.mock`.
+
+## Guards
 
 `guards.forbidRuntimeImports` em `proto.config.ts` faz `proto check` falhar com
-`network_import` quando um protótipo alcança banco, sessão, armazenamento, e-mail ou
-`app/**/_actions/**`. A correção é tirar o acesso da view, nunca afrouxar o guard.
+`network_import` quando um protótipo alcança banco, sessão, armazenamento, o envio de
+e-mail ou `app/**/_actions/**`. Os templates puros de `lib/email` ficam liberados,
+porque as views os usam na prévia. A correção é tirar o acesso da view, nunca
+afrouxar o guard.

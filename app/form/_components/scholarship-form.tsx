@@ -9,12 +9,12 @@ import { Step4Expenses } from "./step-4-expenses";
 import { Step5Vehicles } from "./step-5-vehicles";
 import { Step6Review } from "./step-6-review";
 import { SuccessScreen } from "./success-screen";
-import { submitApplication } from "../_actions/form-actions";
 import { INITIAL_FORM_DATA, parseMoney } from "./form-types";
 import type { FormData } from "./form-types";
 import { MSG_OBRIGATORIO } from "./field-ui";
 import { isValidCPF } from "@/lib/validations/cpf";
 import type { ApplicationSubmission } from "@/lib/validations/application-schema";
+import { useServerAction } from "@/components/server-actions";
 
 const TOTAL_STEPS = 6;
 
@@ -167,6 +167,7 @@ function validateStep5(data: FormData): Record<string, string> {
 }
 
 export function ScholarshipForm() {
+  const submitApplication = useServerAction("submitApplication");
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     ...INITIAL_FORM_DATA,
@@ -358,7 +359,7 @@ export function ScholarshipForm() {
       submittingRef.current = false;
       setSubmitting(false);
     }
-  }, [accepted, contributionAccepted, confidentialityAccepted, formData]);
+  }, [accepted, contributionAccepted, confidentialityAccepted, formData, submitApplication]);
 
   if (submitted) {
     return <SuccessScreen />;

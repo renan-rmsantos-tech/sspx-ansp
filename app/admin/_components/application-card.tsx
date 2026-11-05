@@ -14,12 +14,7 @@ import { Notice } from "./notice";
 import { RecordRow } from "./record-row";
 import { STATUS_LABELS, STATUS_TONES, type ApplicationStatus } from "./status-labels";
 import { StatusPill } from "./status-pill";
-import {
-  getApplicationDetail,
-  exportDecision,
-  exportContract,
-  exportApplication,
-} from "../_actions/admin-actions";
+import { useServerAction } from "@/components/server-actions";
 
 export interface ApplicationSummary {
   id: string;
@@ -60,6 +55,10 @@ function sum(values: Array<number | null | undefined>): number {
 }
 
 export function ApplicationCard({ application, onDecision, defaultOpen = false }: ApplicationCardProps) {
+  const getApplicationDetail = useServerAction("getApplicationDetail");
+  const exportDecision = useServerAction("exportDecision");
+  const exportContract = useServerAction("exportContract");
+  const exportApplication = useServerAction("exportApplication");
   const [open, setOpen] = useState(defaultOpen);
   const [detail, setDetail] = useState<Record<string, unknown> | null>(null);
   const [detailError, setDetailError] = useState(false);
@@ -84,7 +83,7 @@ export function ApplicationCard({ application, onDecision, defaultOpen = false }
     return () => {
       cancelled = true;
     };
-  }, [open, detail, detailError, application.id]);
+  }, [open, detail, detailError, application.id, getApplicationDetail]);
 
   const runExport = useCallback(
     async (kind: "data" | "decision" | "contract", action: (id: string) => Promise<PdfResult>, title: string) => {

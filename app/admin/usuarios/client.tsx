@@ -4,17 +4,13 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  createSecretariatUser,
-  resetSecretariatPassword,
-  setSecretariatUserActive,
-} from "../_actions/staff-actions";
 import { EmptyState } from "../_components/empty-state";
 import { Field } from "../_components/field";
 import { Notice } from "../_components/notice";
 import { PageHeader } from "../_components/page-header";
 import { Section } from "../_components/section";
 import { StatusPill } from "../_components/status-pill";
+import { useServerAction } from "@/components/server-actions";
 
 type User = { id: string; email: string; ativo: boolean; created_at: string };
 
@@ -26,6 +22,9 @@ function formatCreatedAt(iso: string): string | null {
 }
 
 export function UsuariosClient({ initialUsers }: { initialUsers: User[] }) {
+  const createSecretariatUser = useServerAction("createSecretariatUser");
+  const resetSecretariatPassword = useServerAction("resetSecretariatPassword");
+  const setSecretariatUserActive = useServerAction("setSecretariatUserActive");
   const [users, setUsers] = useState(initialUsers);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

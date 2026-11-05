@@ -4,12 +4,6 @@ import { useState, useCallback, useRef, type FormEvent, type ReactNode } from "r
 import { Mail, Printer, Receipt, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  deleteDonorPledge,
-  exportDonorPledge,
-  getDocumentUrl,
-  updateDonorDueDay,
-} from "../_actions/admin-actions";
 import { ReceiptLinkControl } from "./receipt-link-control";
 import { PdfPreviewModal } from "./pdf-preview-modal";
 import { ActionBar } from "./action-bar";
@@ -21,8 +15,8 @@ import { RecordRow } from "./record-row";
 import { StatusPill } from "./status-pill";
 import { prioradoCapelaLabel } from "@/lib/data/priorados-capelas";
 import { formatDonorDate } from "@/lib/donor-date";
-import { markDonorWelcomeEmailSent, unmarkDonorWelcomeEmailSent, retryDonorWelcomeEmail } from "@/app/admin/_actions/donor-email-actions";
 import { DonorMonthlyInstructions, type CurrentReceipt, type MonthlyInstructionsAttempt, type PendingOccurrence } from "./donor-monthly-instructions";
+import { useServerAction } from "@/components/server-actions";
 
 export interface DonorPledge {
   id: string;
@@ -242,6 +236,13 @@ interface DonorCardProps {
 }
 
 export function DonorCard({ donor, onDelete, onWelcomeSent, onDueDayUpdated, onInstructionsUpdated, defaultOpen = false }: DonorCardProps) {
+  const deleteDonorPledge = useServerAction("deleteDonorPledge");
+  const exportDonorPledge = useServerAction("exportDonorPledge");
+  const getDocumentUrl = useServerAction("getDocumentUrl");
+  const updateDonorDueDay = useServerAction("updateDonorDueDay");
+  const markDonorWelcomeEmailSent = useServerAction("markDonorWelcomeEmailSent");
+  const unmarkDonorWelcomeEmailSent = useServerAction("unmarkDonorWelcomeEmailSent");
+  const retryDonorWelcomeEmail = useServerAction("retryDonorWelcomeEmail");
   const [markingWelcome, setMarkingWelcome] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -317,7 +318,7 @@ export function DonorCard({ donor, onDelete, onWelcomeSent, onDueDayUpdated, onI
     } finally {
       setSendingWelcome(false);
     }
-  }, [donor.id, sendingWelcome, markingWelcome, welcomeInProgress, welcomeSentAt, onWelcomeSent]);
+  }, [sendingWelcome, markingWelcome, welcomeSentAt, welcomeInProgress, retryDonorWelcomeEmail, donor.id, onWelcomeSent]);
 
   const handleMarkWelcome = async () => {
     if (markingWelcome || sendingWelcome || welcomeSentAt || welcomeInProgress) return;
@@ -363,7 +364,7 @@ export function DonorCard({ donor, onDelete, onWelcomeSent, onDueDayUpdated, onI
       setExportError(result.error);
     }
     setExporting(false);
-  }, [donor.id]);
+  }, [donor.id, exportDonorPledge]);
 
   const handleOpenRecibo = useCallback(async () => {
     if (!donor.recibo_path) return;
@@ -376,7 +377,7 @@ export function DonorCard({ donor, onDelete, onWelcomeSent, onDueDayUpdated, onI
     } else {
       setReciboError(result.error);
     }
-  }, [donor.recibo_path]);
+  }, [donor.recibo_path, getDocumentUrl]);
 
   const handleDelete = useCallback(async () => {
     setDeleting(true);
@@ -389,7 +390,7 @@ export function DonorCard({ donor, onDelete, onWelcomeSent, onDueDayUpdated, onI
       setError(result.error ?? "Erro ao excluir.");
       setConfirming(false);
     }
-  }, [donor.id, onDelete]);
+  }, [deleteDonorPledge, donor.id, onDelete]);
 
   const welcomeNotice = welcomeSentAt ? (
     <Notice

@@ -8,11 +8,12 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { cn } from "@/lib/utils";
-import { getDonorFinancialReport, type FinancialFilters } from "../_actions/donor-financial-report-actions";
+import type { FinancialFilters, getDonorFinancialReport } from "../_actions/donor-financial-report-actions";
 import { Field } from "../_components/field";
 import { Notice } from "../_components/notice";
 import { Section } from "../_components/section";
 import { StatTile } from "../_components/stat-tile";
+import { useServerAction } from "@/components/server-actions";
 
 type Report = Awaited<ReturnType<typeof getDonorFinancialReport>>;
 
@@ -77,6 +78,7 @@ function ValuesTable({
 }
 
 export function FinancialReport({ initialReport }: { initialReport: Report }) {
+  const getDonorFinancialReport = useServerAction("getDonorFinancialReport");
   const [report, setReport] = useState(initialReport);
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();

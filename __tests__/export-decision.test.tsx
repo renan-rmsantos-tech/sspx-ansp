@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, fireEvent, cleanup, act } from "@testing-library/react";
+import { screen, fireEvent, cleanup, act } from "@testing-library/react";
 
 const {
   mockGetApplicationDetail,
@@ -29,6 +29,10 @@ vi.mock("@/app/admin/_components/application-observations", () => ({
 }));
 
 import { ApplicationCard, type ApplicationSummary } from "@/app/admin/_components/application-card";
+import * as adminActions from "@/app/admin/_actions/admin-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(adminActions);
 
 // base64 de "PDF"
 const PDF_BASE64 = Buffer.from("PDF").toString("base64");

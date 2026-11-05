@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, fireEvent, cleanup, act } from "@testing-library/react";
+import { screen, fireEvent, cleanup, act } from "@testing-library/react";
 
 const { mockSaveTemplate } = vi.hoisted(() => ({
   mockSaveTemplate: vi.fn(),
@@ -13,6 +13,10 @@ vi.mock("@/app/admin/_actions/admin-actions", () => ({
 import { TemplateEditor, type TemplateData } from "@/app/admin/_components/template-editor";
 import { TemplatePreview, SAMPLE_DATA } from "@/app/admin/_components/template-preview";
 import { replaceTokens } from "@/lib/templates/token-replacer";
+import * as adminActions from "@/app/admin/_actions/admin-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(adminActions);
 
 function makeTemplate(overrides: Partial<TemplateData> = {}): TemplateData {
   return {

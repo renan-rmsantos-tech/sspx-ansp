@@ -10,16 +10,12 @@ import { InstitutionalEmailPreview } from "../../_components/institutional-email
 import { Notice } from "../../_components/notice";
 import { Section } from "../../_components/section";
 import {
-  previewDonorMonthlyInstructionsTemplate,
-  saveDonorMonthlyInstructionsTemplate,
-  sendDonorMonthlyInstructionsTest,
-} from "../../_actions/donor-monthly-instructions-actions";
-import {
   DONOR_MONTHLY_INSTRUCTIONS_SAMPLE_LINK,
   DONOR_MONTHLY_INSTRUCTIONS_TOKENS,
   type DonorMonthlyInstructionsTemplate,
 } from "@/lib/email/donor-monthly-instructions-template";
 import type { DocumentHeaderData } from "@/lib/documents/document-header";
+import { useServerAction } from "@/components/server-actions";
 
 type Preview = { assunto: string; bodyHtml: string };
 type Message = { type: "success" | "error"; text: string };
@@ -34,6 +30,9 @@ export function DonorMonthlyInstructionsClient({
   header: DocumentHeaderData;
   resendConfigured: boolean;
 }) {
+  const previewDonorMonthlyInstructionsTemplate = useServerAction("previewDonorMonthlyInstructionsTemplate");
+  const saveDonorMonthlyInstructionsTemplate = useServerAction("saveDonorMonthlyInstructionsTemplate");
+  const sendDonorMonthlyInstructionsTest = useServerAction("sendDonorMonthlyInstructionsTest");
   const [template, setTemplate] = useState(initialTemplate);
   const [saved, setSaved] = useState(initialTemplate);
   const [previewed, setPreviewed] = useState(initialTemplate);

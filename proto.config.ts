@@ -9,12 +9,16 @@ export default defineProtoConfig({
   roles: { admin: "Administração", secretaria: "Secretaria" },
   guards: {
     // Protótipos e drafts renderizam views com fixtures: nunca alcançam banco,
-    // sessão, armazenamento, e-mail ou server actions.
+    // sessão, armazenamento, envio de e-mail ou server actions. Os templates
+    // de e-mail em lib/email são funções puras que as views usam na prévia;
+    // o envio, os stores e os anexos (lidos do disco) ficam bloqueados.
     forbidRuntimeImports: [
       "lib/db",
       "lib/auth",
       "lib/storage",
-      "lib/email",
+      "lib/email/send-*.ts",
+      "lib/email/*-store.ts",
+      "lib/email/institutional-email-attachments.ts",
       "app/**/_actions/**",
       "proxy.ts",
       "next/headers",

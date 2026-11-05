@@ -2,7 +2,6 @@
 
 import { useCallback, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { registerDonorPledge } from "../_actions/donor-actions";
 import type { DonorPledge } from "@/lib/validations/donor-schema";
 import { isValidCPF } from "@/lib/validations/cpf";
 import { BRAZILIAN_UFS, PUBLIC_MONTHLY_DUE_DAYS } from "@/lib/validations/donor-schema";
@@ -21,6 +20,7 @@ import {
   formatCep,
   lookupCep,
 } from "@/lib/cep/viacep";
+import { useServerAction } from "@/components/server-actions";
 
 type Frequencia = "unica" | "mensal";
 type Duracao = "um_ano" | "indeterminado";
@@ -81,6 +81,7 @@ function ErrorText({ msg }: { msg?: string }) {
 }
 
 export function DonorForm() {
+  const registerDonorPledge = useServerAction("registerDonorPledge");
   const [frequencia, setFrequencia] = useState<Frequencia>("mensal");
   const [duracao, setDuracao] = useState<Duracao | null>("um_ano");
   const [valorPreset, setValorPreset] = useState<ValorPreset>(80);
@@ -253,6 +254,7 @@ export function DonorForm() {
     dataPagamento,
     recibo,
     observacoes,
+    registerDonorPledge,
   ]);
 
   if (done) {

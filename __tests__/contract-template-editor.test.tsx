@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, fireEvent, cleanup, act } from "@testing-library/react";
+import { screen, fireEvent, cleanup, act } from "@testing-library/react";
 
 const { mockSaveContractTemplate } = vi.hoisted(() => ({
   mockSaveContractTemplate: vi.fn(),
@@ -11,6 +11,10 @@ vi.mock("@/app/admin/_actions/admin-actions", () => ({
 
 import { ContractTemplateEditor } from "@/app/admin/_components/contract-template-editor";
 import type { ContractTemplate } from "@/app/admin/_actions/admin-actions";
+import * as adminActions from "@/app/admin/_actions/admin-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(adminActions);
 
 function makeTemplate(overrides: Partial<ContractTemplate> = {}): ContractTemplate {
   return {

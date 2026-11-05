@@ -1,11 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { DEFAULT_DOCUMENT_HEADER, FOOTER_HELP } from "@/lib/documents/document-header";
 
 const save = vi.hoisted(() => vi.fn());
 vi.mock("@/app/admin/_actions/admin-actions", () => ({ saveDocumentHeader: save }));
 
 import { CabecalhoClient } from "@/app/admin/cabecalho/client";
+import * as adminActions from "@/app/admin/_actions/admin-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(adminActions);
 
 afterEach(() => {
   cleanup();

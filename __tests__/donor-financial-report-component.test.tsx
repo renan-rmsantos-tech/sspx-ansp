@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 const { getReport } = vi.hoisted(() => ({ getReport: vi.fn() }));
 vi.mock("@/app/admin/_actions/donor-financial-report-actions", () => ({ getDonorFinancialReport: getReport }));
 vi.mock("recharts", () => {
@@ -7,6 +7,10 @@ vi.mock("recharts", () => {
   return { Bar: Tag, BarChart: Tag, CartesianGrid: Tag, ResponsiveContainer: Tag, Tooltip: Tag, XAxis: Tag, YAxis: Tag };
 });
 import { FinancialReport } from "@/app/admin/relatorios/financial-report";
+import * as donorFinancialReportActions from "@/app/admin/_actions/donor-financial-report-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(donorFinancialReportActions);
 const zero = { previsto: 0, recebido: 0, emAberto: 0, naoIdentificadoDivergente: 0 };
 const data = { filters: { from: "2026-10", to: "2026-11", frequency: "mensal" as const }, summary: { previsto: 10001, recebido: 5000, emAberto: 5001, naoIdentificadoDivergente: 0 }, byFrequency: { mensal: { previsto: 10001, recebido: 5000, emAberto: 5001, naoIdentificadoDivergente: 0 }, unica: zero }, months: [{ month: "2026-10", previsto: 10001, recebido: 5000, emAberto: 5001, naoIdentificadoDivergente: 0 }], donors: [{ donorId: "1", donorName: "Ana", frequency: "mensal", pago: 5000, devido: 5001, parcelasEmAtraso: 1 }] };
 afterEach(() => { cleanup(); getReport.mockReset(); });

@@ -2,9 +2,9 @@
 
 import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { getDocumentUrl } from "../_actions/admin-actions";
 import { Modal } from "./modal";
 import { Notice } from "./notice";
+import { useServerAction } from "@/components/server-actions";
 
 interface Document {
   id: string;
@@ -58,6 +58,7 @@ async function downloadFromSignedUrl(url: string, filename: string) {
 }
 
 export function DocumentPreview({ documents }: DocumentPreviewProps) {
+  const getDocumentUrl = useServerAction("getDocumentUrl");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewName, setPreviewName] = useState<string>("");
   const [loading, setLoading] = useState<string | null>(null);
@@ -83,7 +84,7 @@ export function DocumentPreview({ documents }: DocumentPreviewProps) {
     // Só limpa se ainda for o loading deste documento — outra ação pode
     // ter começado enquanto esta aguardava o servidor.
     setLoading((prev) => (prev === doc.id ? null : prev));
-  }, []);
+  }, [getDocumentUrl]);
 
   const handleDownload = useCallback(async (doc: Document) => {
     setLoading(doc.id);
@@ -99,7 +100,7 @@ export function DocumentPreview({ documents }: DocumentPreviewProps) {
       setError(result.error);
     }
     setLoading((prev) => (prev === doc.id ? null : prev));
-  }, []);
+  }, [getDocumentUrl]);
 
   return (
     <div className="space-y-3" data-testid="documents-section">

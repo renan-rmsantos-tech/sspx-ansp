@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 
 const { sendAction, resolveAction } = vi.hoisted(() => ({
   sendAction: vi.fn(), resolveAction: vi.fn(),
@@ -10,6 +10,10 @@ vi.mock("@/app/admin/_actions/donor-monthly-instructions-actions", () => ({
 }));
 
 import { DonorMonthlyInstructions, type MonthlyInstructionsAttempt } from "@/app/admin/_components/donor-monthly-instructions";
+import * as donorMonthlyInstructionsActions from "@/app/admin/_actions/donor-monthly-instructions-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(donorMonthlyInstructionsActions);
 
 const pledgeId = "b8fae3ab-fd64-4fb3-bacc-a9c12408d209";
 const occurrences = [

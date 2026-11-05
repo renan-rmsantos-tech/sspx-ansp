@@ -3,10 +3,10 @@
 import { useState, useCallback, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createSchoolYear } from "../_actions/admin-actions";
 import { Field } from "./field";
 import { Notice } from "./notice";
 import type { SchoolYear } from "./school-year-list";
+import { useServerAction } from "@/components/server-actions";
 
 interface SchoolYearFormProps {
   onCreated: (year: SchoolYear) => void;
@@ -16,6 +16,7 @@ interface SchoolYearFormProps {
 const INPUT_CLASS = "h-10 bg-surface";
 
 export function SchoolYearForm({ onCreated, onCancel }: SchoolYearFormProps) {
+  const createSchoolYear = useServerAction("createSchoolYear");
   const [nome, setNome] = useState("");
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
@@ -64,7 +65,7 @@ export function SchoolYearForm({ onCreated, onCancel }: SchoolYearFormProps) {
       setDataFim("");
       setLoading(false);
     },
-    [nome, dataInicio, dataFim, onCreated]
+    [nome, dataInicio, dataFim, createSchoolYear, onCreated]
   );
 
   return (

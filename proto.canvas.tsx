@@ -2,12 +2,20 @@ import "./app/globals.css";
 
 import type { CanvasProps, FrameProps } from "@compozy/proto";
 import { AdminShell } from "@/app/admin/_components/admin-shell";
+import { ServerActionsProvider } from "@/components/server-actions";
 import type { StaffRole } from "@/lib/auth/authorization";
 import { PathnameProvider } from "./proto/next/navigation";
+import { fixtureActions } from "./proto/server-actions.fixtures";
 
-/** O layout raiz só aplica `globals.css`; não há providers de apresentação. */
+const BASELINE_ACTIONS = fixtureActions();
+
+/**
+ * O layout raiz só aplica `globals.css`. As views chamam server actions pelo
+ * contexto; aqui toda action resolve sem servidor, e cada protótipo sobrepõe
+ * as que seus estados precisam com outro `ServerActionsProvider`.
+ */
 export function Canvas({ children }: CanvasProps) {
-  return children;
+  return <ServerActionsProvider actions={BASELINE_ACTIONS}>{children}</ServerActionsProvider>;
 }
 
 const STAFF: Record<StaffRole, { email: string; role: StaffRole }> = {

@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, fireEvent, cleanup, waitFor } from "@testing-library/react";
+import { screen, fireEvent, cleanup, waitFor } from "@testing-library/react";
 import { FileUpload } from "@/app/form/_components/file-upload";
+import * as formActions from "@/app/form/_actions/form-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(formActions);
 
 const mockCreateUploadUrl = vi.fn();
 
