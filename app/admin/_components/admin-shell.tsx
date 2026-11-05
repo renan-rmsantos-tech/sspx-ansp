@@ -4,7 +4,6 @@ import { useEffect, useRef, useState, useTransition, type ReactNode } from "reac
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogOut, Menu, X } from "lucide-react";
-import { logout } from "@/app/login/_actions/auth-actions";
 import { Button } from "@/components/ui/button";
 import { SealLogo } from "@/components/ui/seal-logo";
 import type { StaffRole } from "@/lib/auth/authorization";
@@ -23,14 +22,18 @@ const ROLE_LABELS: Record<StaffRole, string> = {
  * Casca do painel: barra superior (menu mobile, selo, usuário, Sair), menu
  * lateral com os grupos de `nav.ts` e contadores, e `main` com 1040px.
  * Contadores indisponíveis (`counts === null`) só omitem os badges.
+ * `onLogout` vem do layout (a server action), para a casca não importar o
+ * servidor e poder renderizar com fixtures na galeria de protótipos.
  */
 export function AdminShell({
   staff,
   counts,
+  onLogout,
   children,
 }: {
   staff: { email: string; role: StaffRole };
   counts: AdminShellCounts | null;
+  onLogout: () => Promise<void>;
   children: ReactNode;
 }) {
   const pathname = usePathname();
@@ -117,7 +120,7 @@ export function AdminShell({
             size="lg"
             className="gap-2"
             disabled={loggingOut}
-            onClick={() => startLogout(() => logout())}
+            onClick={() => startLogout(() => onLogout())}
           >
             <LogOut aria-hidden="true" />
             {loggingOut ? "Saindo…" : "Sair"}

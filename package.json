@@ -20,7 +20,8 @@
     "donors:enrich-residence": "node --env-file-if-exists=.env --import tsx scripts/enrich-donor-residences.ts",
     "donors:reminders": "node --env-file-if-exists=.env --import tsx scripts/send-donor-reminders.ts",
     "storage:cleanup": "tsx scripts/cleanup-pending.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "proto": "proto"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
@@ -44,6 +45,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@compozy/proto": "^0.1.6",
     "@eslint/eslintrc": "^3.3.5",
     "@tailwindcss/postcss": "^4.3.1",
     "@testing-library/jest-dom": "^6.9.1",
@@ -56,9 +58,11 @@
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.9",
     "jsdom": "^29.1.1",
+    "playwright": "^1.64.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^4.3.1",
     "typescript": "^6.0.3",
+    "vite": "^8.3.5",
     "vitest": "^4.1.9"
   }
 }

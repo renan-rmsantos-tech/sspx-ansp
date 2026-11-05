@@ -24,10 +24,6 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-vi.mock("@/app/login/_actions/auth-actions", () => ({
-  logout: () => mockLogout(),
-}));
-
 vi.mock("@/components/ui/seal-logo", () => ({
   SealLogo: ({ size }: { size?: number }) => <svg data-testid="shell-seal" data-size={size} />,
 }));
@@ -39,7 +35,7 @@ const secretaria = { email: "sec@escola.org", role: "secretaria" as const };
 
 function renderShell(props: Partial<React.ComponentProps<typeof AdminShell>> = {}) {
   return render(
-    <AdminShell staff={admin} counts={null} {...props}>
+    <AdminShell staff={admin} counts={null} onLogout={mockLogout} {...props}>
       <p>conteúdo</p>
     </AdminShell>
   );

@@ -1,14 +1,6 @@
 import type { NextConfig } from "next";
 
-// Protótipos de design (docs/design/prototyping.md) vivem em
-// app/prototipos/**/page.proto.tsx. A extensão só é reconhecida fora de
-// produção, então `next build` não gera essas rotas.
-const isProduction = process.env.NODE_ENV === "production";
-const pageExtensions = ["tsx", "ts", "jsx", "js"];
-if (!isProduction) pageExtensions.push("proto.tsx");
-
 const nextConfig: NextConfig = {
-  pageExtensions,
   // Rotas antigas do painel (redesenho de 2026-10): redirect permanente para
   // as páginas novas e com abas. Parâmetros de consulta (ex.: `?month=`) são
   // repassados. O proxy.ts continua exigindo sessão antes do redirect.
