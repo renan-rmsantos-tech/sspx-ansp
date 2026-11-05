@@ -9,12 +9,12 @@ import { Step4Expenses } from "./step-4-expenses";
 import { Step5Vehicles } from "./step-5-vehicles";
 import { Step6Review } from "./step-6-review";
 import { SuccessScreen } from "./success-screen";
-import { submitApplication } from "../_actions/form-actions";
 import { INITIAL_FORM_DATA, parseMoney } from "./form-types";
 import type { FormData } from "./form-types";
 import { MSG_OBRIGATORIO } from "./field-ui";
 import { isValidCPF } from "@/lib/validations/cpf";
 import type { ApplicationSubmission } from "@/lib/validations/application-schema";
+import { useServerAction } from "@/components/server-actions";
 
 const TOTAL_STEPS = 6;
 
@@ -166,12 +166,28 @@ function validateStep5(data: FormData): Record<string, string> {
   return errors;
 }
 
-export function ScholarshipForm() {
-  const [currentStep, setCurrentStep] = useState(1);
+interface ScholarshipFormProps {
+  /** Etapa aberta ao montar (1 a 6); o padrão é a primeira. */
+  initialStep?: number;
+  /** Dados já preenchidos ao montar; o padrão é o formulário vazio. */
+  initialData?: FormData;
+  /** Erros de validação já exibidos na etapa inicial (protótipos). */
+  initialErrors?: Record<string, string>;
+}
+
+export function ScholarshipForm({
+  initialStep = 1,
+  initialData = INITIAL_FORM_DATA,
+  initialErrors = {},
+}: ScholarshipFormProps = {}) {
+  const submitApplication = useServerAction("submitApplication");
+  const [currentStep, setCurrentStep] = useState(() =>
+    Math.min(Math.max(Math.trunc(initialStep), 1), TOTAL_STEPS)
+  );
   const [formData, setFormData] = useState<FormData>({
-    ...INITIAL_FORM_DATA,
+    ...initialData,
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>(initialErrors);
   const [contributionAccepted, setContributionAccepted] = useState(false);
   const [confidentialityAccepted, setConfidentialityAccepted] = useState(false);
   const [accepted, setAccepted] = useState(false);
@@ -358,7 +374,7 @@ export function ScholarshipForm() {
       submittingRef.current = false;
       setSubmitting(false);
     }
-  }, [accepted, contributionAccepted, confidentialityAccepted, formData]);
+  }, [accepted, contributionAccepted, confidentialityAccepted, formData, submitApplication]);
 
   if (submitted) {
     return <SuccessScreen />;

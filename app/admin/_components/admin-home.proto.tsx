@@ -4,6 +4,7 @@ import { adminHomeSummary, adminHomeSummaryIdle } from "./admin-home.fixtures";
 
 export const meta = definePrototype({
   title: "Início do painel",
+  spec: "painel",
   route: "/admin",
   roles: ["admin", "secretaria"],
   states: [

@@ -3,10 +3,10 @@
 import { Fragment, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { deleteSchoolYear } from "../_actions/admin-actions";
 import { EmptyState } from "./empty-state";
 import { InlineConfirm } from "./inline-confirm";
 import { StatusPill } from "./status-pill";
+import { useServerAction } from "@/components/server-actions";
 
 export interface SchoolYear {
   id: string;
@@ -19,9 +19,22 @@ export interface SchoolYear {
 interface SchoolYearListProps {
   years: SchoolYear[];
   onYearsChange: (years: SchoolYear[]) => void;
+  /** Data de referência (AAAA-MM-DD) para a situação; o padrão é hoje em São Paulo. */
+  today?: string;
+  /** Ano com a confirmação de exclusão já aberta. */
+  defaultConfirmDeleteId?: string;
 }
 
 type ConfirmAction = { type: "delete"; id: string };
+
+function saoPauloToday(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
 
 function formatDate(iso: string): string {
   return new Date(iso + "T12:00:00").toLocaleDateString("pt-BR");
@@ -29,8 +42,11 @@ function formatDate(iso: string): string {
 
 const TH_CLASS = "px-5 py-3 font-medium";
 
-export function SchoolYearList({ years, onYearsChange }: SchoolYearListProps) {
-  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null);
+export function SchoolYearList({ years, onYearsChange, today: todayProp, defaultConfirmDeleteId }: SchoolYearListProps) {
+  const deleteSchoolYear = useServerAction("deleteSchoolYear");
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(
+    defaultConfirmDeleteId ? { type: "delete", id: defaultConfirmDeleteId } : null
+  );
   const [loading, setLoading] = useState(false);
 
   const confirmAndExecute = useCallback(async () => {
@@ -42,7 +58,7 @@ export function SchoolYearList({ years, onYearsChange }: SchoolYearListProps) {
 
     setConfirmAction(null);
     setLoading(false);
-  }, [confirmAction, years, onYearsChange]);
+  }, [confirmAction, deleteSchoolYear, onYearsChange, years]);
 
   if (years.length === 0) {
     return (
@@ -69,7 +85,7 @@ export function SchoolYearList({ years, onYearsChange }: SchoolYearListProps) {
           </thead>
           <tbody>
             {years.map((year) => {
-              const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+              const today = todayProp ?? saoPauloToday();
               const status = today < year.data_inicio ? "Não iniciado" : today > year.data_fim ? "Encerrado" : "Ativo";
               const confirming = confirmAction?.id === year.id ? confirmAction : null;
               return (

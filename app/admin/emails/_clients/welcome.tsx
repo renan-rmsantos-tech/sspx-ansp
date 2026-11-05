@@ -9,13 +9,9 @@ import { Field } from "../../_components/field";
 import { InstitutionalEmailPreview } from "../../_components/institutional-email-preview";
 import { Notice } from "../../_components/notice";
 import { Section } from "../../_components/section";
-import {
-  retryDonorWelcomeEmail,
-  saveDonorEmailTemplate,
-  sendDonorTestEmail,
-} from "../../_actions/donor-email-actions";
 import { renderDonorWelcomeEmail } from "@/lib/email/donor-welcome-template";
 import type { DocumentHeaderData } from "@/lib/documents/document-header";
+import { useServerAction } from "@/components/server-actions";
 
 interface EmailTemplate {
   assunto: string;
@@ -38,18 +34,24 @@ export function DonorEmailClient({
   initialPending,
   header,
   resendConfigured,
+  initialMessage,
 }: {
   initialTemplate: EmailTemplate;
   initialPending: PendingDonor[];
   header: DocumentHeaderData;
   resendConfigured: boolean;
+  /** Mensagem de salvamento já exibida ao abrir (usada pelos protótipos). */
+  initialMessage?: Message;
 }) {
+  const retryDonorWelcomeEmail = useServerAction("retryDonorWelcomeEmail");
+  const saveDonorEmailTemplate = useServerAction("saveDonorEmailTemplate");
+  const sendDonorTestEmail = useServerAction("sendDonorTestEmail");
   const [template, setTemplate] = useState(initialTemplate);
   const [saved, setSaved] = useState(initialTemplate);
   const [pending, setPending] = useState(initialPending);
   const [saving, setSaving] = useState(false);
   const [sendingId, setSendingId] = useState<string | null>(null);
-  const [message, setMessage] = useState<Message | null>(null);
+  const [message, setMessage] = useState<Message | null>(initialMessage ?? null);
   const [retryError, setRetryError] = useState<{ id: string; text: string } | null>(null);
   const [testEmail, setTestEmail] = useState("");
   const [sendingTest, setSendingTest] = useState(false);

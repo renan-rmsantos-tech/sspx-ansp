@@ -1,25 +1,28 @@
 "use client";
 
 import { useActionState } from "react";
-import { loginAction, type LoginState } from "./_actions/auth-actions";
+import type { LoginState } from "./_actions/auth-actions";
 import { SealLogo } from "@/components/ui/seal-logo";
+import { useServerAction } from "@/components/server-actions";
 
 type LoginFormProps = {
   showCredentialsHint?: boolean;
   hintEmail?: string;
   hintPassword?: string;
+  /** Erro exibido antes do primeiro envio (protótipos); o padrão é nenhum. */
+  initialError?: string | null;
 };
-
-const initialState: LoginState = { error: null };
 
 export function LoginForm({
   showCredentialsHint = false,
   hintEmail,
   hintPassword,
+  initialError = null,
 }: LoginFormProps) {
-  const [state, formAction, isPending] = useActionState(
+  const loginAction = useServerAction("loginAction");
+  const [state, formAction, isPending] = useActionState<LoginState, FormData>(
     loginAction,
-    initialState
+    { error: initialError }
   );
 
   return (

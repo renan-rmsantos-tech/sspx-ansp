@@ -234,7 +234,14 @@ export interface SecretariatDonorPledge {
   created_at: string;
 }
 
-export function SecretariatDonorsClient({ initialDonors }: { initialDonors: SecretariatDonorPledge[] }) {
+export function SecretariatDonorsClient({
+  initialDonors,
+  initialOpenDonorId = null,
+}: {
+  initialDonors: SecretariatDonorPledge[];
+  /** Registro que começa aberto; por padrão todos começam fechados. */
+  initialOpenDonorId?: string | null;
+}) {
   const [filter, setFilter] = useState<FrequenciaFilter>("todos");
   const [search, setSearch] = useState("");
   const [priorado, setPriorado] = useState(ALL_PRIORADOS);
@@ -266,6 +273,7 @@ export function SecretariatDonorsClient({ initialDonors }: { initialDonors: Secr
           <RecordRow
             key={donor.id}
             data-testid={`donor-card-${donor.id}`}
+            defaultOpen={donor.id === initialOpenDonorId}
             title={donor.nome}
             meta={<DonorRowMeta donor={donor} />}
             status={<DonorFrequencyPill frequencia={donor.frequencia} />}
@@ -285,9 +293,15 @@ interface BenfeitoresClientProps {
   initialDonors: DonorPledge[];
   /** Vem de `?boas-vindas=pendentes`. */
   initialWelcomePendingOnly?: boolean;
+  /** Registro que começa aberto; por padrão todos começam fechados. */
+  initialOpenDonorId?: string | null;
 }
 
-export function BenfeitoresClient({ initialDonors, initialWelcomePendingOnly = false }: BenfeitoresClientProps) {
+export function BenfeitoresClient({
+  initialDonors,
+  initialWelcomePendingOnly = false,
+  initialOpenDonorId = null,
+}: BenfeitoresClientProps) {
   const [donors, setDonors] = useState<DonorPledge[]>(initialDonors);
   const [filter, setFilter] = useState<FrequenciaFilter>("todos");
   const [welcomePendingOnly, setWelcomePendingOnly] = useState(initialWelcomePendingOnly);
@@ -370,6 +384,7 @@ export function BenfeitoresClient({ initialDonors, initialWelcomePendingOnly = f
           <DonorCard
             key={donor.id}
             donor={donor}
+            defaultOpen={donor.id === initialOpenDonorId}
             onDelete={handleDelete}
             onDueDayUpdated={(id, day, nextDueDate) =>
               setDonors((current) =>

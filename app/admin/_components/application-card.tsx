@@ -3,8 +3,8 @@
 import { useState, useCallback, useEffect } from "react";
 import { FileDown, FileSignature, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ApplicationDetail } from "./application-detail";
-import { DecisionActions } from "./decision-actions";
+import { ApplicationDetail, type DetailTab } from "./application-detail";
+import { DecisionActions, type DecisionMode } from "./decision-actions";
 import { PdfPreviewModal } from "./pdf-preview-modal";
 import { IssuedDocuments } from "./issued-documents";
 import { ApplicationObservations } from "./application-observations";
@@ -14,12 +14,7 @@ import { Notice } from "./notice";
 import { RecordRow } from "./record-row";
 import { STATUS_LABELS, STATUS_TONES, type ApplicationStatus } from "./status-labels";
 import { StatusPill } from "./status-pill";
-import {
-  getApplicationDetail,
-  exportDecision,
-  exportContract,
-  exportApplication,
-} from "../_actions/admin-actions";
+import { useServerAction } from "@/components/server-actions";
 
 export interface ApplicationSummary {
   id: string;
@@ -46,6 +41,10 @@ interface ApplicationCardProps {
   application: ApplicationSummary;
   onDecision: DecisionHandler;
   defaultOpen?: boolean;
+  /** Aba do detalhe na primeira abertura; o padrão depende da situação e dos documentos. */
+  defaultTab?: DetailTab;
+  /** Formulário de decisão já aberto (somente solicitações pendentes). */
+  defaultDecisionMode?: DecisionMode;
 }
 
 type Preview = { pdfBase64: string; filename: string; title: string };
@@ -59,7 +58,17 @@ function sum(values: Array<number | null | undefined>): number {
   return values.reduce<number>((total, value) => total + (Number(value) || 0), 0);
 }
 
-export function ApplicationCard({ application, onDecision, defaultOpen = false }: ApplicationCardProps) {
+export function ApplicationCard({
+  application,
+  onDecision,
+  defaultOpen = false,
+  defaultTab,
+  defaultDecisionMode,
+}: ApplicationCardProps) {
+  const getApplicationDetail = useServerAction("getApplicationDetail");
+  const exportDecision = useServerAction("exportDecision");
+  const exportContract = useServerAction("exportContract");
+  const exportApplication = useServerAction("exportApplication");
   const [open, setOpen] = useState(defaultOpen);
   const [detail, setDetail] = useState<Record<string, unknown> | null>(null);
   const [detailError, setDetailError] = useState(false);
@@ -84,7 +93,7 @@ export function ApplicationCard({ application, onDecision, defaultOpen = false }
     return () => {
       cancelled = true;
     };
-  }, [open, detail, detailError, application.id]);
+  }, [open, detail, detailError, application.id, getApplicationDetail]);
 
   const runExport = useCallback(
     async (kind: "data" | "decision" | "contract", action: (id: string) => Promise<PdfResult>, title: string) => {
@@ -131,6 +140,7 @@ export function ApplicationCard({ application, onDecision, defaultOpen = false }
       familyIncome={detail ? sum([detail.renda_pai as number, detail.renda_mae as number, detail.renda_outros as number]) : undefined}
       monthlyTuition={sum(application.students.map((student) => student.mensalidade))}
       onDecision={onDecision}
+      defaultMode={defaultDecisionMode}
     />
   );
 
@@ -172,6 +182,7 @@ export function ApplicationCard({ application, onDecision, defaultOpen = false }
         <ApplicationDetail
           detail={detail}
           status={application.status}
+          defaultTab={defaultTab}
           decisionPanel={decisionPanel}
           afterResumo={<ApplicationObservations applicationId={application.id} />}
         />

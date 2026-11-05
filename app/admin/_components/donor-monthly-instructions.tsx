@@ -1,11 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import {
-  resolveUncertainDonorMonthlyInstructionsAction,
-  sendManualDonorMonthlyInstructionsAction,
-} from "@/app/admin/_actions/donor-monthly-instructions-actions";
 import { saoPauloDate } from "@/lib/donor-recurrence";
+import { useServerAction } from "@/components/server-actions";
 
 export interface MonthlyInstructionsAttempt {
   generation: number;
@@ -81,6 +78,8 @@ interface Props {
 }
 
 export function DonorMonthlyInstructions({ pledgeId, latest, currentReceipt, pendingOccurrences, onUpdated }: Props) {
+  const resolveUncertainDonorMonthlyInstructionsAction = useServerAction("resolveUncertainDonorMonthlyInstructionsAction");
+  const sendManualDonorMonthlyInstructionsAction = useServerAction("sendManualDonorMonthlyInstructionsAction");
   const [attempt, setAttempt] = useState(latest);
   const [competence, setCompetence] = useState(() => defaultCompetence(latest, pendingOccurrences));
   const [confirmed, setConfirmed] = useState(false);

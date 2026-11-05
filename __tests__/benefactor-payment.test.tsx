@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 
 vi.mock("@/app/benfeitor/_actions/donor-actions", () => ({ registerDonorPledge: vi.fn() }));
+vi.mock("@/app/form/_actions/form-actions", () => ({ createUploadUrl: vi.fn() }));
 vi.mock("@/app/form/_components/file-upload", () => ({ FileUpload: () => <div /> }));
 
 import SejaUmBenfeitorPage from "@/app/seja-um-benfeitor/page";

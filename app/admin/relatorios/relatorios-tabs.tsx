@@ -17,11 +17,14 @@ const TAB_LABELS: Record<ReportTab, string> = {
 export function RelatoriosTabs({
   reports,
   financial,
+  defaultTab = "cadastros",
 }: {
   reports: ComponentProps<typeof DonorReportsClient>["initialReports"];
   financial: ComponentProps<typeof FinancialReport>["initialReport"];
+  /** Aba aberta quando a URL não traz `?aba=`. */
+  defaultTab?: ReportTab;
 }) {
-  const [tab, setTab] = useUrlTab<ReportTab>("/admin/relatorios", REPORT_TABS, "cadastros");
+  const [tab, setTab] = useUrlTab<ReportTab>("/admin/relatorios", REPORT_TABS, defaultTab);
 
   return (
     <Tabs value={tab} onValueChange={(next) => setTab(next as ReportTab)} className="gap-5">

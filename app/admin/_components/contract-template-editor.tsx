@@ -5,7 +5,7 @@ import { ArrowDown, ArrowUp, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { saveContractTemplate, type ContractTemplate } from "../_actions/admin-actions";
+import type { ContractTemplate } from "../_actions/admin-actions";
 import {
   AVAILABLE_CONTRACT_TOKENS,
   replaceContractTokens,
@@ -15,9 +15,12 @@ import {
 import { Field } from "./field";
 import { Notice } from "./notice";
 import { TokenReference } from "./token-reference";
+import { useServerAction } from "@/components/server-actions";
 
 interface ContractTemplateEditorProps {
   initialTemplate: ContractTemplate | null;
+  /** Mensagem de salvamento já exibida ao abrir (usada pelos protótipos). */
+  initialMessage?: { type: "success" | "error"; text: string };
 }
 
 const EMPTY = {
@@ -31,7 +34,9 @@ const FIELD_CLASS = "bg-surface font-mono text-sm";
 
 export function ContractTemplateEditor({
   initialTemplate,
+  initialMessage,
 }: ContractTemplateEditorProps) {
+  const saveContractTemplate = useServerAction("saveContractTemplate");
   const [titulo, setTitulo] = useState(initialTemplate?.titulo ?? EMPTY.titulo);
   const [cabecalho, setCabecalho] = useState(
     initialTemplate?.cabecalho ?? EMPTY.cabecalho
@@ -44,7 +49,7 @@ export function ContractTemplateEditor({
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
-  } | null>(null);
+  } | null>(initialMessage ?? null);
 
   const clearMessage = useCallback(() => setMessage(null), []);
 
@@ -103,7 +108,7 @@ export function ContractTemplateEditor({
       });
     }
     setSaving(false);
-  }, [titulo, cabecalho, clausulas, rodape]);
+  }, [saveContractTemplate, titulo, cabecalho, clausulas, rodape]);
 
   const preview = useMemo(() => {
     const r = (t: string) => replaceContractTokens(t, SAMPLE_CONTRACT_DATA);

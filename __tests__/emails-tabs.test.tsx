@@ -28,9 +28,10 @@ import { DEFAULT_DOCUMENT_HEADER } from "@/lib/documents/document-header";
 
 const header = DEFAULT_DOCUMENT_HEADER;
 
-function show() {
+function show(defaultTab?: React.ComponentProps<typeof EmailsTabs>["defaultTab"]) {
   return render(
     <EmailsTabs
+      defaultTab={defaultTab}
       welcome={{ initialTemplate: { assunto: "Bem-vindo", corpo: "Olá benfeitor" }, initialPending: [], header, resendConfigured: true }}
       monthly={{
         initialTemplate: { assunto: "Instruções {nome}", corpo: "Pague {link_comprovante}" },
@@ -90,5 +91,14 @@ describe("EmailsTabs", () => {
     mockSearch = "aba=qualquer";
     show();
     expect(screen.getByTestId("tab-boas-vindas")).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("abre na aba de defaultTab quando a URL não traz ?aba=, e a URL continua prevalecendo", () => {
+    const { unmount } = show("lembretes");
+    expect(screen.getByTestId("tab-lembretes")).toHaveAttribute("aria-selected", "true");
+    unmount();
+    mockSearch = "aba=instrucoes";
+    show("lembretes");
+    expect(screen.getByTestId("tab-instrucoes")).toHaveAttribute("aria-selected", "true");
   });
 });

@@ -1,14 +1,11 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import {
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-  cleanup,
-  act,
-} from "@testing-library/react";
+import { screen, fireEvent, waitFor, cleanup, act } from "@testing-library/react";
 import { ScholarshipForm } from "@/app/form/_components/scholarship-form";
 import { SERIES_OPTIONS } from "@/app/form/_components/form-types";
+import * as formActions from "@/app/form/_actions/form-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(formActions);
 
 const mockSubmitApplication = vi.fn();
 

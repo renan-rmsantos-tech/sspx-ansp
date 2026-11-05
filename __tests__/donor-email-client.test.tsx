@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 
 const { saveDonorEmailTemplate, retryDonorWelcomeEmail, sendDonorTestEmail } = vi.hoisted(() => ({
   saveDonorEmailTemplate: vi.fn(),
@@ -14,6 +14,10 @@ vi.mock("@/app/admin/_actions/donor-email-actions", () => ({
 }));
 
 import { DonorEmailClient } from "@/app/admin/emails/_clients/welcome";
+import * as donorEmailActions from "@/app/admin/_actions/donor-email-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(donorEmailActions);
 
 afterEach(() => {
   cleanup();

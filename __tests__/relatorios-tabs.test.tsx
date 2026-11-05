@@ -65,4 +65,9 @@ describe("RelatoriosTabs", () => {
     render(<RelatoriosTabs reports={reports} financial={financial} />);
     expect(screen.getByRole("tab", { name: "Cadastros de benfeitores" })).toHaveAttribute("aria-selected", "true");
   });
+
+  it("abre em Financeiro com defaultTab quando a URL não traz ?aba=", () => {
+    render(<RelatoriosTabs reports={reports} financial={financial} defaultTab="financeiro" />);
+    expect(screen.getByTestId("tab-financeiro")).toHaveAttribute("aria-selected", "true");
+  });
 });

@@ -8,7 +8,7 @@ import { DataGrid, DataItem } from "./data-grid";
 import { Field } from "./field";
 import { Notice } from "./notice";
 import type { DecisionHandler } from "./application-card";
-import { approveApplication, rejectApplication } from "../_actions/admin-actions";
+import { useServerAction } from "@/components/server-actions";
 
 interface DecisionActionsProps {
   applicationId: string;
@@ -18,7 +18,11 @@ interface DecisionActionsProps {
   /** Soma das mensalidades dos alunos. */
   monthlyTuition?: number;
   onDecision: DecisionHandler;
+  /** Formulário aberto na montagem; o padrão mostra os botões de decisão. */
+  defaultMode?: DecisionMode;
 }
+
+export type DecisionMode = "idle" | "approve" | "reject";
 
 const currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -32,8 +36,11 @@ export function DecisionActions({
   familyIncome,
   monthlyTuition,
   onDecision,
+  defaultMode = "idle",
 }: DecisionActionsProps) {
-  const [mode, setMode] = useState<"idle" | "approve" | "reject">("idle");
+  const approveApplication = useServerAction("approveApplication");
+  const rejectApplication = useServerAction("rejectApplication");
+  const [mode, setMode] = useState<DecisionMode>(defaultMode);
   const [discount, setDiscount] = useState(String(requestedDiscount));
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -66,7 +73,7 @@ export function DecisionActions({
     } finally {
       setSubmitting(false);
     }
-  }, [mode, applicationId, discount, reason, onDecision]);
+  }, [mode, discount, approveApplication, applicationId, reason, rejectApplication, onDecision]);
 
   if (mode === "idle") {
     return (

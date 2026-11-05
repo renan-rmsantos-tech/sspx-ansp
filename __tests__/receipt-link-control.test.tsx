@@ -1,8 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 const issue = vi.hoisted(() => vi.fn());
 vi.mock("@/app/admin/_actions/donor-receipt-actions", () => ({ issueDonorReceiptRecoveryLink: issue }));
 import { ReceiptLinkControl } from "@/app/admin/_components/receipt-link-control";
+import * as donorReceiptActions from "@/app/admin/_actions/donor-receipt-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(donorReceiptActions);
 
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
 describe("admin receipt link control", () => {

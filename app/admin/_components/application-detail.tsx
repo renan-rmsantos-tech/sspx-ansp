@@ -7,7 +7,7 @@ import { DocumentPreview } from "./document-preview";
 import { EmptyState } from "./empty-state";
 import { PAGE_TABS_LIST_CLASS, PAGE_TABS_TRIGGER_CLASS } from "./url-tabs";
 
-type DetailTab = "resumo" | "documentos" | "financeiro" | "decisao";
+export type DetailTab = "resumo" | "documentos" | "financeiro" | "decisao";
 
 interface ApplicationDetailProps {
   detail: Record<string, unknown>;

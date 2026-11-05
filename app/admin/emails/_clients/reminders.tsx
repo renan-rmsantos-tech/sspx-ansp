@@ -9,16 +9,10 @@ import { Field } from "../../_components/field";
 import { InstitutionalEmailPreview } from "../../_components/institutional-email-preview";
 import { Notice } from "../../_components/notice";
 import { Section } from "../../_components/section";
-import {
-  getDonorReminderDashboard,
-  previewDonorReminderTemplate,
-  resolveUncertainDonorReminder,
-  retryFailedDonorReminder,
-  saveDonorReminderTemplate,
-  sendDonorReminderTest,
-} from "../../_actions/donor-reminder-actions";
+import type { getDonorReminderDashboard } from "../../_actions/donor-reminder-actions";
 import { DONOR_REMINDER_SAMPLE_LINK } from "@/lib/email/donor-reminder-template";
 import type { DocumentHeaderData } from "@/lib/documents/document-header";
+import { useServerAction } from "@/components/server-actions";
 
 type Template = { assunto: string; corpo: string };
 type Preview = { assunto: string; bodyHtml: string };
@@ -72,14 +66,22 @@ function formatDateTime(value: string) {
 }
 
 export function DonorReminderClient({
-  initialTemplate, initialPreview, initialSends, header, resendConfigured,
+  initialTemplate, initialPreview, initialSends, header, resendConfigured, initialMessage,
 }: {
   initialTemplate: Template;
   initialPreview: Preview;
   initialSends: Send[];
   header: DocumentHeaderData;
   resendConfigured: boolean;
+  /** Mensagem de salvamento já exibida ao abrir (usada pelos protótipos). */
+  initialMessage?: Message;
 }) {
+  const getDonorReminderDashboard = useServerAction("getDonorReminderDashboard");
+  const previewDonorReminderTemplate = useServerAction("previewDonorReminderTemplate");
+  const resolveUncertainDonorReminder = useServerAction("resolveUncertainDonorReminder");
+  const retryFailedDonorReminder = useServerAction("retryFailedDonorReminder");
+  const saveDonorReminderTemplate = useServerAction("saveDonorReminderTemplate");
+  const sendDonorReminderTest = useServerAction("sendDonorReminderTest");
   const [template, setTemplate] = useState(initialTemplate);
   const [saved, setSaved] = useState(initialTemplate);
   const [preview, setPreview] = useState(initialPreview);
@@ -88,7 +90,7 @@ export function DonorReminderClient({
   const [sends, setSends] = useState(initialSends);
   const [testEmail, setTestEmail] = useState("");
   const [busy, setBusy] = useState<"save" | "preview" | "test" | string | null>(null);
-  const [notice, setNotice] = useState<Message | null>(null);
+  const [notice, setNotice] = useState<Message | null>(initialMessage ?? null);
   const [testNotice, setTestNotice] = useState<Message | null>(null);
   const [sendNotice, setSendNotice] = useState<Message | null>(null);
   const [reviewed, setReviewed] = useState<string[]>([]);

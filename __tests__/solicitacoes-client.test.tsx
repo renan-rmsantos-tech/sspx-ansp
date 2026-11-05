@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { render, screen, fireEvent, cleanup, act, within, waitFor } from "@testing-library/react";
+import { screen, fireEvent, cleanup, act, within, waitFor } from "@testing-library/react";
 
 const {
   mockGetApplicationDetail,
@@ -56,6 +56,11 @@ vi.mock("@/app/admin/_actions/observation-actions", () => ({
 
 import { SecretariatApplicationsClient, SolicitacoesClient } from "@/app/admin/solicitacoes/client";
 import type { ApplicationSummary } from "@/app/admin/_components/application-card";
+import * as adminActions from "@/app/admin/_actions/admin-actions";
+import * as observationActions from "@/app/admin/_actions/observation-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(adminActions, observationActions);
 
 function makeApp(overrides: Partial<ApplicationSummary> = {}): ApplicationSummary {
   return {
@@ -407,6 +412,35 @@ describe("SolicitacoesClient", () => {
     });
   });
 
+  describe("estado inicial e falha de carregamento", () => {
+    it("mostra um aviso no lugar da lista quando a busca falha", async () => {
+      render(<SolicitacoesClient initialApplications={[]} error="Erro ao buscar solicitações." />);
+      await settle();
+
+      expect(screen.getByTestId("applications-error")).toHaveTextContent("Não foi possível carregar as solicitações");
+      expect(screen.getByTestId("applications-error")).toHaveTextContent("Erro ao buscar solicitações.");
+      expect(screen.queryByTestId("application-list")).not.toBeInTheDocument();
+      expect(screen.queryByText("Nenhuma solicitação recebida")).not.toBeInTheDocument();
+    });
+
+    it("abre o registro, a aba e o formulário de decisão pedidos", async () => {
+      render(
+        <SolicitacoesClient
+          initialApplications={fourApps()}
+          initialOpenId="a1"
+          initialTab="decisao"
+          initialDecision="reject"
+        />
+      );
+      await settle();
+
+      const card = screen.getByTestId("application-card-a1");
+      expect(within(card).getByTestId("detail-tab-decisao")).toHaveAttribute("aria-selected", "true");
+      expect(within(card).getByTestId("reject-form")).toBeInTheDocument();
+      expect(screen.getAllByTestId("card-detail")).toHaveLength(1);
+    });
+  });
+
   describe("decisão inline (US-007)", () => {
     async function openDecision(app = makeApp()) {
       await renderClient([app]);
@@ -594,6 +628,18 @@ describe("SecretariatApplicationsClient", () => {
     });
     expect(await screen.findByText("Ligar para a família.")).toBeInTheDocument();
     await waitFor(() => expect(screen.getByPlaceholderText("Registrar observação interna")).toHaveValue(""));
+  });
+
+  it("abre o registro e a aba pedidos, e avisa quando a lista não carregou", async () => {
+    render(
+      <SecretariatApplicationsClient initialApplications={[secretariatApp]} initialOpenId="app-1" initialTab="documentos-finais" />
+    );
+    expect(await screen.findByRole("button", { name: "Baixar decisão" })).toBeInTheDocument();
+    cleanup();
+
+    render(<SecretariatApplicationsClient initialApplications={[]} error="Erro ao buscar solicitações." />);
+    expect(screen.getByTestId("applications-error")).toHaveTextContent("Erro ao buscar solicitações.");
+    expect(screen.queryByTestId("application-list")).not.toBeInTheDocument();
   });
 
   it("filtra, pré-seleciona ?situacao= e mostra vazio", () => {

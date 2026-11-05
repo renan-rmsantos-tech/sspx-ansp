@@ -1,8 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { DonorForm } from "@/app/benfeitor/_components/donor-form";
 import { registerDonorPledge } from "@/app/benfeitor/_actions/donor-actions";
 import { createUploadUrl } from "@/app/form/_actions/form-actions";
+import * as donorActions from "@/app/benfeitor/_actions/donor-actions";
+import * as formActions from "@/app/form/_actions/form-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(donorActions, formActions);
 
 const { lookupCep } = vi.hoisted(() => ({ lookupCep: vi.fn() }));
 

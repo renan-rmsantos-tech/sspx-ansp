@@ -10,16 +10,12 @@ import { InstitutionalEmailPreview } from "../../_components/institutional-email
 import { Notice } from "../../_components/notice";
 import { Section } from "../../_components/section";
 import {
-  previewDonorMonthlyInstructionsTemplate,
-  saveDonorMonthlyInstructionsTemplate,
-  sendDonorMonthlyInstructionsTest,
-} from "../../_actions/donor-monthly-instructions-actions";
-import {
   DONOR_MONTHLY_INSTRUCTIONS_SAMPLE_LINK,
   DONOR_MONTHLY_INSTRUCTIONS_TOKENS,
   type DonorMonthlyInstructionsTemplate,
 } from "@/lib/email/donor-monthly-instructions-template";
 import type { DocumentHeaderData } from "@/lib/documents/document-header";
+import { useServerAction } from "@/components/server-actions";
 
 type Preview = { assunto: string; bodyHtml: string };
 type Message = { type: "success" | "error"; text: string };
@@ -27,13 +23,18 @@ type Message = { type: "success" | "error"; text: string };
 const CARD = "rounded-lg border border-border bg-surface p-5";
 
 export function DonorMonthlyInstructionsClient({
-  initialTemplate, initialPreview, header, resendConfigured,
+  initialTemplate, initialPreview, header, resendConfigured, initialMessage,
 }: {
   initialTemplate: DonorMonthlyInstructionsTemplate;
   initialPreview: Preview;
   header: DocumentHeaderData;
   resendConfigured: boolean;
+  /** Mensagem de salvamento já exibida ao abrir (usada pelos protótipos). */
+  initialMessage?: Message;
 }) {
+  const previewDonorMonthlyInstructionsTemplate = useServerAction("previewDonorMonthlyInstructionsTemplate");
+  const saveDonorMonthlyInstructionsTemplate = useServerAction("saveDonorMonthlyInstructionsTemplate");
+  const sendDonorMonthlyInstructionsTest = useServerAction("sendDonorMonthlyInstructionsTest");
   const [template, setTemplate] = useState(initialTemplate);
   const [saved, setSaved] = useState(initialTemplate);
   const [previewed, setPreviewed] = useState(initialTemplate);
@@ -41,7 +42,7 @@ export function DonorMonthlyInstructionsClient({
   const [previewHeader, setPreviewHeader] = useState(header);
   const [testEmail, setTestEmail] = useState("");
   const [busy, setBusy] = useState<"save" | "preview" | "test" | null>(null);
-  const [notice, setNotice] = useState<Message | null>(null);
+  const [notice, setNotice] = useState<Message | null>(initialMessage ?? null);
   const [testNotice, setTestNotice] = useState<Message | null>(null);
   const dirty = template.assunto !== saved.assunto || template.corpo !== saved.corpo;
   const previewDirty = template.assunto !== previewed.assunto || template.corpo !== previewed.corpo;

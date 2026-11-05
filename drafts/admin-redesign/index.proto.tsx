@@ -3,6 +3,7 @@ import { SCREENS, Shell, type Role, type ScreenId } from "./shell";
 
 export const meta = definePrototype({
   title: "Painel administrativo — redesenho",
+  spec: "painel",
   roles: ["admin", "secretaria"],
   states: [
     { id: "inicio", label: "Início" },

@@ -1,11 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { DEFAULT_DOCUMENT_HEADER, FOOTER_HELP } from "@/lib/documents/document-header";
 
 const save = vi.hoisted(() => vi.fn());
 vi.mock("@/app/admin/_actions/admin-actions", () => ({ saveDocumentHeader: save }));
 
 import { CabecalhoClient } from "@/app/admin/cabecalho/client";
+import * as adminActions from "@/app/admin/_actions/admin-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(adminActions);
 
 afterEach(() => {
   cleanup();
@@ -64,5 +68,10 @@ describe("CabecalhoClient", () => {
     fireEvent.click(screen.getByTestId("header-save"));
     await waitFor(() => expect(screen.getByTestId("header-error")).toHaveTextContent("Sem permissão."));
     expect(save).toHaveBeenCalledTimes(1);
+  });
+
+  it("mostra o erro inicial já ao abrir", () => {
+    render(<CabecalhoClient initialHeader={DEFAULT_DOCUMENT_HEADER} initialError="Sem permissão." />);
+    expect(screen.getByTestId("header-error")).toHaveTextContent("Sem permissão.");
   });
 });

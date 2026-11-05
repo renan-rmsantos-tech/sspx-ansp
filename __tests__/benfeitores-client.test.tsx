@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 
 const { updateDonorDueDay, deleteDonorPledge, exportDonorPledge, getDocumentUrl } = vi.hoisted(() => ({
   updateDonorDueDay: vi.fn(),
@@ -18,6 +18,13 @@ vi.mock("@/app/admin/_actions/donor-monthly-instructions-actions", () => ({
 
 import { BenfeitoresClient, SecretariatDonorsClient, type SecretariatDonorPledge } from "@/app/admin/benfeitores/client";
 import type { DonorPledge } from "@/app/admin/_components/donor-card";
+import * as adminActions from "@/app/admin/_actions/admin-actions";
+import * as donorEmailActions from "@/app/admin/_actions/donor-email-actions";
+import * as donorMonthlyInstructionsActions from "@/app/admin/_actions/donor-monthly-instructions-actions";
+import * as donorReceiptActions from "@/app/admin/_actions/donor-receipt-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(adminActions, donorEmailActions, donorMonthlyInstructionsActions, donorReceiptActions);
 
 afterEach(cleanup);
 beforeEach(() => {
@@ -82,6 +89,13 @@ describe("SecretariatDonorsClient", () => {
     expect(screen.getByText("Nenhum benfeitor com esses filtros")).toBeInTheDocument();
   });
 
+  it("opens only the record named by initialOpenDonorId", () => {
+    render(<SecretariatDonorsClient initialDonors={[base, { ...base, id: "d2", nome: "Bruna" }]} initialOpenDonorId="d2" />);
+    const toggle = (id: string) => screen.getByTestId(`donor-card-${id}`).querySelector("button[aria-expanded]");
+    expect(toggle("d1")).toHaveAttribute("aria-expanded", "false");
+    expect(toggle("d2")).toHaveAttribute("aria-expanded", "true");
+  });
+
   it("combines the priorado filter with the search", () => {
     render(
       <SecretariatDonorsClient
@@ -140,6 +154,17 @@ describe("BenfeitoresClient", () => {
     expect(within(pendingCard).getByRole("button", { name: "Gerar link de comprovante" })).toBeInTheDocument();
     expect(within(sentCard).queryByRole("button", { name: "Gerar link de comprovante" })).not.toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "Gerar link de comprovante" })).toHaveLength(1);
+  });
+  it("opens only the card named by initialOpenDonorId; all start closed by default", () => {
+    const toggle = (id: string) => screen.getByTestId(`donor-card-${id}`).querySelector("button[aria-expanded]");
+    const { unmount } = render(<BenfeitoresClient initialDonors={trio} initialOpenDonorId="d3" />);
+    expect(toggle("d1")).toHaveAttribute("aria-expanded", "false");
+    expect(toggle("d2")).toHaveAttribute("aria-expanded", "false");
+    expect(toggle("d3")).toHaveAttribute("aria-expanded", "true");
+    unmount();
+
+    render(<BenfeitoresClient initialDonors={trio} />);
+    expect(screen.queryAllByRole("button", { expanded: true })).toHaveLength(0);
   });
   it("UT-050: filters by frequency with the segmented control and counts results", () => {
     render(<BenfeitoresClient initialDonors={trio} />);

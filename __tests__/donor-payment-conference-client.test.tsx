@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import type { ComponentProps } from "react";
 
 const actions = vi.hoisted(() => ({
@@ -17,6 +17,11 @@ vi.mock("recharts", () => {
 });
 
 import { PagamentosClient } from "@/app/admin/pagamentos/client";
+import * as donorPaymentConferenceActions from "@/app/admin/_actions/donor-payment-conference-actions";
+import * as donorReceiptActions from "@/app/admin/_actions/donor-receipt-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(donorPaymentConferenceActions, donorReceiptActions);
 
 type Data = NonNullable<ComponentProps<typeof PagamentosClient>["initialData"]>;
 type Row = Data["rows"][number];

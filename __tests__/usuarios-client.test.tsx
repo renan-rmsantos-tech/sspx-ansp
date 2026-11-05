@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen, within } from "@testing-library/react";
 
 const { createSecretariatUser, resetSecretariatPassword, setSecretariatUserActive } = vi.hoisted(() => ({
   createSecretariatUser: vi.fn(),
@@ -15,6 +15,10 @@ vi.mock("@/app/admin/_actions/staff-actions", () => ({
 }));
 
 import { UsuariosClient } from "@/app/admin/usuarios/client";
+import * as staffActions from "@/app/admin/_actions/staff-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(staffActions);
 
 const users = [
   { id: "u-1", email: "ana@exemplo.com", ativo: true, created_at: "2026-03-10T12:00:00.000Z" },
@@ -136,5 +140,10 @@ describe("UsuariosClient", () => {
     const list = screen.getByRole("region", { name: "Acessos existentes" });
     expect(within(list).getByRole("alert")).toHaveTextContent("Senha inválida.");
     vi.restoreAllMocks();
+  });
+
+  it("mostra o erro de criação inicial já ao abrir", () => {
+    render(<UsuariosClient initialUsers={[]} initialFormError="Este e-mail já tem acesso." />);
+    expect(screen.getByRole("alert")).toHaveTextContent("Este e-mail já tem acesso.");
   });
 });

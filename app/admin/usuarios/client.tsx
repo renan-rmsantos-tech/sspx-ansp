@@ -4,17 +4,13 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  createSecretariatUser,
-  resetSecretariatPassword,
-  setSecretariatUserActive,
-} from "../_actions/staff-actions";
 import { EmptyState } from "../_components/empty-state";
 import { Field } from "../_components/field";
 import { Notice } from "../_components/notice";
 import { PageHeader } from "../_components/page-header";
 import { Section } from "../_components/section";
 import { StatusPill } from "../_components/status-pill";
+import { useServerAction } from "@/components/server-actions";
 
 type User = { id: string; email: string; ativo: boolean; created_at: string };
 
@@ -25,12 +21,22 @@ function formatCreatedAt(iso: string): string | null {
   return Number.isNaN(date.getTime()) ? null : date.toLocaleDateString("pt-BR");
 }
 
-export function UsuariosClient({ initialUsers }: { initialUsers: User[] }) {
+export function UsuariosClient({
+  initialUsers,
+  initialFormError,
+}: {
+  initialUsers: User[];
+  /** Erro de criação já exibido ao abrir (usado pelos protótipos). */
+  initialFormError?: string;
+}) {
+  const createSecretariatUser = useServerAction("createSecretariatUser");
+  const resetSecretariatPassword = useServerAction("resetSecretariatPassword");
+  const setSecretariatUserActive = useServerAction("setSecretariatUserActive");
   const [users, setUsers] = useState(initialUsers);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [creating, setCreating] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(initialFormError ?? null);
   const [listError, setListError] = useState<string | null>(null);
 
   async function create(event: FormEvent<HTMLFormElement>) {

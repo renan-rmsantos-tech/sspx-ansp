@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { getCurrentIssuedDocuments, getIssuedDocumentHistory, getIssuedDocumentUrl } from "../_actions/admin-actions";
+import { useServerAction } from "@/components/server-actions";
 
 type Document = { id: string; kind: "decision" | "contract"; version: number; filename: string; issued_at: string };
 
@@ -12,6 +12,9 @@ function label(document: Document): string {
 
 /** Documentos finais já emitidos (versão atual e histórico) para a Administração. */
 export function IssuedDocuments({ applicationId }: { applicationId: string }) {
+  const getCurrentIssuedDocuments = useServerAction("getCurrentIssuedDocuments");
+  const getIssuedDocumentHistory = useServerAction("getIssuedDocumentHistory");
+  const getIssuedDocumentUrl = useServerAction("getIssuedDocumentUrl");
   const [current, setCurrent] = useState<Document[]>([]);
   const [history, setHistory] = useState<Document[]>([]);
 
@@ -22,7 +25,7 @@ export function IssuedDocuments({ applicationId }: { applicationId: string }) {
         setHistory(versions as Document[]);
       }
     );
-  }, [applicationId]);
+  }, [applicationId, getCurrentIssuedDocuments, getIssuedDocumentHistory]);
 
   async function download(id: string) {
     const result = await getIssuedDocumentUrl(id);

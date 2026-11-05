@@ -1,17 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getApplicationObservations } from "../_actions/observation-actions";
+import { useServerAction } from "@/components/server-actions";
 
 type Observation = { id: string; body: string; created_at: string; author_user?: { email: string } | null };
 
 /** Observações internas registradas pela Secretaria (somente leitura para a Administração). */
 export function ApplicationObservations({ applicationId }: { applicationId: string }) {
+  const getApplicationObservations = useServerAction("getApplicationObservations");
   const [items, setItems] = useState<Observation[]>([]);
 
   useEffect(() => {
     void getApplicationObservations(applicationId).then((result) => setItems(result as Observation[]));
-  }, [applicationId]);
+  }, [applicationId, getApplicationObservations]);
 
   return (
     <section>

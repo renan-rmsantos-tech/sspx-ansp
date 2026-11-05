@@ -29,6 +29,15 @@ npm run proto -- screenshot admin-home --state erro --role secretaria
   `app/admin/_components/admin-home.proto.tsx`.
 - **Draft**: `drafts/<slug>/index.proto.tsx`, exploração com markup livre antes de a
   view existir. Exemplo: `drafts/admin-redesign/`.
+- **Seções**: cada protótipo declara `spec` no `meta`, e a galeria agrupa por ela:
+  `painel` (Painel administrativo), `publico` (Site público), `divulgacao` (Cartazes e
+  divulgação) e `componentes` (Componentes de interface). As seções ficam em `specs`
+  de `proto.config.ts`.
+- **Cartazes e divulgação**: os materiais impressos e de redes sociais são views em
+  `app/_divulgacao/` (cartaz A4 dos benfeitores, cartaz A4 das famílias, posts de feed
+  e story), com protótipo ao lado. Usam só textos da landing e do cartaz original
+  (`docs/design/cartaz-divulgacao/`). Para imprimir, abra o estado com `--bare` na
+  galeria e use "Salvar como PDF" no navegador (o CSS define `@page` A4).
 - **Canvas e Frame**: `proto.canvas.tsx` carrega `app/globals.css` e envolve os
   protótipos de componente com o `AdminShell` real (use `standalone: true` no `meta`
   para telas públicas sem o painel). O papel escolhido na galeria (`admin` ou
@@ -40,9 +49,27 @@ O app é Next; a galeria compila com `vite.config.ts`, que o `next build` e o Vi
 não leem. `next/link`, `next/image` e `next/navigation` são trocados pelas versões de
 `proto/next/`: links não navegam e `usePathname()` devolve o `meta.route` do
 protótipo. Componentes de servidor (`async`, `next/headers`) e server actions não
-rodam na galeria: a página busca os dados e passa por props para a view, e callbacks
-como `onLogout` chegam por prop.
+rodam na galeria: a página busca os dados e passa por props para a view.
+
+## Server actions nas views
+
+Views de cliente não importam `_actions/`. Elas pedem a action ao contexto com
+`useServerAction("nome")` (`components/server-actions.tsx`), e quem está no servidor
+entrega as actions reais com `ServerActionsProvider`: `app/admin/layout.tsx` para o
+painel inteiro; as páginas `/solicitar-bolsa`, `/seja-um-benfeitor` e `/login` para
+as públicas. Uma action nova chamada por uma view precisa entrar nesse provider.
+
+Na galeria, o `Canvas` fornece `fixtureActions()` (`proto/server-actions.fixtures.ts`):
+toda action resolve `{ success: true }`. O protótipo sobrepõe as que seus estados
+precisam, por exemplo
+`<ServerActionsProvider actions={fixtureActions({ getApplicationDetail: async () => detail })}>`.
+Nos testes, `withServerActions(...)` (`__tests__/helpers/server-actions.tsx`) devolve um
+`render` que entrega os módulos trocados por `vi.mock`.
+
+## Guards
 
 `guards.forbidRuntimeImports` em `proto.config.ts` faz `proto check` falhar com
-`network_import` quando um protótipo alcança banco, sessão, armazenamento, e-mail ou
-`app/**/_actions/**`. A correção é tirar o acesso da view, nunca afrouxar o guard.
+`network_import` quando um protótipo alcança banco, sessão, armazenamento, o envio de
+e-mail ou `app/**/_actions/**`. Os templates puros de `lib/email` ficam liberados,
+porque as views os usam na prévia. A correção é tirar o acesso da view, nunca
+afrouxar o guard.

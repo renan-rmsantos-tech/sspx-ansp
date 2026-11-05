@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, screen, waitFor, within } from "@testing-library/react";
 
 const actions = vi.hoisted(() => ({
   getDonorReminderDashboard: vi.fn(), previewDonorReminderTemplate: vi.fn(),
@@ -10,6 +10,10 @@ vi.mock("@/app/admin/_actions/donor-reminder-actions", () => actions);
 
 import { DonorReminderClient } from "@/app/admin/emails/_clients/reminders";
 import { DONOR_REMINDER_BODY, DONOR_REMINDER_SUBJECT } from "@/lib/email/donor-reminder-template";
+import * as donorReminderActions from "@/app/admin/_actions/donor-reminder-actions";
+import { withServerActions } from "./helpers/server-actions";
+
+const render = withServerActions(donorReminderActions);
 
 const template = { assunto: DONOR_REMINDER_SUBJECT, corpo: DONOR_REMINDER_BODY };
 const header = { linha1: "Arca Atual", linha2: "Colégio São José", linha3: "Itatiba/SP", mostrar_selo: false };

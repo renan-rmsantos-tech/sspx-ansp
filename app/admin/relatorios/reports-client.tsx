@@ -5,16 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
-import {
-  getDonorReports,
-  type DonorReportCategory,
-  type DonorReportFilters,
-  type DonorReports,
-} from "../_actions/donor-report-actions";
+import type { DonorReportCategory, DonorReportFilters, DonorReports } from "../_actions/donor-report-actions";
 import { Field } from "../_components/field";
 import { Notice } from "../_components/notice";
 import { Section } from "../_components/section";
 import { DonorReportCharts } from "./reports-charts";
+import { useServerAction } from "@/components/server-actions";
 
 const INPUT_CLASS = "h-10 bg-surface";
 const SELECT_CLASS = "w-full [&>select]:h-10 [&>select]:bg-surface";
@@ -68,6 +64,7 @@ function ReportSeries({
 }
 
 export function DonorReportsClient({ initialReports }: { initialReports: DonorReports }) {
+  const getDonorReports = useServerAction("getDonorReports");
   const [reports, setReports] = useState(initialReports);
   const [error, setError] = useState("");
   const [pending, startTransition] = useTransition();

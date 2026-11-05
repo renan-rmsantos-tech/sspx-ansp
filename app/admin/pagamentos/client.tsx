@@ -6,13 +6,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatDonorDate } from "@/lib/donor-date";
 import { cn } from "@/lib/utils";
-import {
-  confirmDonorPayment,
-  getDonorPaymentConference,
-  getDonorPaymentReceiptUrl,
-  markDonorPaymentNotIdentified,
-  resetDonorPayment,
-} from "../_actions/donor-payment-conference-actions";
+import type { getDonorPaymentConference } from "../_actions/donor-payment-conference-actions";
 import { ActionBar } from "../_components/action-bar";
 import { competenciaLabel } from "../_components/admin-home";
 import { DataGrid, DataItem } from "../_components/data-grid";
@@ -26,6 +20,7 @@ import { Section } from "../_components/section";
 import { StatTile } from "../_components/stat-tile";
 import { StatusPill, type Tone } from "../_components/status-pill";
 import { MonthlyChart } from "./monthly-chart";
+import { useServerAction } from "@/components/server-actions";
 
 export type ConferenceData = Awaited<ReturnType<typeof getDonorPaymentConference>>;
 export type ConferenceRow = ConferenceData["rows"][number];
@@ -86,6 +81,7 @@ export function PagamentosClient({
   invalidMonth?: boolean;
   error?: string;
 }) {
+  const getDonorPaymentConference = useServerAction("getDonorPaymentConference");
   const [month, setMonth] = useState(initialMonth);
   const [data, setData] = useState(initialData);
   const [loadError, setLoadError] = useState(error ?? "");
@@ -227,6 +223,10 @@ function PaymentRow({
   /** Um mesmo pagamento pode aparecer no mês e nas pendências; o prefixo evita ids repetidos. */
   testIdPrefix?: string;
 }) {
+  const confirmDonorPayment = useServerAction("confirmDonorPayment");
+  const getDonorPaymentReceiptUrl = useServerAction("getDonorPaymentReceiptUrl");
+  const markDonorPaymentNotIdentified = useServerAction("markDonorPaymentNotIdentified");
+  const resetDonorPayment = useServerAction("resetDonorPayment");
   const [amount, setAmount] = useState(row.received_value === "0.00" ? row.expected_value : row.received_value);
   const [date, setDate] = useState(row.credit_date ?? "");
   const [note, setNote] = useState(row.note ?? "");
