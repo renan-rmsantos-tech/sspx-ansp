@@ -28,14 +28,16 @@ const CARD_CLASS = "gap-5 rounded-lg border border-border bg-surface p-5 ring-0"
 
 interface CabecalhoClientProps {
   initialHeader: HeaderForm;
+  /** Erro de salvamento já exibido ao abrir (usado pelos protótipos). */
+  initialError?: string;
 }
 
-export function CabecalhoClient({ initialHeader }: CabecalhoClientProps) {
+export function CabecalhoClient({ initialHeader, initialError }: CabecalhoClientProps) {
   const saveDocumentHeader = useServerAction("saveDocumentHeader");
   const [form, setForm] = useState<HeaderForm>(resolveDocumentHeader(initialHeader));
   const [saving, setSaving] = useState(false);
-  const [status, setStatus] = useState<"idle" | "saved" | "error">("idle");
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [status, setStatus] = useState<"idle" | "saved" | "error">(initialError ? "error" : "idle");
+  const [errorMsg, setErrorMsg] = useState<string | null>(initialError ?? null);
 
   const update = useCallback(<K extends keyof HeaderForm>(key: K, value: HeaderForm[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));

@@ -21,7 +21,14 @@ function formatCreatedAt(iso: string): string | null {
   return Number.isNaN(date.getTime()) ? null : date.toLocaleDateString("pt-BR");
 }
 
-export function UsuariosClient({ initialUsers }: { initialUsers: User[] }) {
+export function UsuariosClient({
+  initialUsers,
+  initialFormError,
+}: {
+  initialUsers: User[];
+  /** Erro de criação já exibido ao abrir (usado pelos protótipos). */
+  initialFormError?: string;
+}) {
   const createSecretariatUser = useServerAction("createSecretariatUser");
   const resetSecretariatPassword = useServerAction("resetSecretariatPassword");
   const setSecretariatUserActive = useServerAction("setSecretariatUserActive");
@@ -29,7 +36,7 @@ export function UsuariosClient({ initialUsers }: { initialUsers: User[] }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [creating, setCreating] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(initialFormError ?? null);
   const [listError, setListError] = useState<string | null>(null);
 
   async function create(event: FormEvent<HTMLFormElement>) {

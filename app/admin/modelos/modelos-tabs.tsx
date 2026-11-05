@@ -18,11 +18,14 @@ const TAB_LABELS: Record<ModelTab, string> = {
 export function ModelosTabs({
   templates,
   contract,
+  defaultTab = "aprovacao",
 }: {
   templates: TemplateData[];
   contract: ContractTemplate | null;
+  /** Aba aberta quando a URL não traz `?aba=`. */
+  defaultTab?: ModelTab;
 }) {
-  const [tab, setTab] = useUrlTab<ModelTab>("/admin/modelos", MODEL_TABS, "aprovacao");
+  const [tab, setTab] = useUrlTab<ModelTab>("/admin/modelos", MODEL_TABS, defaultTab);
 
   return (
     <Tabs value={tab} onValueChange={(next) => setTab(next as ModelTab)} className="gap-5">

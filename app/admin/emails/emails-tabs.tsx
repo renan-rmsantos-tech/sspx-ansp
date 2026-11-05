@@ -20,12 +20,15 @@ export function EmailsTabs({
   welcome,
   monthly,
   reminders,
+  defaultTab = "boas-vindas",
 }: {
   welcome: ComponentProps<typeof DonorEmailClient>;
   monthly: ComponentProps<typeof DonorMonthlyInstructionsClient>;
   reminders: ComponentProps<typeof DonorReminderClient>;
+  /** Aba aberta quando a URL não traz `?aba=`. */
+  defaultTab?: EmailTab;
 }) {
-  const [tab, setTab] = useUrlTab<EmailTab>("/admin/emails", EMAIL_TABS, "boas-vindas");
+  const [tab, setTab] = useUrlTab<EmailTab>("/admin/emails", EMAIL_TABS, defaultTab);
 
   return (
     <Tabs value={tab} onValueChange={(next) => setTab(next as EmailTab)} className="gap-5">
