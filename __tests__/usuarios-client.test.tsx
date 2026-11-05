@@ -141,4 +141,9 @@ describe("UsuariosClient", () => {
     expect(within(list).getByRole("alert")).toHaveTextContent("Senha inválida.");
     vi.restoreAllMocks();
   });
+
+  it("mostra o erro de criação inicial já ao abrir", () => {
+    render(<UsuariosClient initialUsers={[]} initialFormError="Este e-mail já tem acesso." />);
+    expect(screen.getByRole("alert")).toHaveTextContent("Este e-mail já tem acesso.");
+  });
 });

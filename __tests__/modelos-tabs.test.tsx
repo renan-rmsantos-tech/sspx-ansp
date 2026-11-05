@@ -71,4 +71,9 @@ describe("ModelosTabs", () => {
     expect(screen.getAllByTestId("token-item")).toHaveLength(8);
     expect(screen.getByRole("heading", { name: "Campos disponíveis" })).toBeInTheDocument();
   });
+
+  it("abre no contrato com defaultTab quando a URL não traz ?aba=", () => {
+    render(<ModelosTabs templates={templates} contract={contract} defaultTab="contrato" />);
+    expect(screen.getByTestId("contract-template-editor")).toBeInTheDocument();
+  });
 });

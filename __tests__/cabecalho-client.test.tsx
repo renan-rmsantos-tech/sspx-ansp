@@ -69,4 +69,9 @@ describe("CabecalhoClient", () => {
     await waitFor(() => expect(screen.getByTestId("header-error")).toHaveTextContent("Sem permissão."));
     expect(save).toHaveBeenCalledTimes(1);
   });
+
+  it("mostra o erro inicial já ao abrir", () => {
+    render(<CabecalhoClient initialHeader={DEFAULT_DOCUMENT_HEADER} initialError="Sem permissão." />);
+    expect(screen.getByTestId("header-error")).toHaveTextContent("Sem permissão.");
+  });
 });
