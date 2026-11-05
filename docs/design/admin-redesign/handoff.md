@@ -1,7 +1,7 @@
 # Handoff — redesenho do painel administrativo
 
-Aprovado em 2026-10-29. Protótipo: `app/prototipos/_designs/admin-redesign/`
-(preview em `/prototipos/admin-redesign` com `npm run dev`). Tela `#/padroes`
+Aprovado em 2026-10-29. Protótipo: `drafts/admin-redesign/`
+(galeria em `npm run proto dev`, estado `padroes`). Tela `padroes`
 documenta tokens, hierarquia de botões, vocabulário de situações e avisos.
 
 ## Regras de implementação

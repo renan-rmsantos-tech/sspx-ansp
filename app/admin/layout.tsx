@@ -1,3 +1,4 @@
+import { logout } from "@/app/login/_actions/auth-actions";
 import { requireStaff } from "@/lib/auth/authorization";
 import { getAdminHomeSummary } from "./_actions/admin-home-actions";
 import { AdminShell } from "./_components/admin-shell";
@@ -15,7 +16,7 @@ export default async function AdminLayout({
     : null;
 
   return (
-    <AdminShell staff={{ email: staff.email, role: staff.role }} counts={counts}>
+    <AdminShell staff={{ email: staff.email, role: staff.role }} counts={counts} onLogout={logout}>
       {children}
     </AdminShell>
   );

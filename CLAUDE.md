@@ -45,8 +45,9 @@ Admin sections: solicitações, benfeitores, ano letivo, cabeçalho (PDF header)
 
 ```
 app/                 # Next.js routes (form, admin, benfeitor, login, api)
-│   └── prototipos/      # Design prototypes, dev-only (page.proto.tsx; see docs/design/prototyping.md)
 lib/                 # db, auth, storage, pdf, validations, templates
+drafts/              # @compozy/proto drafts (drafts/<slug>/index.proto.tsx)
+proto/               # proto review store (review/) and next/* shims for the gallery (next/)
 drizzle/             # SQL migrations
 scripts/             # bootstrap, backup, post-receive deploy hook, cleanup
 docs/
@@ -56,6 +57,7 @@ docs/
 ├── examples/        # Original paper form, contract template, sample PDFs
 └── plano-deploy-droplet.md
 proxy.ts             # Next.js 16 proxy guard for /admin/* (no middleware.ts)
+proto.config.ts      # Prototype gallery config; vite.config.ts and proto.canvas.tsx serve only the gallery
 ```
 
 ## Schema (key tables)
@@ -66,7 +68,7 @@ proxy.ts             # Next.js 16 proxy guard for /admin/* (no middleware.ts)
 
 Leia `PRODUCT.md`, `DESIGN.md` e `COPY.md` antes de trabalho de UX/UI ou copy. O catálogo e os protótipos ficam em `docs/design/opendesign/`; são referência visual, não código de produção. A fonte executável dos tokens é `app/globals.css` e os componentes em `app/` e `components/` prevalecem em qualquer divergência.
 
-Protótipos interativos com os componentes reais vivem em `app/prototipos/_designs/<slug>/` e são servidos em `/prototipos/<slug>` apenas em desenvolvimento (`page.proto.tsx` só é rota fora de produção). `docs/design/prototyping.md` registra comandos, caminhos e regras; `docs/design/<slug>/index.html` guarda a evidência renderizada. Protótipos nunca chamam server actions ou banco.
+Protótipos usam `@compozy/proto` (skills `proto` e `proto-apply-comments`): `<view>.proto.tsx` ao lado da view real, com fixtures em `<view>.fixtures.ts`, e explorações em `drafts/<slug>/index.proto.tsx`. `npm run proto dev` abre a galeria em `127.0.0.1:4400`; `npm run proto check` precisa passar antes da revisão. A galeria compila com `vite.config.ts` (o `next build` não o usa) e troca `next/link`, `next/image` e `next/navigation` pelas versões de `proto/next/`. Views recebem dados e callbacks por props; protótipos nunca alcançam server actions, banco ou sessão, e o guard de `proto.config.ts` falha quando alcançam. Detalhes em `docs/design/prototyping.md`.
 
 ## Development
 

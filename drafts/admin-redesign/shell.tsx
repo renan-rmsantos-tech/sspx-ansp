@@ -129,7 +129,7 @@ export function Shell({ screen, role, onNavigate }: { screen: ScreenId; role: Ro
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-29px)] flex-col">
+    <div className="flex min-h-screen flex-col">
       <header
         className="sticky top-0 z-[var(--z-sticky)] flex h-14 items-center justify-between gap-4 border-b border-border bg-surface px-4 md:px-6"
         data-od-id="topbar"
