@@ -29,6 +29,15 @@ npm run proto -- screenshot admin-home --state erro --role secretaria
   `app/admin/_components/admin-home.proto.tsx`.
 - **Draft**: `drafts/<slug>/index.proto.tsx`, exploração com markup livre antes de a
   view existir. Exemplo: `drafts/admin-redesign/`.
+- **Seções**: cada protótipo declara `spec` no `meta`, e a galeria agrupa por ela:
+  `painel` (Painel administrativo), `publico` (Site público), `divulgacao` (Cartazes e
+  divulgação) e `componentes` (Componentes de interface). As seções ficam em `specs`
+  de `proto.config.ts`.
+- **Cartazes e divulgação**: os materiais impressos e de redes sociais são views em
+  `app/_divulgacao/` (cartaz A4 dos benfeitores, cartaz A4 das famílias, posts de feed
+  e story), com protótipo ao lado. Usam só textos da landing e do cartaz original
+  (`docs/design/cartaz-divulgacao/`). Para imprimir, abra o estado com `--bare` na
+  galeria e use "Salvar como PDF" no navegador (o CSS define `@page` A4).
 - **Canvas e Frame**: `proto.canvas.tsx` carrega `app/globals.css` e envolve os
   protótipos de componente com o `AdminShell` real (use `standalone: true` no `meta`
   para telas públicas sem o painel). O papel escolhido na galeria (`admin` ou

@@ -9,6 +9,7 @@ import {
 
 export const meta = definePrototype({
   title: "Comprovante mensal do benfeitor",
+  spec: "publico",
   route: "/benfeitor/comprovante",
   standalone: true,
   states: [

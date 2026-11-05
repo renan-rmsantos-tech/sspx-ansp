@@ -4,6 +4,7 @@ import { documentHeader, footerError, minimalHeader, overlongFooterHeader } from
 
 export const meta = definePrototype({
   title: "Cabeçalho e rodapé",
+  spec: "painel",
   route: "/admin/cabecalho",
   roles: ["admin"],
   states: [

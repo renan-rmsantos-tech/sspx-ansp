@@ -6,6 +6,7 @@ import { createUserError, secretariatUsers } from "./usuarios.fixtures";
 
 export const meta = definePrototype({
   title: "Usuários da Secretaria",
+  spec: "painel",
   route: "/admin/usuarios",
   roles: ["admin"],
   states: [

@@ -9,12 +9,14 @@ import { emailHeader, emailsProps, reminderSendsNeedingAttention } from "./email
 
 export const meta = definePrototype({
   title: "E-mails aos benfeitores",
+  spec: "painel",
   route: "/admin/emails",
   roles: ["admin"],
   states: [
     { id: "boas-vindas-pendentes", label: "Boas-vindas com envios pendentes" },
     { id: "boas-vindas-em-dia", label: "Boas-vindas sem pendências" },
     { id: "envio-indisponivel", label: "Resend não configurado" },
+    { id: "erro-ao-salvar", label: "Boas-vindas: erro ao salvar o modelo" },
     { id: "instrucoes", label: "Instruções de pagamento" },
     { id: "lembretes-atencao", label: "Lembretes com falhas e resultados incertos" },
     { id: "lembretes-em-dia", label: "Lembretes sem pendências" },
@@ -54,13 +56,18 @@ export default function Prototype({ state }: PrototypeProps) {
     resendConfigured: state !== "envio-indisponivel",
   });
 
+  const welcome =
+    state === "erro-ao-salvar"
+      ? { ...props.welcome, initialMessage: { type: "error" as const, text: "Não foi possível salvar o modelo. Tente novamente." } }
+      : props.welcome;
+
   return (
     <ServerActionsProvider actions={actions}>
       <PageHeader
         title="E-mails aos benfeitores"
         description="Textos das mensagens automáticas. As alterações valem para os próximos envios; o cabeçalho e o rodapé vêm de Cabeçalho e rodapé."
       />
-      <EmailsTabs {...props} defaultTab={TAB_BY_STATE[state] ?? "boas-vindas"} />
+      <EmailsTabs {...props} welcome={welcome} defaultTab={TAB_BY_STATE[state] ?? "boas-vindas"} />
     </ServerActionsProvider>
   );
 }

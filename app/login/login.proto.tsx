@@ -6,6 +6,7 @@ import { devCredentials, invalidCredentialsError, invalidCredentialsState } from
 
 export const meta = definePrototype({
   title: "Login da área administrativa",
+  spec: "publico",
   route: "/login",
   standalone: true,
   states: [

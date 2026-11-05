@@ -7,6 +7,7 @@ import { emptyStep1Errors, filledFormData, upcomingSchoolYear } from "./solicita
 
 export const meta = definePrototype({
   title: "Solicitar bolsa",
+  spec: "publico",
   route: "/solicitar-bolsa",
   standalone: true,
   states: [

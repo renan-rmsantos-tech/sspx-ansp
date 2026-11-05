@@ -36,11 +36,13 @@ interface TemplateEditorProps {
   initialTemplates: TemplateData[];
   /** Tipo editado; a página Modelos monta um editor por aba. */
   tipo: TemplateTipo;
+  /** Mensagem de salvamento já exibida ao abrir (usada pelos protótipos). */
+  initialMessage?: { type: "success" | "error"; text: string };
 }
 
 const FIELD_CLASS = "bg-surface font-mono text-sm";
 
-export function TemplateEditor({ initialTemplates, tipo }: TemplateEditorProps) {
+export function TemplateEditor({ initialTemplates, tipo, initialMessage }: TemplateEditorProps) {
   const saveTemplate = useServerAction("saveTemplate");
   const [fields, setFields] = useState<TemplateFields>(() => {
     const initial = initialTemplates.find((template) => template.tipo === tipo);
@@ -51,7 +53,9 @@ export function TemplateEditor({ initialTemplates, tipo }: TemplateEditorProps) 
     };
   });
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(
+    initialMessage ?? null
+  );
 
   const updateField = useCallback((field: keyof TemplateFields, value: string) => {
     setFields((prev) => ({ ...prev, [field]: value }));

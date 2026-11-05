@@ -66,13 +66,15 @@ function formatDateTime(value: string) {
 }
 
 export function DonorReminderClient({
-  initialTemplate, initialPreview, initialSends, header, resendConfigured,
+  initialTemplate, initialPreview, initialSends, header, resendConfigured, initialMessage,
 }: {
   initialTemplate: Template;
   initialPreview: Preview;
   initialSends: Send[];
   header: DocumentHeaderData;
   resendConfigured: boolean;
+  /** Mensagem de salvamento já exibida ao abrir (usada pelos protótipos). */
+  initialMessage?: Message;
 }) {
   const getDonorReminderDashboard = useServerAction("getDonorReminderDashboard");
   const previewDonorReminderTemplate = useServerAction("previewDonorReminderTemplate");
@@ -88,7 +90,7 @@ export function DonorReminderClient({
   const [sends, setSends] = useState(initialSends);
   const [testEmail, setTestEmail] = useState("");
   const [busy, setBusy] = useState<"save" | "preview" | "test" | string | null>(null);
-  const [notice, setNotice] = useState<Message | null>(null);
+  const [notice, setNotice] = useState<Message | null>(initialMessage ?? null);
   const [testNotice, setTestNotice] = useState<Message | null>(null);
   const [sendNotice, setSendNotice] = useState<Message | null>(null);
   const [reviewed, setReviewed] = useState<string[]>([]);

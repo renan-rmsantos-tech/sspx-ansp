@@ -23,12 +23,14 @@ type Message = { type: "success" | "error"; text: string };
 const CARD = "rounded-lg border border-border bg-surface p-5";
 
 export function DonorMonthlyInstructionsClient({
-  initialTemplate, initialPreview, header, resendConfigured,
+  initialTemplate, initialPreview, header, resendConfigured, initialMessage,
 }: {
   initialTemplate: DonorMonthlyInstructionsTemplate;
   initialPreview: Preview;
   header: DocumentHeaderData;
   resendConfigured: boolean;
+  /** Mensagem de salvamento já exibida ao abrir (usada pelos protótipos). */
+  initialMessage?: Message;
 }) {
   const previewDonorMonthlyInstructionsTemplate = useServerAction("previewDonorMonthlyInstructionsTemplate");
   const saveDonorMonthlyInstructionsTemplate = useServerAction("saveDonorMonthlyInstructionsTemplate");
@@ -40,7 +42,7 @@ export function DonorMonthlyInstructionsClient({
   const [previewHeader, setPreviewHeader] = useState(header);
   const [testEmail, setTestEmail] = useState("");
   const [busy, setBusy] = useState<"save" | "preview" | "test" | null>(null);
-  const [notice, setNotice] = useState<Message | null>(null);
+  const [notice, setNotice] = useState<Message | null>(initialMessage ?? null);
   const [testNotice, setTestNotice] = useState<Message | null>(null);
   const dirty = template.assunto !== saved.assunto || template.corpo !== saved.corpo;
   const previewDirty = template.assunto !== previewed.assunto || template.corpo !== previewed.corpo;

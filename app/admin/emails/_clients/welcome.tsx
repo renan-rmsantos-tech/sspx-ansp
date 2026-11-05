@@ -34,11 +34,14 @@ export function DonorEmailClient({
   initialPending,
   header,
   resendConfigured,
+  initialMessage,
 }: {
   initialTemplate: EmailTemplate;
   initialPending: PendingDonor[];
   header: DocumentHeaderData;
   resendConfigured: boolean;
+  /** Mensagem de salvamento já exibida ao abrir (usada pelos protótipos). */
+  initialMessage?: Message;
 }) {
   const retryDonorWelcomeEmail = useServerAction("retryDonorWelcomeEmail");
   const saveDonorEmailTemplate = useServerAction("saveDonorEmailTemplate");
@@ -48,7 +51,7 @@ export function DonorEmailClient({
   const [pending, setPending] = useState(initialPending);
   const [saving, setSaving] = useState(false);
   const [sendingId, setSendingId] = useState<string | null>(null);
-  const [message, setMessage] = useState<Message | null>(null);
+  const [message, setMessage] = useState<Message | null>(initialMessage ?? null);
   const [retryError, setRetryError] = useState<{ id: string; text: string } | null>(null);
   const [testEmail, setTestEmail] = useState("");
   const [sendingTest, setSendingTest] = useState(false);

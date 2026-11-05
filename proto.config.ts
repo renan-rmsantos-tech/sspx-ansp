@@ -6,6 +6,13 @@ export default defineProtoConfig({
   locale: "pt-BR",
   prototypes: ["app/**/*.proto.tsx", "components/**/*.proto.tsx", "drafts/**/*.proto.tsx"],
   drafts: "drafts",
+  // Seções da galeria.
+  specs: {
+    painel: "Painel administrativo",
+    publico: "Site público",
+    divulgacao: "Cartazes e divulgação",
+    componentes: "Componentes de interface",
+  },
   roles: { admin: "Administração", secretaria: "Secretaria" },
   guards: {
     // Protótipos e drafts renderizam views com fixtures: nunca alcançam banco,

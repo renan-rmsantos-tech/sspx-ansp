@@ -7,6 +7,7 @@ import { donorReports, donorReportsEmpty, financialReport, financialReportEmpty 
 
 export const meta = definePrototype({
   title: "Relatórios",
+  spec: "painel",
   route: "/admin/relatorios",
   roles: ["admin"],
   states: [

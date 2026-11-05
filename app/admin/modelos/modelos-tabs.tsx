@@ -19,11 +19,14 @@ export function ModelosTabs({
   templates,
   contract,
   defaultTab = "aprovacao",
+  initialMessages = {},
 }: {
   templates: TemplateData[];
   contract: ContractTemplate | null;
   /** Aba aberta quando a URL não traz `?aba=`. */
   defaultTab?: ModelTab;
+  /** Mensagem de salvamento já exibida em cada aba (usada pelos protótipos). */
+  initialMessages?: Partial<Record<ModelTab, { type: "success" | "error"; text: string }>>;
 }) {
   const [tab, setTab] = useUrlTab<ModelTab>("/admin/modelos", MODEL_TABS, defaultTab);
 
@@ -37,13 +40,13 @@ export function ModelosTabs({
         ))}
       </TabsList>
       <TabsContent value="aprovacao">
-        <TemplateEditor initialTemplates={templates} tipo="aprovacao" />
+        <TemplateEditor initialTemplates={templates} tipo="aprovacao" initialMessage={initialMessages.aprovacao} />
       </TabsContent>
       <TabsContent value="rejeicao">
-        <TemplateEditor initialTemplates={templates} tipo="rejeicao" />
+        <TemplateEditor initialTemplates={templates} tipo="rejeicao" initialMessage={initialMessages.rejeicao} />
       </TabsContent>
       <TabsContent value="contrato">
-        <ContractTemplateEditor initialTemplate={contract} />
+        <ContractTemplateEditor initialTemplate={contract} initialMessage={initialMessages.contrato} />
       </TabsContent>
     </Tabs>
   );

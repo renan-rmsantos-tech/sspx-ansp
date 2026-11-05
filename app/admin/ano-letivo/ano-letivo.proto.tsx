@@ -4,6 +4,7 @@ import { schoolYears, today } from "./ano-letivo.fixtures";
 
 export const meta = definePrototype({
   title: "Ano letivo",
+  spec: "painel",
   route: "/admin/ano-letivo",
   roles: ["admin"],
   states: [

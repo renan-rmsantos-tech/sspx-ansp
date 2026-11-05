@@ -19,6 +19,8 @@ import { useServerAction } from "@/components/server-actions";
 
 interface ContractTemplateEditorProps {
   initialTemplate: ContractTemplate | null;
+  /** Mensagem de salvamento já exibida ao abrir (usada pelos protótipos). */
+  initialMessage?: { type: "success" | "error"; text: string };
 }
 
 const EMPTY = {
@@ -32,6 +34,7 @@ const FIELD_CLASS = "bg-surface font-mono text-sm";
 
 export function ContractTemplateEditor({
   initialTemplate,
+  initialMessage,
 }: ContractTemplateEditorProps) {
   const saveContractTemplate = useServerAction("saveContractTemplate");
   const [titulo, setTitulo] = useState(initialTemplate?.titulo ?? EMPTY.titulo);
@@ -46,7 +49,7 @@ export function ContractTemplateEditor({
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
-  } | null>(null);
+  } | null>(initialMessage ?? null);
 
   const clearMessage = useCallback(() => setMessage(null), []);
 

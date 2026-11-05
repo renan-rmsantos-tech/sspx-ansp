@@ -6,6 +6,7 @@ import { OPEN_MONTHLY_DONOR_ID, donors, issuedReceiptLink, secretariatDonors } f
 
 export const meta = definePrototype({
   title: "Benfeitores",
+  spec: "painel",
   route: "/admin/benfeitores",
   roles: ["admin", "secretaria"],
   states: [

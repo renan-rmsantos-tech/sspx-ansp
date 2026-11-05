@@ -5,6 +5,7 @@ import { emptyMonthlyErrors } from "./seja-um-benfeitor.fixtures";
 
 export const meta = definePrototype({
   title: "Seja um benfeitor",
+  spec: "publico",
   route: "/seja-um-benfeitor",
   standalone: true,
   states: [

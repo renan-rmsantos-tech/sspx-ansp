@@ -14,6 +14,7 @@ import {
 
 export const meta = definePrototype({
   title: "Pagamentos",
+  spec: "painel",
   route: "/admin/pagamentos",
   roles: ["admin"],
   states: [

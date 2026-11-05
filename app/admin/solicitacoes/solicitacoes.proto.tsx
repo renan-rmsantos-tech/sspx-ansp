@@ -17,6 +17,7 @@ import {
 
 export const meta = definePrototype({
   title: "Solicitações de bolsa",
+  spec: "painel",
   route: "/admin/solicitacoes",
   roles: ["admin", "secretaria"],
   states: [
