@@ -128,6 +128,14 @@ function makeDetail(overrides: Record<string, unknown> = {}) {
         mime_type: "application/pdf",
       },
       {
+        id: "d2",
+        application_id: "app-1",
+        categoria: "carta_recomendacao",
+        nome_arquivo: "carta.pdf",
+        storage_path: "pending/carta.pdf",
+        mime_type: "application/pdf",
+      },
+      {
         id: "d1",
         application_id: "app-1",
         categoria: "rg_pai",
@@ -297,7 +305,7 @@ describe("SolicitacoesClient", () => {
       expect(toggle).toHaveAttribute("aria-expanded", "true");
       expect(screen.getByTestId("card-detail")).toBeInTheDocument();
       expect(screen.getByTestId("detail-tab-resumo")).toHaveTextContent("Resumo");
-      expect(screen.getByTestId("detail-tab-documentos")).toHaveTextContent("Documentos (2)");
+      expect(screen.getByTestId("detail-tab-documentos")).toHaveTextContent("Documentos (3)");
       expect(screen.getByTestId("detail-tab-financeiro")).toHaveTextContent("Renda e despesas");
       expect(screen.getByTestId("detail-tab-decisao")).toHaveTextContent("Decisão");
       expect(screen.getByRole("tablist", { name: "Seções da solicitação" })).toBeInTheDocument();
@@ -315,6 +323,7 @@ describe("SolicitacoesClient", () => {
       expect(screen.getByTestId("detail-tab-documentos")).toHaveAttribute("aria-selected", "true");
       expect(screen.getByTestId("documents-section")).toBeInTheDocument();
       expect(screen.getByText("Declaração de Vaga do Colégio")).toBeInTheDocument();
+      expect(screen.getByText("Carta de Recomendação do Padre")).toBeInTheDocument();
 
       cleanup();
       mockGetApplicationDetail.mockResolvedValue({ data: makeDetail({ documents: [] }) });

@@ -52,6 +52,8 @@ function validateStep1(data: FormData): Record<string, string> {
   {
     const declaracaoVaga = docError(data.declaracao_vaga);
     if (declaracaoVaga) errors.declaracao_vaga = declaracaoVaga;
+    const cartaRecomendacao = docError(data.carta_recomendacao);
+    if (cartaRecomendacao) errors.carta_recomendacao = cartaRecomendacao;
     const docPai = docError(data.doc_pai);
     if (docPai) errors.doc_pai = docPai;
     const docMae = docError(data.doc_mae);
@@ -263,6 +265,9 @@ export function ScholarshipForm({
       ciencia_confidencialidade: confidentialityAccepted,
       escola: formData.escola,
       declaracao_vaga: formData.declaracao_vaga
+        .filter((f) => f.path)
+        .map((f) => f.path),
+      carta_recomendacao: formData.carta_recomendacao
         .filter((f) => f.path)
         .map((f) => f.path),
       pai: {

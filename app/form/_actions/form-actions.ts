@@ -30,7 +30,7 @@ interface SchoolYear {
 
 const UPLOAD_TICKET_TTL_SECONDS = 30 * 60;
 const FIXED_UPLOAD_CATEGORIES = new Set([
-  "declaracao_vaga", "rg_pai", "rg_mae", "certidao", "comprovante_endereco",
+  "declaracao_vaga", "carta_recomendacao", "rg_pai", "rg_mae", "certidao", "comprovante_endereco",
   "extrato_ir", "extrato_bancario", "recibo_pagamento",
 ]);
 const isAllowedUploadCategory = (category: string) =>
@@ -45,6 +45,7 @@ function validateDocumentCategories(data: ApplicationSubmission): boolean {
   const seen = new Set<string>();
   const required: Array<[string[], string]> = [
     [data.declaracao_vaga, "declaracao_vaga"],
+    [data.carta_recomendacao, "carta_recomendacao"],
     [data.pai.documentos, "rg_pai"],
     [data.mae.documentos, "rg_mae"],
     [data.certidao_casamento, "certidao"],
@@ -314,6 +315,7 @@ function collectDocumentRows(
   };
 
   addDocs(data.declaracao_vaga, "declaracao_vaga");
+  addDocs(data.carta_recomendacao, "carta_recomendacao");
   addDocs(data.pai.documentos, "rg_pai");
   addDocs(data.mae.documentos, "rg_mae");
   addDocs(data.certidao_casamento, "certidao_casamento");

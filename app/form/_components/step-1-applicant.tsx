@@ -96,6 +96,24 @@ export function Step1Applicant({ data, onChange, errors }: Step1Props) {
           />
         </div>
 
+        <div className="mb-5">
+          <label className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg">
+            Carta de recomendação do padre
+            <RequiredMark />
+          </label>
+          <p className="mb-2 text-xs text-muted">
+            Envie a carta em que o padre recomenda a família para a bolsa.
+          </p>
+          <FileUpload
+            label="para enviar a carta de recomendação do padre"
+            category="carta_recomendacao"
+            files={data.carta_recomendacao}
+            onChange={(f) => updateFiles("carta_recomendacao", f)}
+            required
+            error={errors.carta_recomendacao}
+          />
+        </div>
+
         <div className="my-6 h-px bg-border" />
 
         <Field

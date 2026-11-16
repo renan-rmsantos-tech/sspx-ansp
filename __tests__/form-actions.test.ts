@@ -126,7 +126,7 @@ describe("createUploadUrl", () => {
   });
 
   it.each([
-    "declaracao_vaga", "rg_pai", "rg_mae", "certidao", "comprovante_endereco",
+    "declaracao_vaga", "carta_recomendacao", "rg_pai", "rg_mae", "certidao", "comprovante_endereco",
     "extrato_ir", "extrato_bancario", "recibo_pagamento", "rg_aluno_0", "certidao_nascimento_12",
   ])("accepts the supported category %s", async (category) => {
     await expect(createUploadUrl("doc.pdf", category)).resolves.toMatchObject({ path: expect.stringContaining(`/${category}/`) });

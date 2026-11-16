@@ -23,6 +23,7 @@ const BENFEITORES = [
 export const filledFormData: FormData = {
   ...INITIAL_FORM_DATA,
   declaracao_vaga: uploaded("declaracao-vaga.pdf"),
+  carta_recomendacao: uploaded("carta-recomendacao-padre.pdf"),
   pai_nome: "José Carlos de Almeida",
   pai_rg: "12.345.678-9",
   pai_cpf: "529.982.247-25",
@@ -82,6 +83,7 @@ export const filledFormData: FormData = {
 export const emptyStep1Errors: Record<string, string> = Object.fromEntries(
   [
     "declaracao_vaga",
+    "carta_recomendacao",
     "pai_nome",
     "pai_rg",
     "pai_cpf",

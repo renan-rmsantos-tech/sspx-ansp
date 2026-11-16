@@ -46,6 +46,7 @@ function validInput() {
     ciencia_confidencialidade: true as const,
     escola: "Colégio São José",
     declaracao_vaga: ["pending/uuid/declaracao_vaga/declaracao.pdf"],
+    carta_recomendacao: ["pending/uuid/carta_recomendacao/carta.pdf"],
     pai: {
       nome: "João da Silva",
       rg: "12.345.678-9",
@@ -162,6 +163,42 @@ describe("submitApplication", () => {
         storage_path: "applications/app-1/uuid/declaracao_vaga/declaracao.pdf",
       })
     );
+  });
+
+  it("stores the priest's recommendation letter with its own category", async () => {
+    await submitApplication(validInput());
+
+    const rows = insertedFor(documents) as Array<{
+      categoria: string;
+      storage_path: string;
+    }>;
+    expect(rows).toContainEqual(
+      expect.objectContaining({
+        categoria: "carta_recomendacao",
+        storage_path: "applications/app-1/uuid/carta_recomendacao/carta.pdf",
+      })
+    );
+  });
+
+  it("rejects a submission without the priest's recommendation letter", async () => {
+    const result = await submitApplication({ ...validInput(), carta_recomendacao: [] });
+
+    expect(result.success).toBe(false);
+    expect(result.errors).toHaveProperty("carta_recomendacao");
+    expect(inserted).toHaveLength(0);
+  });
+
+  it("rejects a recommendation letter uploaded under another category", async () => {
+    const result = await submitApplication({
+      ...validInput(),
+      carta_recomendacao: ["pending/uuid/rg_pai/carta.pdf"],
+    });
+
+    expect(result).toEqual({
+      success: false,
+      errors: { _form: ["Os documentos enviados não correspondem às categorias exigidas."] },
+    });
+    expect(inserted).toHaveLength(0);
   });
 
   it("moves uploaded files from pending/ into the application folder", async () => {

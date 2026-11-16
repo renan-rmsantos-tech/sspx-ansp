@@ -10,6 +10,7 @@ function validApplication(): ApplicationSubmission {
     ciencia_confidencialidade: true,
     escola: "Colégio São José",
     declaracao_vaga: ["pending/uuid1/declaracao_vaga/declaracao.pdf"],
+    carta_recomendacao: ["pending/uuid1/carta_recomendacao/carta.pdf"],
     pai: {
       nome: "João da Silva",
       rg: "12.345.678-9",
@@ -154,7 +155,8 @@ describe("applicationSubmissionSchema", () => {
   });
 
   it.each([
-    "declaracao_vaga", "certidao_casamento", "comprovante_endereco", "extrato_ir", "extratos_bancarios",
+    "declaracao_vaga", "carta_recomendacao", "certidao_casamento", "comprovante_endereco", "extrato_ir",
+    "extratos_bancarios",
   ])("rejects each missing required document group: %s", (field) => {
     const data = validApplication() as Record<string, unknown>;
     data[field] = [];

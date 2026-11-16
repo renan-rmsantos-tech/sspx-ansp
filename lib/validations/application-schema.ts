@@ -77,6 +77,7 @@ export const applicationSubmissionSchema = z.object({
   ciencia_confidencialidade: z.literal(true, { message: "Confirme a ciência sobre o sigilo dos documentos." }),
   escola: z.string().min(1, "Nome da escola é obrigatório"),
   declaracao_vaga: requiredFileArray,
+  carta_recomendacao: requiredFileArray,
 
   pai: z.object({
     nome: z.string().min(1, "Nome do pai é obrigatório"),

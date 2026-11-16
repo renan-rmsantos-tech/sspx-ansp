@@ -66,6 +66,7 @@ export const applicationDetails: Record<string, ApplicationDetailData> = {
     benefactors: [{ id: "bf-1", application_id: "app-oliveira", nome: "José Carlos Bueno", email: "jc.bueno@example.com" }],
     documents: [
       doc("app-oliveira", "dc-1", "declaracao_vaga", "declaracao-vaga-2027.pdf", "application/pdf"),
+      doc("app-oliveira", "dc-9", "carta_recomendacao", "carta-padre.pdf", "application/pdf"),
       doc("app-oliveira", "dc-2", "rg_pai", "rg-marcos.jpg", "image/jpeg"),
       doc("app-oliveira", "dc-3", "rg_mae", "rg-fernanda.jpg", "image/jpeg"),
       doc("app-oliveira", "dc-4", "certidao", "certidao-casamento.pdf", "application/pdf"),

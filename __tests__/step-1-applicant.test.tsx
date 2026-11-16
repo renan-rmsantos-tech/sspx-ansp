@@ -113,6 +113,16 @@ describe("Step1Applicant", () => {
     );
   });
 
+  it("asks for the priest's recommendation letter right after the vacancy declaration", () => {
+    renderStep1({}, { carta_recomendacao: "Campo obrigatório" });
+    expect(screen.getByText("Carta de recomendação do padre")).toBeInTheDocument();
+    const uploadAreas = screen.getAllByTestId("upload-area");
+    expect(uploadAreas[1]).toHaveTextContent(
+      "para enviar a carta de recomendação do padre"
+    );
+    expect(screen.getByText("Campo obrigatório")).toBeInTheDocument();
+  });
+
   it("updates mae_cpf on change", () => {
     const { onChange } = renderStep1();
     fireEvent.change(screen.getByTestId("mae-cpf"), {

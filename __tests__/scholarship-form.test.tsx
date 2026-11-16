@@ -294,6 +294,9 @@ describe("ScholarshipForm", () => {
       expect(screen.getByTestId("success-screen")).toBeInTheDocument();
     });
     expect(mockSubmitApplication).toHaveBeenCalledTimes(1);
+    expect(mockSubmitApplication.mock.calls[0][0]).toMatchObject({
+      carta_recomendacao: ["pending/abc/doc/file.pdf"],
+    });
   });
 
   it("step validation prevents advancing with missing required fields", async () => {
