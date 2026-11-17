@@ -89,6 +89,7 @@ export async function registerDonorPledge(
       recibo_path: finalReciboPath,
       recibo_nome: finalReciboNome,
       observacoes: data.observacoes || null,
+      observacoes_financeiras: data.observacoes_financeiras || null,
       created_at: registeredAt,
     } satisfies typeof donorPledges.$inferInsert;
 

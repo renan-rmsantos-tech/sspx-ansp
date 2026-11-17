@@ -231,6 +231,7 @@ export interface SecretariatDonorPledge {
   lembrete_canal: "whatsapp" | "email" | null;
   priorado_capela: string | null;
   observacoes: string | null;
+  observacoes_financeiras: string | null;
   created_at: string;
 }
 

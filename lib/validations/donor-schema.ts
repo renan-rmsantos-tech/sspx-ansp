@@ -10,6 +10,8 @@ export const BRAZILIAN_UFS = [
   "SP", "SE", "TO",
 ] as const;
 
+export const DONOR_FINANCIAL_NOTES_MAX = 255;
+
 export const PUBLIC_MONTHLY_DUE_DAYS = [1, 10, 15, 20, 30] as const;
 
 export const donorPledgeSchema = z
@@ -46,6 +48,11 @@ export const donorPledgeSchema = z
     recibo_path: z.string().optional(),
     recibo_nome: z.string().optional(),
     observacoes: z.string().optional(),
+    observacoes_financeiras: z
+      .string()
+      .trim()
+      .max(DONOR_FINANCIAL_NOTES_MAX, `Use no máximo ${DONOR_FINANCIAL_NOTES_MAX} caracteres.`)
+      .optional(),
   })
   .refine(
     (data) => data.frequencia !== "mensal" || Boolean(data.duracao),

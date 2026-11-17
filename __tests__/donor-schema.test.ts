@@ -21,6 +21,7 @@ describe("donor pledge schema", () => {
       "welcome_email_reservation_token",
       "welcome_email_reservation_expires_at",
       "dia_vencimento",
+      "observacoes_financeiras",
     ];
 
     for (const name of nullableColumns) {
@@ -48,6 +49,13 @@ describe("donor pledge conditional validation", () => {
     const result = donorPledgeSchema.safeParse({ ...base, dia_vencimento: day });
     expect(result.success).toBe(false);
     if (!result.success) expect(result.error.flatten().fieldErrors.dia_vencimento).toBeDefined();
+  });
+
+  it("accepts financial notes up to 255 characters", () => {
+    expect(donorPledgeSchema.safeParse({ ...base, observacoes_financeiras: "a".repeat(255) }).success).toBe(true);
+    const result = donorPledgeSchema.safeParse({ ...base, observacoes_financeiras: "a".repeat(256) });
+    expect(result.success).toBe(false);
+    if (!result.success) expect(result.error.flatten().fieldErrors.observacoes_financeiras).toBeDefined();
   });
 
   it("accepts forged monthly receipt fields without treating them as evidence", () => {

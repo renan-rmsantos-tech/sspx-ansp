@@ -64,6 +64,7 @@ describe("SecretariatDonorsClient", () => {
     lembrete_canal: "email",
     priorado_capela: null,
     observacoes: null,
+    observacoes_financeiras: null,
     created_at: "2026-01-01",
   };
 

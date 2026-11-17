@@ -36,6 +36,7 @@ export const donors: DonorPledge[] = [
     pending_occurrences: [{ competencia: "2026-11", due_date: "2026-11-10" }],
     lembrete_canal: "email",
     observacoes: "Prefere contato por e-mail no período da manhã.",
+    observacoes_financeiras: "Nos meses de dezembro pode atrasar alguns dias por causa do 13º salário.",
     created_at: "2026-11-03T21:10:00.000Z",
   },
   {
@@ -173,6 +174,7 @@ export const secretariatDonors: SecretariatDonorPledge[] = donors.map((donor) =>
   lembrete_canal: donor.lembrete_canal ?? null,
   priorado_capela: donor.priorado_capela ?? null,
   observacoes: donor.observacoes ?? null,
+  observacoes_financeiras: donor.observacoes_financeiras ?? null,
   created_at: donor.created_at,
 }));
 

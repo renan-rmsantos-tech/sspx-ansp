@@ -4,7 +4,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { DonorPledge } from "@/lib/validations/donor-schema";
 import { isValidCPF } from "@/lib/validations/cpf";
-import { BRAZILIAN_UFS, PUBLIC_MONTHLY_DUE_DAYS } from "@/lib/validations/donor-schema";
+import { BRAZILIAN_UFS, DONOR_FINANCIAL_NOTES_MAX, PUBLIC_MONTHLY_DUE_DAYS } from "@/lib/validations/donor-schema";
 import { PixPaymentDetails } from "./pix-payment-details";
 import {
   FileUpload,
@@ -117,6 +117,7 @@ export function DonorForm({
   const [prioradoCapela, setPrioradoCapela] = useState("");
   const [recibo, setRecibo] = useState<UploadedFile[]>([]);
   const [observacoes, setObservacoes] = useState("");
+  const [observacoesFinanceiras, setObservacoesFinanceiras] = useState("");
 
   const [errors, setErrors] = useState<Record<string, string>>(initialErrors);
   const [submitting, setSubmitting] = useState(false);
@@ -228,6 +229,7 @@ export function DonorForm({
       recibo_path: frequencia === "unica" ? reciboOk?.path : undefined,
       recibo_nome: frequencia === "unica" ? reciboOk?.name : undefined,
       observacoes: observacoes.trim() || undefined,
+      observacoes_financeiras: observacoesFinanceiras.trim() || undefined,
     };
 
     try {
@@ -267,6 +269,7 @@ export function DonorForm({
     dataPagamento,
     recibo,
     observacoes,
+    observacoesFinanceiras,
     registerDonorPledge,
   ]);
 
@@ -478,6 +481,33 @@ export function DonorForm({
             Você receberá automaticamente lembretes por e-mail 10 e 5 dias antes de cada vencimento escolhido, com o link para enviar o comprovante, enquanto ele estiver pendente.
           </p>
         )}
+
+        <div>
+          <label htmlFor="donor-obs-financeiras" className="mb-2 block text-sm font-medium text-fg">
+            Observações financeiras <span className="text-muted">(opcional)</span>
+          </label>
+          <p id="donor-obs-financeiras-help" className="mb-2 text-sm text-muted">
+            Use para algum esclarecimento sobre o pagamento.
+          </p>
+          <textarea
+            id="donor-obs-financeiras"
+            rows={2}
+            maxLength={DONOR_FINANCIAL_NOTES_MAX}
+            value={observacoesFinanceiras}
+            onChange={(e) => {
+              setObservacoesFinanceiras(e.target.value);
+              setErrors((current) => ({ ...current, observacoes_financeiras: "" }));
+            }}
+            aria-invalid={Boolean(errors.observacoes_financeiras)}
+            aria-describedby="donor-obs-financeiras-help donor-obs-financeiras-count"
+            className={inputClass}
+            data-testid="donor-obs-financeiras"
+          />
+          <p id="donor-obs-financeiras-count" className="mt-1 text-right text-xs text-muted">
+            {observacoesFinanceiras.length}/{DONOR_FINANCIAL_NOTES_MAX}
+          </p>
+          <ErrorText msg={errors.observacoes_financeiras} />
+        </div>
 
         <hr className="border-border" />
 

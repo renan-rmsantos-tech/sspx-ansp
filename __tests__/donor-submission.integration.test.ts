@@ -83,6 +83,32 @@ describe("conditional donor submission", () => {
     expect(sendDonorWelcomeEmail).not.toHaveBeenCalled();
   });
 
+  it("persists trimmed financial notes and rejects notes longer than 255 characters", async () => {
+    const ok = await registerDonorPledge({
+      ...base, frequencia: "mensal", duracao: "um_ano", dia_vencimento: 10,
+      observacoes_financeiras: "  Pago pela conta da empresa.  ",
+    });
+    expect(ok).toEqual({ success: true });
+    expect(inserted[0].values).toMatchObject({ observacoes_financeiras: "Pago pela conta da empresa." });
+
+    resetFakeDb();
+    const tooLong = await registerDonorPledge({
+      ...base, frequencia: "mensal", duracao: "um_ano", dia_vencimento: 10,
+      observacoes_financeiras: "a".repeat(256),
+    });
+    expect(tooLong.success).toBe(false);
+    expect(tooLong.errors?.observacoes_financeiras).toBeDefined();
+    expect(inserted).toHaveLength(0);
+  });
+
+  it("stores null financial notes when the field is left blank", async () => {
+    await registerDonorPledge({
+      ...base, frequencia: "mensal", duracao: "um_ano", dia_vencimento: 10,
+      observacoes_financeiras: "   ",
+    });
+    expect(inserted[0].values).toMatchObject({ observacoes_financeiras: null });
+  });
+
   it("moves a valid one-time receipt before insertion", async () => {
     const result = await registerDonorPledge({
       ...base, frequencia: "unica", data_pagamento: "2026-10-26",

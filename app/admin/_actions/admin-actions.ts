@@ -152,6 +152,7 @@ export async function getDonorPledges() {
           telefone: true,
           priorado_capela: true,
           observacoes: true,
+          observacoes_financeiras: true,
           created_at: true,
         },
         orderBy: desc(donorPledges.created_at),

@@ -1,0 +1,1 @@
+ALTER TABLE "donor_pledges" ADD COLUMN "observacoes_financeiras" varchar(255);

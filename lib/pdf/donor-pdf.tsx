@@ -33,6 +33,7 @@ export interface DonorPdfData {
   lembrete_canal?: "whatsapp" | "email" | null;
   recibo_nome?: string | null;
   observacoes?: string | null;
+  observacoes_financeiras?: string | null;
   created_at: string;
 }
 
@@ -195,6 +196,12 @@ function DonorDocument({ data }: { data: DonorPdfData }) {
             />
           )}
         </View>
+        {data.observacoes_financeiras && (
+          <>
+            <Text style={styles.sectionTitle}>Observações financeiras</Text>
+            <Text style={styles.obs}>{data.observacoes_financeiras}</Text>
+          </>
+        )}
 
         {data.observacoes && (
           <>

@@ -12,6 +12,7 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
+  varchar,
 } from "drizzle-orm/pg-core";
 import type { ContractClause } from "@/lib/templates/contract-tokens";
 
@@ -349,6 +350,7 @@ export const donorPledges = pgTable(
     recibo_path: text("recibo_path"),
     recibo_nome: text("recibo_nome"),
     observacoes: text("observacoes"),
+    observacoes_financeiras: varchar("observacoes_financeiras", { length: 255 }),
     welcome_email_sent_at: timestamp("welcome_email_sent_at", {
       withTimezone: true,
       mode: "string",

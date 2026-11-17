@@ -50,6 +50,7 @@ export interface DonorPledge {
   recibo_path?: string | null;
   recibo_nome?: string | null;
   observacoes?: string | null;
+  observacoes_financeiras?: string | null;
   created_at: string;
 }
 
@@ -68,6 +69,7 @@ export type DonorSummary = Pick<
   | "data_pagamento"
   | "lembrete_canal"
   | "observacoes"
+  | "observacoes_financeiras"
   | "created_at"
 > & { cpf?: string; endereco?: string | null; cep?: string | null };
 
@@ -220,6 +222,9 @@ export function DonorContributionSection({ donor, children }: { donor: DonorSumm
           <DataItem label="Data do pagamento" value={formatDateBR(donor.data_pagamento)} />
         )}
         {donor.lembrete_canal && <DataItem label="Lembrete" value={CANAL_LABELS[donor.lembrete_canal]} />}
+        {donor.observacoes_financeiras && (
+          <DataItem label="Observações financeiras" value={donor.observacoes_financeiras} className="sm:col-span-2" />
+        )}
       </DataGrid>
       {children}
     </DetailSection>
