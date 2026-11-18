@@ -8,6 +8,8 @@ export const CONTACT_EMAIL = "contato@arcaprovidencia.com.br";
 /** QR Code de `SITE_URL`, o mesmo do cartaz A4 impresso. */
 export const SITE_QR_SRC = "/divulgacao/qrcode-site.svg";
 export const FSSPX_LOGO_SRC = "/mqjmgzod-logo.png";
+/** O mesmo logo ampliado para 1600 px, para peças de grande formato. */
+export const FSSPX_LOGO_PRINT_SRC = "/divulgacao/fsspx-logo-impressao.png";
 export const MOTTO = "Ajudar a formar as almas de hoje é garantir os santos de amanhã.";
 
 export const materialTokens = `
@@ -21,7 +23,9 @@ export const materialTokens = `
   --gold: oklch(72% 0.10 80);
   --gold-deep: oklch(52% 0.09 75);
   --cream: oklch(92% 0.03 85);
-  --night: radial-gradient(120% 150% at 12% 0%, #1e2a4a 0%, #0f1729 72%);
+  --night-glow: #1e2a4a;
+  --night-deep: #0f1729;
+  --night: radial-gradient(120% 150% at 12% 0%, var(--night-glow) 0%, var(--night-deep) 72%);
   --font-display: "Iowan Old Style", "Charter", "Palatino", Georgia, serif;
   --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
   color: var(--fg);

@@ -34,10 +34,13 @@ npm run proto -- screenshot admin-home --state erro --role secretaria
   divulgação) e `componentes` (Componentes de interface). As seções ficam em `specs`
   de `proto.config.ts`.
 - **Cartazes e divulgação**: os materiais impressos e de redes sociais são views em
-  `app/_divulgacao/` (cartaz A4 dos benfeitores, cartaz A4 das famílias, posts de feed
-  e story), com protótipo ao lado. Usam só textos da landing e do cartaz original
-  (`docs/design/cartaz-divulgacao/`). Para imprimir, abra o estado com `--bare` na
-  galeria e use "Salvar como PDF" no navegador (o CSS define `@page` A4).
+  `app/_divulgacao/` (cartaz A4 dos benfeitores, cartaz A4 das famílias, cartaz de
+  100 × 60 cm do projeto, posts de feed e story), com protótipo ao lado. Usam só textos
+  da landing e do cartaz original (`docs/design/cartaz-divulgacao/`). Para imprimir,
+  abra o estado com `--bare` na galeria e use "Salvar como PDF" no navegador (o CSS
+  define `@page` com o tamanho da peça). O cartaz de 100 × 60 cm aparece reduzido na
+  tela e sai em tamanho real na impressão; os PDFs para a gráfica, com textos em curvas,
+  ficam em `docs/design/cartaz-projeto/`.
 - **Canvas e Frame**: `proto.canvas.tsx` carrega `app/globals.css` e envolve os
   protótipos de componente com o `AdminShell` real (use `standalone: true` no `meta`
   para telas públicas sem o painel). O papel escolhido na galeria (`admin` ou

@@ -9,6 +9,7 @@ vi.mock("next/navigation", () => ({
 
 import { CartazBenfeitores } from "@/app/_divulgacao/cartaz-benfeitores";
 import { CartazFamilias } from "@/app/_divulgacao/cartaz-familias";
+import { CartazProjeto } from "@/app/_divulgacao/cartaz-projeto";
 import { PostRedes } from "@/app/_divulgacao/post-redes";
 import { ContractTemplateEditor } from "@/app/admin/_components/contract-template-editor";
 import { TemplateEditor } from "@/app/admin/_components/template-editor";
@@ -80,6 +81,29 @@ describe("materiais de divulgação", () => {
       "02Anexe a documentação solicitada",
       "03Aguarde a análise da comissão avaliadora",
     ]);
+  });
+
+  it("o cartaz do projeto destaca o nome da Arca e traz a frase, a citação, a apresentação, o convite e o QR Code", () => {
+    const retrato = render(<CartazProjeto orientacao="retrato" />);
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/^Arca Nossa Senhora da Providência$/);
+    expect(screen.getByText(/Educar para a Eternidade, sob o manto da/)).toHaveTextContent(
+      "Educar para a Eternidade, sob o manto da Providência."
+    );
+    expect(screen.getByRole("figure")).toHaveTextContent(
+      "“O fim próprio e imediato da educação cristã é cooperar com a graça divina na formação do verdadeiro e perfeito cristão.”Pio XI · Divini Illius Magistri"
+    );
+    const apresentacao = screen.getByText(/Toda família católica busca/);
+    expect(apresentacao).toHaveTextContent(/estender as mãos a essas famílias\.$/);
+    expect(apresentacao.querySelector("strong")).toHaveTextContent("Arca Nossa Senhora da Providência");
+    expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent("Seja um benfeitor");
+    expect(screen.queryByText(/bolsa de estudos/)).not.toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "QR Code para www.arcaprovidencia.com.br" })).toHaveAttribute("src", "/divulgacao/qrcode-site.svg");
+    expect(retrato.container.querySelector("style")).toHaveTextContent("@page { size: 600mm 1000mm; margin: 0; }");
+    retrato.unmount();
+
+    const paisagem = render(<CartazProjeto orientacao="paisagem" />);
+    expect(paisagem.container.querySelector("style")).toHaveTextContent("@page { size: 1000mm 600mm; margin: 0; }");
+    expect(screen.getByRole("main")).toHaveClass("paisagem");
   });
 
   it("o post muda de texto pelo tema e mostra a frase só no story", () => {
