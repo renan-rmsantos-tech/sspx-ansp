@@ -15,6 +15,7 @@ export const applicationDetails: Record<string, ApplicationDetailData> = {
   "app-oliveira": {
     id: "app-oliveira",
     school_year_id: SCHOOL_YEAR_ID,
+    applicant_account_id: null,
     status: "pendente",
     escola: ESCOLA,
     pai_nome: "Marcos Antônio de Oliveira",
@@ -79,6 +80,7 @@ export const applicationDetails: Record<string, ApplicationDetailData> = {
   "app-almeida": {
     id: "app-almeida",
     school_year_id: SCHOOL_YEAR_ID,
+    applicant_account_id: null,
     status: "aprovada",
     escola: ESCOLA,
     pai_nome: "Roberto Carlos Almeida",

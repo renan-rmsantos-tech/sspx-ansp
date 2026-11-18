@@ -3,7 +3,9 @@
 import { randomUUID } from "crypto";
 import { and, asc, eq, gt, lte, gte } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { getApplicant } from "@/lib/auth/applicant-session";
 import {
+  applicationDrafts,
   applications,
   benefactors,
   collaboration,
@@ -29,19 +31,29 @@ interface SchoolYear {
 }
 
 const UPLOAD_TICKET_TTL_SECONDS = 30 * 60;
-const FIXED_UPLOAD_CATEGORIES = new Set([
+const SCHOLARSHIP_UPLOAD_CATEGORIES = new Set([
   "declaracao_vaga", "carta_recomendacao", "rg_pai", "rg_mae", "certidao", "comprovante_endereco",
-  "extrato_ir", "extrato_bancario", "recibo_pagamento",
+  "extrato_ir", "extrato_bancario",
 ]);
-const isAllowedUploadCategory = (category: string) =>
-  FIXED_UPLOAD_CATEGORIES.has(category) || /^(rg_aluno|certidao_nascimento)_\d+$/.test(category);
+const isScholarshipUploadCategory = (category: string) =>
+  SCHOLARSHIP_UPLOAD_CATEGORIES.has(category) || /^(rg_aluno|certidao_nascimento)_\d+$/.test(category);
 
-function pathsMatchCategory(paths: string[], category: string, seen: Set<string>) {
-  const expression = new RegExp(`^pending/[^/]+/${category.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/[^/]+$`);
+/** Limite do JSON do rascunho; o formulário completo ocupa poucos kB. */
+const MAX_DRAFT_BYTES = 256 * 1024;
+const NOT_LOGGED_IN = "Sua sessão expirou. Entre novamente para continuar.";
+
+/** Pasta dos arquivos de rascunho de uma conta; nunca é apagada pela limpeza de 48 h de `pending/`. */
+function draftUploadPrefix(accountId: string): string {
+  return `drafts/${accountId}/`;
+}
+
+function pathsMatchCategory(paths: string[], prefix: string, category: string, seen: Set<string>) {
+  const escape = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const expression = new RegExp(`^${escape(prefix)}[^/]+/${escape(category)}/[^/]+$`);
   return paths.every((path) => expression.test(path) && !seen.has(path) && (seen.add(path), true));
 }
 
-function validateDocumentCategories(data: ApplicationSubmission): boolean {
+function validateDocumentCategories(data: ApplicationSubmission, prefix: string): boolean {
   const seen = new Set<string>();
   const required: Array<[string[], string]> = [
     [data.declaracao_vaga, "declaracao_vaga"],
@@ -57,7 +69,7 @@ function validateDocumentCategories(data: ApplicationSubmission): boolean {
       [student.certidao_nascimento, `certidao_nascimento_${index}`],
     ]),
   ];
-  return required.every(([paths, category]) => pathsMatchCategory(paths, category, seen));
+  return required.every(([paths, category]) => pathsMatchCategory(paths, prefix, category, seen));
 }
 
 // Data de hoje em São Paulo como "YYYY-MM-DD". O container roda em UTC; sem o
@@ -99,26 +111,95 @@ export async function getActiveSchoolYear(): Promise<{
   };
 }
 
+function uploadTicket(prefix: string, filename: string, category: string) {
+  const sanitized = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
+  if (!sanitized || sanitized === "." || sanitized === "..") return { error: "Nome de arquivo inválido." };
+  const path = `${prefix}${randomUUID()}/${category}/${sanitized}`;
+  const ticket = createTicket(path, "upload", UPLOAD_TICKET_TTL_SECONDS);
+  return { url: `/api/uploads?ticket=${encodeURIComponent(ticket)}`, path };
+}
+
 /**
- * Emite um ticket de upload assinado. O caminho de destino é escolhido aqui e
- * viaja dentro do ticket, então o cliente não consegue gravar em outro lugar.
+ * Emite um ticket de upload anônimo, só para o comprovante do benfeitor. O
+ * caminho de destino é escolhido aqui e viaja dentro do ticket, então o
+ * cliente não consegue gravar em outro lugar.
  */
 export async function createUploadUrl(
   filename: string,
   category: string
 ): Promise<{ url: string; path: string } | { error: string }> {
   try {
-    if (!isAllowedUploadCategory(category)) return { error: "Categoria de documento inválida." };
-
-    const uuid = randomUUID();
-    const sanitized = filename.replace(/[^a-zA-Z0-9._-]/g, "_");
-    if (!sanitized || sanitized === "." || sanitized === "..") return { error: "Nome de arquivo inválido." };
-    const path = `pending/${uuid}/${category}/${sanitized}`;
-    const ticket = createTicket(path, "upload", UPLOAD_TICKET_TTL_SECONDS);
-
-    return { url: `/api/uploads?ticket=${encodeURIComponent(ticket)}`, path };
+    if (category !== "recibo_pagamento") return { error: "Categoria de documento inválida." };
+    return uploadTicket("pending/", filename, category);
   } catch {
     return { error: "Erro ao gerar URL de upload. Tente novamente." };
+  }
+}
+
+/**
+ * Ticket de upload dos documentos da bolsa. Exige o solicitante logado e grava
+ * na pasta de rascunho da conta, que só essa conta consegue enviar.
+ */
+export async function createApplicantUploadUrl(
+  filename: string,
+  category: string
+): Promise<{ url: string; path: string } | { error: string }> {
+  try {
+    const applicant = await getApplicant();
+    if (!applicant) return { error: NOT_LOGGED_IN };
+    if (!isScholarshipUploadCategory(category)) return { error: "Categoria de documento inválida." };
+    return uploadTicket(draftUploadPrefix(applicant.id), filename, category);
+  } catch {
+    return { error: "Erro ao gerar URL de upload. Tente novamente." };
+  }
+}
+
+async function activeYearInWindow() {
+  const year = await db.query.schoolYears.findFirst({
+    columns: { id: true, data_inicio: true, data_fim: true },
+    where: and(lte(schoolYears.data_inicio, todayInSaoPaulo()), gte(schoolYears.data_fim, todayInSaoPaulo())),
+    orderBy: [asc(schoolYears.data_inicio), asc(schoolYears.id)],
+  });
+  return year && isWithinWindow(year) ? year : null;
+}
+
+/** Salva o rascunho do formulário (dados e etapa) da conta logada no ano aberto. */
+export async function saveApplicationDraft(
+  data: unknown,
+  currentStep: number
+): Promise<{ success: true; savedAt: string } | { success: false; error: string }> {
+  const applicant = await getApplicant();
+  if (!applicant) return { success: false, error: NOT_LOGGED_IN };
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    return { success: false, error: "Rascunho inválido." };
+  }
+  if (Buffer.byteLength(JSON.stringify(data)) > MAX_DRAFT_BYTES) {
+    return { success: false, error: "Rascunho grande demais para ser salvo." };
+  }
+  const step = Math.min(Math.max(Math.trunc(Number(currentStep) || 1), 1), 6);
+
+  try {
+    const year = await activeYearInWindow();
+    if (!year) return { success: false, error: "O período de inscrição não está aberto no momento." };
+
+    const submitted = await db.query.applications.findFirst({
+      columns: { id: true },
+      where: and(eq(applications.applicant_account_id, applicant.id), eq(applications.school_year_id, year.id)),
+    });
+    if (submitted) return { success: false, error: "Sua solicitação já foi enviada." };
+
+    const savedAt = new Date().toISOString();
+    await db
+      .insert(applicationDrafts)
+      .values({ account_id: applicant.id, school_year_id: year.id, data, current_step: step, updated_at: savedAt })
+      .onConflictDoUpdate({
+        target: [applicationDrafts.account_id, applicationDrafts.school_year_id],
+        set: { data, current_step: step, updated_at: savedAt },
+      });
+    return { success: true, savedAt };
+  } catch (error) {
+    console.error("[saveApplicationDraft] falha:", error instanceof Error ? error.message : error);
+    return { success: false, error: "Não foi possível salvar o rascunho." };
   }
 }
 
@@ -139,19 +220,18 @@ export async function submitApplication(
 
   const data = result.data;
 
-  if (!validateDocumentCategories(data)) {
+  const applicant = await getApplicant();
+  if (!applicant) return { success: false, errors: { _form: [NOT_LOGGED_IN] } };
+
+  // Só aceita arquivos da pasta de rascunho da própria conta.
+  if (!validateDocumentCategories(data, draftUploadPrefix(applicant.id))) {
     return { success: false, errors: { _form: ["Os documentos enviados não correspondem às categorias exigidas."] } };
   }
 
-  const activeYear = await db.query.schoolYears.findFirst({
-    columns: { id: true, data_inicio: true, data_fim: true },
-    where: and(lte(schoolYears.data_inicio, todayInSaoPaulo()), gte(schoolYears.data_fim, todayInSaoPaulo())),
-    orderBy: [asc(schoolYears.data_inicio), asc(schoolYears.id)],
-  });
-
   // Revalida a janela aqui: a Server Action pode ser chamada diretamente,
   // sem passar pela página que já faz essa checagem.
-  if (!activeYear || !isWithinWindow(activeYear)) {
+  const activeYear = await activeYearInWindow();
+  if (!activeYear) {
     return {
       success: false,
       errors: {
@@ -160,12 +240,21 @@ export async function submitApplication(
     };
   }
 
+  const alreadySubmitted = await db.query.applications.findFirst({
+    columns: { id: true },
+    where: and(eq(applications.applicant_account_id, applicant.id), eq(applications.school_year_id, activeYear.id)),
+  });
+  if (alreadySubmitted) {
+    return { success: false, errors: { _form: ["Sua solicitação deste ano letivo já foi enviada."] } };
+  }
+
   try {
     const saved = await db.transaction(async (tx) => {
       const [application] = await tx
         .insert(applications)
         .values({
           school_year_id: activeYear.id,
+          applicant_account_id: applicant.id,
           escola: data.escola,
           pai_nome: data.pai.nome,
           pai_rg: data.pai.rg,
@@ -257,6 +346,10 @@ export async function submitApplication(
         await tx.insert(documents).values(documentRows);
       }
 
+      await tx
+        .delete(applicationDrafts)
+        .where(and(eq(applicationDrafts.account_id, applicant.id), eq(applicationDrafts.school_year_id, activeYear.id)));
+
       return { id, documentRows };
     });
 
@@ -346,10 +439,10 @@ async function fillDocumentSizes(documentRows: DocumentRow[]) {
 }
 
 /**
- * Move os arquivos de `pending/{uuid}/` para `applications/{id}/` depois do
- * commit e atualiza a linha correspondente. Se um move ou update falhar, a
- * linha mantém o caminho `pending/` — `getDocumentUrl` no admin resolve os
- * dois caminhos, então o documento segue acessível.
+ * Move os arquivos de `drafts/{conta}/{uuid}/` para `applications/{id}/{uuid}/`
+ * depois do commit e atualiza a linha correspondente. Se um move ou update
+ * falhar, a linha mantém o caminho de origem — o admin lê o arquivo pelo
+ * caminho gravado, então o documento segue acessível.
  */
 async function moveFilesToApplication(
   documentRows: DocumentRow[],
@@ -358,9 +451,9 @@ async function moveFilesToApplication(
   const storage = getStorage();
 
   for (const doc of documentRows) {
-    if (!doc.storage_path.startsWith("pending/")) continue;
+    if (!doc.storage_path.startsWith("drafts/")) continue;
 
-    const [, uploadId, ...relativeParts] = doc.storage_path.split("/");
+    const [, , uploadId, ...relativeParts] = doc.storage_path.split("/");
     const newPath = `applications/${appId}/${uploadId}/${relativeParts.join("/")}`;
 
     try {

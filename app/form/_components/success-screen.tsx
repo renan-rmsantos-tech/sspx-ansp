@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 
-export function SuccessScreen() {
+export function SuccessScreen({ showTrackingLink = false }: { showTrackingLink?: boolean } = {}) {
   return (
     <div className="px-5 py-16 text-center" data-testid="success-screen">
       <div className="mx-auto mb-5 inline-grid h-16 w-16 place-items-center rounded-full bg-success/20 text-success">
@@ -25,12 +25,21 @@ export function SuccessScreen() {
         Sua solicitação de bolsa foi recebida com sucesso. A direção da escola
         analisará o pedido e entrará em contato.
       </p>
-      <Link
-        href="/"
-        className="mt-6 inline-block rounded-md border border-accent px-5 py-2.5 text-sm font-medium text-accent hover:bg-bg"
-      >
-        Voltar à página principal
-      </Link>
+      {showTrackingLink ? (
+        <Link
+          href="/solicitar-bolsa/minha-solicitacao"
+          className="mt-6 inline-block rounded-md bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent/90"
+        >
+          Acompanhar minha solicitação
+        </Link>
+      ) : (
+        <Link
+          href="/"
+          className="mt-6 inline-block rounded-md border border-accent px-5 py-2.5 text-sm font-medium text-accent hover:bg-bg"
+        >
+          Voltar à página principal
+        </Link>
+      )}
     </div>
   );
 }

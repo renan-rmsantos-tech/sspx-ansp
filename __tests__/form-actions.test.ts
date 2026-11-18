@@ -6,12 +6,18 @@ vi.mock("@/lib/db", async () => ({
   db: (await import("./helpers/fake-db")).fakeDb,
 }));
 
+const { mockGetApplicant } = vi.hoisted(() => ({ mockGetApplicant: vi.fn() }));
+vi.mock("@/lib/auth/applicant-session", () => ({ getApplicant: mockGetApplicant }));
+
 import { verifyTicket } from "@/lib/storage/tickets";
 import {
+  createApplicantUploadUrl,
   createUploadUrl,
   getActiveSchoolYear,
+  saveApplicationDraft,
 } from "@/app/form/_actions/form-actions";
-import { queryFor, resetFakeDb } from "./helpers/fake-db";
+import { applicationDrafts } from "@/lib/db/schema";
+import { inserted, queryFor, resetFakeDb } from "./helpers/fake-db";
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -81,19 +87,19 @@ describe("getActiveSchoolYear", () => {
 
 });
 
-describe("createUploadUrl", () => {
-  it("generates a path under pending/{uuid}/{categoria}/", async () => {
-    const result = await createUploadUrl("doc.pdf", "rg_pai");
+describe("createUploadUrl (anonymous, donor receipt only)", () => {
+  it("generates a path under pending/{uuid}/recibo_pagamento/", async () => {
+    const result = await createUploadUrl("comprovante.pdf", "recibo_pagamento");
 
     expect("url" in result).toBe(true);
     if (!("url" in result)) return;
 
-    expect(result.path).toMatch(/^pending\/[0-9a-f-]+\/rg_pai\/doc\.pdf$/);
+    expect(result.path).toMatch(/^pending\/[0-9a-f-]+\/recibo_pagamento\/comprovante\.pdf$/);
     expect(result.url).toMatch(/^\/api\/uploads\?ticket=/);
   });
 
   it("signs the destination path into the ticket", async () => {
-    const result = await createUploadUrl("doc.pdf", "rg_pai");
+    const result = await createUploadUrl("doc.pdf", "recibo_pagamento");
     if (!("url" in result)) throw new Error("expected a url");
 
     const ticket = new URL(result.url, "http://x").searchParams.get("ticket");
@@ -103,46 +109,101 @@ describe("createUploadUrl", () => {
     expect(verifyTicket(ticket, "download")).toBeNull();
   });
 
-  it("sanitizes filenames", async () => {
-    const result = await createUploadUrl("my file (1).pdf", "rg_pai");
+  it.each(["rg_pai", "extrato_ir", "rg_aluno_0", "../recibo_pagamento", "unknown"])(
+    "refuses scholarship and unknown categories anonymously (%s)",
+    async (category) => {
+      await expect(createUploadUrl("doc.pdf", category)).resolves.toEqual({ error: "Categoria de documento inválida." });
+    }
+  );
 
-    expect("path" in result).toBe(true);
-    if (!("path" in result)) return;
+  it("returns an error when the signing secret is missing", async () => {
+    vi.stubEnv("SESSION_SECRET", "");
 
-    expect(result.path).toMatch(
-      /^pending\/[0-9a-f-]+\/rg_pai\/my_file__1_\.pdf$/
-    );
+    const result = await createUploadUrl("doc.pdf", "recibo_pagamento");
+    expect("error" in result).toBe(true);
+
+    vi.stubEnv("SESSION_SECRET", "y".repeat(48));
+  });
+});
+
+describe("createApplicantUploadUrl", () => {
+  const ACCOUNT = "11111111-1111-4111-8111-111111111111";
+
+  it("requires a logged-in applicant", async () => {
+    mockGetApplicant.mockResolvedValue(null);
+    await expect(createApplicantUploadUrl("doc.pdf", "rg_pai")).resolves.toEqual({
+      error: "Sua sessão expirou. Entre novamente para continuar.",
+    });
+  });
+
+  it("writes under the account's draft folder and sanitizes the filename", async () => {
+    mockGetApplicant.mockResolvedValue({ id: ACCOUNT, email: "maria@example.com" });
+    const result = await createApplicantUploadUrl("my file (1).pdf", "rg_pai");
+    if (!("path" in result)) throw new Error("expected a path");
+
+    expect(result.path).toMatch(new RegExp(`^drafts/${ACCOUNT}/[0-9a-f-]+/rg_pai/my_file__1_\\.pdf$`));
+    const ticket = new URL(result.url, "http://x").searchParams.get("ticket");
+    expect(verifyTicket(ticket, "upload")).toBe(result.path);
   });
 
   it("gives each upload its own directory", async () => {
-    const first = await createUploadUrl("doc.pdf", "rg_pai");
-    const second = await createUploadUrl("doc.pdf", "rg_pai");
-
-    if (!("path" in first) || !("path" in second)) {
-      throw new Error("expected paths");
-    }
-
+    mockGetApplicant.mockResolvedValue({ id: ACCOUNT, email: "maria@example.com" });
+    const first = await createApplicantUploadUrl("doc.pdf", "rg_pai");
+    const second = await createApplicantUploadUrl("doc.pdf", "rg_pai");
+    if (!("path" in first) || !("path" in second)) throw new Error("expected paths");
     expect(first.path).not.toBe(second.path);
   });
 
   it.each([
     "declaracao_vaga", "carta_recomendacao", "rg_pai", "rg_mae", "certidao", "comprovante_endereco",
-    "extrato_ir", "extrato_bancario", "recibo_pagamento", "rg_aluno_0", "certidao_nascimento_12",
-  ])("accepts the supported category %s", async (category) => {
-    await expect(createUploadUrl("doc.pdf", category)).resolves.toMatchObject({ path: expect.stringContaining(`/${category}/`) });
+    "extrato_ir", "extrato_bancario", "rg_aluno_0", "certidao_nascimento_12",
+  ])("accepts the scholarship category %s", async (category) => {
+    mockGetApplicant.mockResolvedValue({ id: ACCOUNT, email: "maria@example.com" });
+    await expect(createApplicantUploadUrl("doc.pdf", category)).resolves.toMatchObject({ path: expect.stringContaining(`/${category}/`) });
   });
 
-  it.each(["doc_pai", "../rg_pai", "rg_aluno_x", "rg_aluno_1/x", "unknown"])
-  ("rejects an unsupported category %s", async (category) => {
-    await expect(createUploadUrl("doc.pdf", category)).resolves.toEqual({ error: "Categoria de documento inválida." });
+  it.each(["recibo_pagamento", "doc_pai", "../rg_pai", "rg_aluno_x", "rg_aluno_1/x", "unknown"])(
+    "rejects an unsupported category %s",
+    async (category) => {
+      mockGetApplicant.mockResolvedValue({ id: ACCOUNT, email: "maria@example.com" });
+      await expect(createApplicantUploadUrl("doc.pdf", category)).resolves.toEqual({ error: "Categoria de documento inválida." });
+    }
+  );
+});
+
+describe("saveApplicationDraft", () => {
+  const OPEN = { id: "year-1", data_inicio: "2000-01-01", data_fim: "2999-12-31" };
+
+  it("requires a logged-in applicant", async () => {
+    mockGetApplicant.mockResolvedValue(null);
+    await expect(saveApplicationDraft({ pai_nome: "José" }, 2)).resolves.toMatchObject({ success: false });
+    expect(inserted).toHaveLength(0);
   });
 
-  it("returns an error when the signing secret is missing", async () => {
-    vi.stubEnv("SESSION_SECRET", "");
+  it("upserts the draft for the account and the open school year, clamping the step", async () => {
+    mockGetApplicant.mockResolvedValue({ id: "acc-1", email: "maria@example.com" });
+    queryFor("schoolYears").findFirst.mockResolvedValue(OPEN);
 
-    const result = await createUploadUrl("doc.pdf", "rg_pai");
-    expect("error" in result).toBe(true);
+    const result = await saveApplicationDraft({ pai_nome: "José" }, 42);
 
-    vi.stubEnv("SESSION_SECRET", "y".repeat(48));
+    expect(result).toMatchObject({ success: true, savedAt: expect.any(String) });
+    expect(inserted[0]).toMatchObject({
+      table: applicationDrafts,
+      values: { account_id: "acc-1", school_year_id: "year-1", data: { pai_nome: "José" }, current_step: 6 },
+    });
+  });
+
+  it("refuses drafts once the application was submitted, outside the window, or when too large", async () => {
+    mockGetApplicant.mockResolvedValue({ id: "acc-1", email: "maria@example.com" });
+    queryFor("schoolYears").findFirst.mockResolvedValue(OPEN);
+    queryFor("applications").findFirst.mockResolvedValueOnce({ id: "app-1" });
+    await expect(saveApplicationDraft({}, 1)).resolves.toEqual({ success: false, error: "Sua solicitação já foi enviada." });
+
+    queryFor("schoolYears").findFirst.mockResolvedValue(undefined);
+    await expect(saveApplicationDraft({}, 1)).resolves.toMatchObject({ success: false });
+
+    await expect(saveApplicationDraft({ big: "x".repeat(300 * 1024) }, 1)).resolves.toMatchObject({ success: false });
+    await expect(saveApplicationDraft(["not", "an", "object"], 1)).resolves.toMatchObject({ success: false });
+    expect(inserted).toHaveLength(0);
   });
 });

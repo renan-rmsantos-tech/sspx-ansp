@@ -6,6 +6,9 @@ vi.mock("@/lib/db", async () => ({
   db: (await import("./helpers/fake-db")).fakeDb,
 }));
 
+const { mockGetApplicant } = vi.hoisted(() => ({ mockGetApplicant: vi.fn() }));
+vi.mock("@/lib/auth/applicant-session", () => ({ getApplicant: mockGetApplicant }));
+
 const { mockMove, mockSize } = vi.hoisted(() => ({
   mockMove: vi.fn(),
   mockSize: vi.fn(),
@@ -22,6 +25,7 @@ vi.mock("@/lib/storage", async () => {
 });
 
 import {
+  applicationDrafts,
   applications,
   benefactors,
   collaboration,
@@ -32,6 +36,7 @@ import {
 } from "@/lib/db/schema";
 import { submitApplication } from "@/app/form/_actions/form-actions";
 import {
+  deleted,
   failWrites,
   inserted,
   queryFor,
@@ -45,38 +50,38 @@ function validInput() {
     compromisso_contribuicao: true as const,
     ciencia_confidencialidade: true as const,
     escola: "Colégio São José",
-    declaracao_vaga: ["pending/uuid/declaracao_vaga/declaracao.pdf"],
-    carta_recomendacao: ["pending/uuid/carta_recomendacao/carta.pdf"],
+    declaracao_vaga: ["drafts/acc-1/uuid/declaracao_vaga/declaracao.pdf"],
+    carta_recomendacao: ["drafts/acc-1/uuid/carta_recomendacao/carta.pdf"],
     pai: {
       nome: "João da Silva",
       rg: "12.345.678-9",
       cpf: "529.982.247-25",
-      documentos: ["pending/uuid/rg_pai/rg.pdf"],
+      documentos: ["drafts/acc-1/uuid/rg_pai/rg.pdf"],
     },
     mae: {
       nome: "Maria da Silva",
       cpf: "111.444.777-35",
-      documentos: ["pending/uuid/rg_mae/rg.pdf"],
+      documentos: ["drafts/acc-1/uuid/rg_mae/rg.pdf"],
     },
-    certidao_casamento: ["pending/uuid/certidao/certidao.pdf"],
+    certidao_casamento: ["drafts/acc-1/uuid/certidao/certidao.pdf"],
     endereco: "Rua das Flores, 123",
     telefone: "(11) 99999-9999",
-    comprovante_endereco: ["pending/uuid/comprovante_endereco/comp.pdf"],
+    comprovante_endereco: ["drafts/acc-1/uuid/comprovante_endereco/comp.pdf"],
     outros_filhos: [],
     alunos: [
       {
         nome: "Ana Silva",
         serie: "5º ano",
         mensalidade: 1200,
-        documento_identidade: ["pending/uuid/rg_aluno_0/rg.pdf"],
-        certidao_nascimento: ["pending/uuid/certidao_nascimento_0/certidao.pdf"],
+        documento_identidade: ["drafts/acc-1/uuid/rg_aluno_0/rg.pdf"],
+        certidao_nascimento: ["drafts/acc-1/uuid/certidao_nascimento_0/certidao.pdf"],
       },
     ],
     desconto_solicitado: 50,
     renda: { pai: 3000, mae: 2500, pessoas: 4 },
-    extrato_ir: ["pending/uuid/extrato_ir/ir.pdf"],
+    extrato_ir: ["drafts/acc-1/uuid/extrato_ir/ir.pdf"],
     despesas: { aluguel: 1200 },
-    extratos_bancarios: ["pending/uuid/extrato_bancario/ext.pdf"],
+    extratos_bancarios: ["drafts/acc-1/uuid/extrato_bancario/ext.pdf"],
     veiculos: [{ marca: "Fiat", modelo: "Uno", ano: "2015" }],
     colaboracao: {
       limpeza: { ativo: true, vezes_semana: 2 },
@@ -104,6 +109,7 @@ beforeEach(() => {
   setReturning(students, [{ id: "student-1", nome: "Ana Silva" }]);
   mockMove.mockResolvedValue(undefined);
   mockSize.mockResolvedValue(2048);
+  mockGetApplicant.mockResolvedValue({ id: "acc-1", email: "maria@example.com" });
 });
 
 describe("submitApplication", () => {
@@ -191,7 +197,7 @@ describe("submitApplication", () => {
   it("rejects a recommendation letter uploaded under another category", async () => {
     const result = await submitApplication({
       ...validInput(),
-      carta_recomendacao: ["pending/uuid/rg_pai/carta.pdf"],
+      carta_recomendacao: ["drafts/acc-1/uuid/rg_pai/carta.pdf"],
     });
 
     expect(result).toEqual({
@@ -201,16 +207,16 @@ describe("submitApplication", () => {
     expect(inserted).toHaveLength(0);
   });
 
-  it("moves uploaded files from pending/ into the application folder", async () => {
+  it("moves uploaded files from the draft folder into the application folder", async () => {
     await submitApplication(validInput());
 
     expect(mockMove).toHaveBeenCalledWith(
-      "pending/uuid/rg_pai/rg.pdf",
+      "drafts/acc-1/uuid/rg_pai/rg.pdf",
       "applications/app-1/uuid/rg_pai/rg.pdf"
     );
 
     // O insert acontece antes do move (dentro da transação), com o caminho
-    // pending/; depois do commit cada linha é atualizada para o caminho final.
+    // de rascunho; depois do commit cada linha é atualizada para o caminho final.
     const updates = updated
       .filter((row) => row.table === documents)
       .map((row) => (row.values as { storage_path: string }).storage_path);
@@ -228,7 +234,7 @@ describe("submitApplication", () => {
     expect(rows.every((row) => row.tamanho_bytes === 2048)).toBe(true);
   });
 
-  it("keeps the pending path when the file cannot be moved", async () => {
+  it("keeps the draft path when the file cannot be moved", async () => {
     mockMove.mockRejectedValue(new Error("ENOENT"));
 
     const result = await submitApplication(validInput());
@@ -239,9 +245,7 @@ describe("submitApplication", () => {
     expect(updated.filter((row) => row.table === documents)).toHaveLength(0);
 
     const rows = insertedFor(documents) as Array<{ storage_path: string }>;
-    expect(rows.every((row) => row.storage_path.startsWith("pending/"))).toBe(
-      true
-    );
+    expect(rows.every((row) => row.storage_path.startsWith("drafts/acc-1/"))).toBe(true);
   });
 
   it("returns an error when the active school year window is closed", async () => {
@@ -258,7 +262,7 @@ describe("submitApplication", () => {
     expect(inserted).toHaveLength(0);
   });
 
-  it("rejects document paths outside pending/", async () => {
+  it("rejects document paths outside the draft folder", async () => {
     const data = validInput();
     data.pai.documentos = ["applications/other-app/rg_pai/rg.pdf"];
 
@@ -269,13 +273,49 @@ describe("submitApplication", () => {
   });
 
   it.each([
-    ["uses another required category", (data: ReturnType<typeof validInput>) => { data.pai.documentos = ["pending/uuid/rg_mae/rg.pdf"]; }],
+    ["uses another required category", (data: ReturnType<typeof validInput>) => { data.pai.documentos = ["drafts/acc-1/uuid/rg_mae/rg.pdf"]; }],
     ["reuses one path in two required groups", (data: ReturnType<typeof validInput>) => { data.mae.documentos = [...data.pai.documentos]; }],
-    ["uses a wrong student category", (data: ReturnType<typeof validInput>) => { data.alunos[0].certidao_nascimento = ["pending/uuid/certidao_nascimento_1/certidao.pdf"]; }],
+    ["uses a wrong student category", (data: ReturnType<typeof validInput>) => { data.alunos[0].certidao_nascimento = ["drafts/acc-1/uuid/certidao_nascimento_1/certidao.pdf"]; }],
   ])("rejects a submission that %s", async (_label, mutate) => {
     const data = validInput();
     mutate(data);
     await expect(submitApplication(data)).resolves.toMatchObject({ success: false });
+    expect(inserted).toHaveLength(0);
+  });
+
+  it("rejects files from another account's draft folder", async () => {
+    const data = validInput();
+    data.pai.documentos = ["drafts/acc-2/uuid/rg_pai/rg.pdf"];
+
+    await expect(submitApplication(data)).resolves.toEqual({
+      success: false,
+      errors: { _form: ["Os documentos enviados não correspondem às categorias exigidas."] },
+    });
+    expect(inserted).toHaveLength(0);
+  });
+
+  it("requires a logged-in applicant", async () => {
+    mockGetApplicant.mockResolvedValue(null);
+
+    const result = await submitApplication(validInput());
+
+    expect(result.errors?._form?.[0]).toMatch(/sessão expirou/);
+    expect(inserted).toHaveLength(0);
+  });
+
+  it("links the application to the account and deletes the draft in the same transaction", async () => {
+    await submitApplication(validInput());
+
+    expect(insertedFor(applications)).toMatchObject({ applicant_account_id: "acc-1", school_year_id: "year-1" });
+    expect(deleted.map((row) => row.table)).toContain(applicationDrafts);
+  });
+
+  it("refuses a second application from the same account in the same school year", async () => {
+    queryFor("applications").findFirst.mockResolvedValue({ id: "app-0" });
+
+    const result = await submitApplication(validInput());
+
+    expect(result.errors?._form?.[0]).toMatch(/já foi enviada/);
     expect(inserted).toHaveLength(0);
   });
 

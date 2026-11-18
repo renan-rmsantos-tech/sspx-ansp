@@ -726,18 +726,22 @@ describe("getDocumentUrl", () => {
     const result = await getDocumentUrl("pending/uuid/rg_pai/rg.pdf", "app-1");
 
     expect(mockSize).toHaveBeenNthCalledWith(1, "pending/uuid/rg_pai/rg.pdf");
-    expect(mockSize).toHaveBeenNthCalledWith(
-      2,
-      "applications/app-1/rg_pai/rg.pdf"
-    );
+    // O envio move pending/{uuid}/... para applications/{id}/{uuid}/...
+    expect(mockSize).toHaveBeenNthCalledWith(2, "applications/app-1/uuid/rg_pai/rg.pdf");
 
     expect("url" in result).toBe(true);
     if (!("url" in result)) return;
 
     const ticket = new URL(result.url, "http://x").searchParams.get("ticket");
-    expect(verifyTicket(ticket, "download")).toBe(
-      "applications/app-1/rg_pai/rg.pdf"
-    );
+    expect(verifyTicket(ticket, "download")).toBe("applications/app-1/uuid/rg_pai/rg.pdf");
+  });
+
+  it("falls back to the applications path when a draft file was already moved", async () => {
+    mockSize.mockResolvedValueOnce(null).mockResolvedValueOnce(2048);
+
+    await getDocumentUrl("drafts/acc-1/uuid/rg_pai/rg.pdf", "app-1");
+
+    expect(mockSize).toHaveBeenNthCalledWith(2, "applications/app-1/uuid/rg_pai/rg.pdf");
   });
 
   it("returns an error when no candidate path exists", async () => {

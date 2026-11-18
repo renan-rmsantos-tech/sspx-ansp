@@ -8,13 +8,15 @@ import { withServerActions } from "./helpers/server-actions";
 const render = withServerActions(formActions);
 
 const mockSubmitApplication = vi.fn();
+const mockSaveDraft = vi.fn();
 
 vi.mock("@/app/form/_actions/form-actions", () => ({
   createUploadUrl: vi.fn().mockResolvedValue({
     url: "https://example.com/upload",
-    path: "pending/abc/doc/file.pdf",
+    path: "drafts/acc-1/abc/doc/file.pdf",
   }),
   submitApplication: (...args: unknown[]) => mockSubmitApplication(...args),
+  saveApplicationDraft: (...args: unknown[]) => mockSaveDraft(...args),
 }));
 
 async function uploadAll() {
@@ -295,7 +297,7 @@ describe("ScholarshipForm", () => {
     });
     expect(mockSubmitApplication).toHaveBeenCalledTimes(1);
     expect(mockSubmitApplication.mock.calls[0][0]).toMatchObject({
-      carta_recomendacao: ["pending/abc/doc/file.pdf"],
+      carta_recomendacao: ["drafts/acc-1/abc/doc/file.pdf"],
     });
   });
 
@@ -466,4 +468,74 @@ it("bloqueia envio enquanto os dois novos checks não forem aceitos", async () =
   expect(mockSubmitApplication).not.toHaveBeenCalled();
 });
 
+});
+
+describe("ScholarshipForm draft autosave", () => {
+  beforeEach(() => mockSaveDraft.mockReset());
+  afterEach(() => cleanup());
+
+  it("saves the edited data and step after a pause and tells the family", async () => {
+    mockSaveDraft.mockResolvedValue({ success: true, savedAt: "2026-11-17T15:32:00.000Z" });
+    render(<ScholarshipForm autosave />);
+
+    fireEvent.change(screen.getByTestId("pai-nome"), { target: { value: "João Silva" } });
+
+    await waitFor(() => expect(mockSaveDraft).toHaveBeenCalledTimes(1), { timeout: 3000 });
+    expect(mockSaveDraft.mock.calls[0][0]).toMatchObject({ pai_nome: "João Silva" });
+    expect(mockSaveDraft.mock.calls[0][1]).toBe(1);
+    await waitFor(() => expect(screen.getByTestId("draft-status")).toHaveTextContent("Rascunho salvo em 17/11, 12:32"));
+  });
+
+  it("does not save on open and shows a failure message", async () => {
+    mockSaveDraft.mockResolvedValue({ success: false, error: "Sua sessão expirou. Entre novamente para continuar." });
+    render(<ScholarshipForm autosave initialSavedAt="2026-11-16T10:00:00.000Z" />);
+    expect(screen.getByTestId("draft-status")).toHaveTextContent("Rascunho salvo em 16/11, 07:00");
+
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    expect(mockSaveDraft).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByTestId("pai-nome"), { target: { value: "João" } });
+    await waitFor(() => expect(screen.getByTestId("draft-status")).toHaveTextContent("Sua sessão expirou"), { timeout: 3000 });
+  });
+
+  it("does not autosave without the autosave flag", async () => {
+    render(<ScholarshipForm />);
+    fireEvent.change(screen.getByTestId("pai-nome"), { target: { value: "João" } });
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    expect(mockSaveDraft).not.toHaveBeenCalled();
+    expect(screen.queryByTestId("draft-status")).not.toBeInTheDocument();
+  });
+});
+
+describe("ScholarshipForm student uploads", () => {
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+
+  it("keeps both student documents when their uploads finish at the same time", async () => {
+    // Os dois PUTs ficam pendentes e terminam juntos, depois das duas seleções.
+    const pending: Array<() => void> = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => new Promise<Response>((resolve) => pending.push(() => resolve({ ok: true } as Response))))
+    );
+    render(<ScholarshipForm initialStep={2} />);
+
+    const file = new File(["x"], "doc.pdf", { type: "application/pdf" });
+    const inputs = screen.getAllByTestId("upload-input");
+    await act(async () => {
+      fireEvent.change(inputs[0], { target: { files: [file] } });
+    });
+    await act(async () => {
+      fireEvent.change(inputs[1], { target: { files: [file] } });
+    });
+    await waitFor(() => expect(pending).toHaveLength(2));
+    await act(async () => {
+      pending.forEach((finish) => finish());
+    });
+
+    await waitFor(() => expect(screen.queryByText("Enviando...")).not.toBeInTheDocument());
+    expect(screen.getAllByText("doc.pdf")).toHaveLength(2);
+  });
 });

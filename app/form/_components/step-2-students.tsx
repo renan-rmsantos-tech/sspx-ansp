@@ -9,7 +9,8 @@ import { useMemo } from "react";
 
 interface Step2Props {
   data: FormData;
-  onChange: (data: Partial<FormData>) => void;
+  /** Aceita também uma função do estado mais recente, usada pelos uploads. */
+  onChange: (data: Partial<FormData> | ((prev: FormData) => Partial<FormData>)) => void;
   errors: Record<string, string>;
 }
 
@@ -51,9 +52,12 @@ export function Step2Students({ data, onChange, errors }: Step2Props) {
     field: keyof Student,
     value: string | UploadedFile[]
   ) => {
-    const updated = [...data.alunos];
-    updated[index] = { ...updated[index], [field]: value };
-    onChange({ alunos: updated });
+    // Parte do estado mais recente, não do `data` desta renderização: o RG e a
+    // certidão podem terminar de enviar ao mesmo tempo, e um não pode
+    // sobrescrever o outro.
+    onChange((prev) => ({
+      alunos: prev.alunos.map((student, i) => (i === index ? { ...student, [field]: value } : student)),
+    }));
   };
 
   return (

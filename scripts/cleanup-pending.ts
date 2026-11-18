@@ -1,5 +1,6 @@
 import { readdir, rm, stat } from "fs/promises";
 import { join } from "path";
+import { cleanupDrafts, DRAFT_MAX_AGE_DAYS } from "../lib/applicant/draft-cleanup";
 import { storageRoot } from "../lib/storage";
 
 /**
@@ -10,13 +11,16 @@ import { storageRoot } from "../lib/storage";
  * retidos. Submissões concluídas movem os arquivos para `applications/` ou
  * `donors/`, então tudo que sobra em `pending/` além da idade limite é lixo.
  *
+ * Também limpa `drafts/`: rascunhos de solicitação sem alteração há
+ * DRAFT_MAX_AGE_DAYS dias e arquivos de rascunho que nenhum rascunho usa.
+ *
  * Uso: npx tsx scripts/cleanup-pending.ts
  * Agende via cron no droplet (ex.: uma vez por dia).
  */
 
 const MAX_AGE_HOURS = 48;
 
-async function main() {
+async function cleanupPending() {
   const pendingDir = join(storageRoot(), "pending");
   const cutoff = Date.now() - MAX_AGE_HOURS * 60 * 60 * 1000;
 
@@ -52,4 +56,17 @@ async function main() {
   );
 }
 
-main();
+async function main() {
+  await cleanupPending();
+  const drafts = await cleanupDrafts();
+  console.log(
+    `[cleanup-drafts] ${drafts.drafts} rascunho(s) com mais de ${DRAFT_MAX_AGE_DAYS} dias e ${drafts.uploads} upload(s) sem uso removido(s).`
+  );
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error("[cleanup] falhou:", error instanceof Error ? error.message : error);
+    process.exit(1);
+  });

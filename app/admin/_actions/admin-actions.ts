@@ -442,8 +442,10 @@ export async function exportDonorPledge(
 function resolveDocumentPaths(path: string, applicationId?: string): string[] {
   const paths = [path];
 
-  if (path.startsWith("pending/") && applicationId) {
-    const rest = path.replace(/^pending\/[^/]+\//, "");
+  // Um move que falhou deixa o caminho de origem na linha, mas o arquivo pode
+  // já estar no destino: tenta os dois.
+  if ((path.startsWith("pending/") || path.startsWith("drafts/")) && applicationId) {
+    const rest = path.replace(/^(?:pending\/|drafts\/[^/]+\/)/, "");
     if (rest) {
       paths.push(`applications/${applicationId}/${rest}`);
     }

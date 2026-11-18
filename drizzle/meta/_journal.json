@@ -134,6 +134,13 @@
       "when": 1794932668862,
       "tag": "0018_donor_financial_notes",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1794960166984,
+      "tag": "0019_applicant_accounts",
+      "breakpoints": true
     }
   ]
 }

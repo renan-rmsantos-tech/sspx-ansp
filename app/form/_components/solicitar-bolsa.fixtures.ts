@@ -3,7 +3,7 @@ import type { UploadedFile } from "./file-upload";
 import { INITIAL_FORM_DATA, type FormData } from "./form-types";
 
 function uploaded(name: string): UploadedFile[] {
-  return [{ id: `fixture-${name}`, name, path: `pending/00000000-0000-4000-8000-000000000000/${name}` }];
+  return [{ id: `fixture-${name}`, name, path: `drafts/00000000-0000-4000-8000-000000000000/00000000-0000-4000-8000-000000000001/${name}` }];
 }
 
 const BENFEITORES = [

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ProgressBar } from "./progress-bar";
 import { Step1Applicant } from "./step-1-applicant";
 import { Step2Students } from "./step-2-students";
@@ -9,7 +9,7 @@ import { Step4Expenses } from "./step-4-expenses";
 import { Step5Vehicles } from "./step-5-vehicles";
 import { Step6Review } from "./step-6-review";
 import { SuccessScreen } from "./success-screen";
-import { INITIAL_FORM_DATA, parseMoney } from "./form-types";
+import { INITIAL_FORM_DATA, draftSnapshot, parseMoney } from "./form-types";
 import type { FormData } from "./form-types";
 import { MSG_OBRIGATORIO } from "./field-ui";
 import { isValidCPF } from "@/lib/validations/cpf";
@@ -175,14 +175,59 @@ interface ScholarshipFormProps {
   initialData?: FormData;
   /** Erros de validação já exibidos na etapa inicial (protótipos). */
   initialErrors?: Record<string, string>;
+  /** Salva o rascunho automaticamente a cada alteração (solicitante logado). */
+  autosave?: boolean;
+  /** Momento do último rascunho salvo, exibido ao abrir. */
+  initialSavedAt?: string | null;
+}
+
+type DraftStatus =
+  | { state: "idle" }
+  | { state: "saving" }
+  | { state: "saved"; at: string }
+  | { state: "error"; message: string };
+
+const AUTOSAVE_DELAY_MS = 1200;
+
+function formatSavedAt(iso: string): string {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    day: "2-digit",
+    month: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(iso));
+}
+
+function DraftStatusText({ status }: { status: DraftStatus }) {
+  const text =
+    status.state === "saving"
+      ? "Salvando rascunho…"
+      : status.state === "saved"
+        ? `Rascunho salvo em ${formatSavedAt(status.at)}. Você pode sair e continuar depois.`
+        : status.state === "error"
+          ? status.message
+          : "";
+  return (
+    <p
+      aria-live="polite"
+      className={`mt-4 min-h-5 text-center text-xs ${status.state === "error" ? "text-danger" : "text-muted"}`}
+      data-testid="draft-status"
+    >
+      {text}
+    </p>
+  );
 }
 
 export function ScholarshipForm({
   initialStep = 1,
   initialData = INITIAL_FORM_DATA,
   initialErrors = {},
+  autosave = false,
+  initialSavedAt = null,
 }: ScholarshipFormProps = {}) {
   const submitApplication = useServerAction("submitApplication");
+  const saveApplicationDraft = useServerAction("saveApplicationDraft");
   const [currentStep, setCurrentStep] = useState(() =>
     Math.min(Math.max(Math.trunc(initialStep), 1), TOTAL_STEPS)
   );
@@ -200,10 +245,47 @@ export function ScholarshipForm({
   // Guarda síncrona: `submitting` só bloqueia o botão após o re-render, e um
   // duplo clique rápido dispararia duas submissões (e duas solicitações).
   const submittingRef = useRef(false);
+  const [draftStatus, setDraftStatus] = useState<DraftStatus>(
+    initialSavedAt ? { state: "saved", at: initialSavedAt } : { state: "idle" }
+  );
+  // Os salvamentos rodam em fila: um rascunho antigo nunca chega ao servidor
+  // depois de um mais novo.
+  const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
+  // Último conteúdo enviado ao servidor. Começa com o rascunho carregado:
+  // abrir a página, ou um upload ainda em andamento, não gera salvamento.
+  const lastSavedRef = useRef<string | null>(null);
 
-  const updateFormData = useCallback((partial: Partial<FormData>) => {
-    setFormData((prev) => ({ ...prev, ...partial }));
-  }, []);
+  useEffect(() => {
+    if (!autosave || submitted) return;
+    const snapshot = draftSnapshot(formData);
+    const step = currentStep;
+    const key = JSON.stringify([snapshot, step]);
+    if (lastSavedRef.current === null) {
+      lastSavedRef.current = key;
+      return;
+    }
+    if (key === lastSavedRef.current) return;
+    const timer = setTimeout(() => {
+      lastSavedRef.current = key;
+      saveQueueRef.current = saveQueueRef.current.then(async () => {
+        setDraftStatus({ state: "saving" });
+        try {
+          const result = await saveApplicationDraft(snapshot, step);
+          setDraftStatus(result.success ? { state: "saved", at: result.savedAt } : { state: "error", message: result.error });
+        } catch {
+          setDraftStatus({ state: "error", message: "Não foi possível salvar o rascunho. Verifique sua conexão." });
+        }
+      });
+    }, AUTOSAVE_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [autosave, submitted, formData, currentStep, saveApplicationDraft]);
+
+  const updateFormData = useCallback(
+    (partial: Partial<FormData> | ((prev: FormData) => Partial<FormData>)) => {
+      setFormData((prev) => ({ ...prev, ...(typeof partial === "function" ? partial(prev) : partial) }));
+    },
+    []
+  );
 
   const validateCurrentStep = useCallback((): boolean => {
     let stepErrors: Record<string, string> = {};
@@ -382,7 +464,7 @@ export function ScholarshipForm({
   }, [accepted, contributionAccepted, confidentialityAccepted, formData, submitApplication]);
 
   if (submitted) {
-    return <SuccessScreen />;
+    return <SuccessScreen showTrackingLink={autosave} />;
   }
 
   return (
@@ -483,6 +565,7 @@ export function ScholarshipForm({
             </button>
           )}
         </div>
+        {autosave && <DraftStatusText status={draftStatus} />}
       </form>
     </div>
   );

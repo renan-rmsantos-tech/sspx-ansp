@@ -14,6 +14,7 @@ import type * as StaffActions from "@/app/admin/_actions/staff-actions";
 import type * as DonorActions from "@/app/benfeitor/_actions/donor-actions";
 import type * as FormActions from "@/app/form/_actions/form-actions";
 import type * as AuthActions from "@/app/login/_actions/auth-actions";
+import type * as ApplicantActions from "@/app/solicitar-bolsa/_actions/applicant-actions";
 
 /** Todas as server actions que as views de cliente chamam. */
 export type ServerActions = typeof AdminActions &
@@ -28,7 +29,8 @@ export type ServerActions = typeof AdminActions &
   typeof StaffActions &
   typeof DonorActions &
   typeof FormActions &
-  typeof AuthActions;
+  typeof AuthActions &
+  typeof ApplicantActions;
 
 export type ServerActionName = keyof ServerActions;
 

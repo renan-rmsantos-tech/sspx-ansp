@@ -17,6 +17,7 @@ Next.js 16 App Router application: a public multi-step form, an admin review pan
 
 - **Data**: Postgres via Drizzle ORM (`postgres.js` driver). Schema in `lib/db/schema.ts`, migrations in `drizzle/` (6 migrations). Drizzle field names deliberately match the DB column names (`snake_case`) because server actions return rows straight to components and PDF renderers.
 - **Auth**: iron-session cookie, admin accounts in `admin_users` (scrypt hashes, `lib/auth/password.ts`). `proxy.ts` guards `/admin`; every admin server action calls `requireAuth()` independently. There is no row-level security — authorization lives entirely in the application. Dev bypass: `AUTH_BYPASS=true` with `admin@admin.com` / `admin123` (ignored in production).
+- **Applicant accounts**: scholarship applicants sign up at `/solicitar-bolsa/cadastro`, confirm their e-mail by link, and log in before filling the form. Their session is a separate iron-session cookie (`ansp-solicitante`, `lib/auth/applicant-session.ts`) that never grants `/admin`; `getApplicant()` rechecks the account and `session_version` on every call. Account e-mail links are single-use tokens stored as SHA-256 hashes (`lib/applicant/tokens.ts`). The form autosaves a draft per account and school year (`application_drafts`); draft uploads live under `drafts/{account}/` and move to `applications/` on submission.
 - **Storage**: documents are written to `STORAGE_DIR` through the driver in `lib/storage/`. Upload and download go through `/api/uploads` and `/api/documents`, authorized by HMAC tickets (`lib/storage/tickets.ts`) signed with `SESSION_SECRET`. Upload and download tickets use separate derived keys. Max upload: 10 MB.
 - **Bootstrap**: `scripts/bootstrap.ts` runs on every start; it is idempotent and never overwrites existing rows or passwords.
 - **PDFs**: `@react-pdf/renderer` in `lib/pdf/` — application, decision, contract, and donor receipts share `document-header.tsx`.
@@ -31,7 +32,8 @@ Form submission runs inside a database transaction. Upload paths are server-gene
 | Area | Path | Key files |
 |------|------|-----------|
 | Landing | `/` | `app/page.tsx` |
-| Scholarship form | `/form` | `app/form/page.tsx`, `app/form/_actions/form-actions.ts`, 6 step components |
+| Scholarship form | `/solicitar-bolsa` (`/form` redirects) | `app/solicitar-bolsa/(apresentacao)/page.tsx`, `app/form/_actions/form-actions.ts`, 6 step components; requires an applicant session |
+| Applicant account | `/solicitar-bolsa/{entrar,cadastro,confirmar,esqueci-senha,nova-senha,minha-solicitacao}` | `app/solicitar-bolsa/_actions/applicant-actions.ts`, `app/solicitar-bolsa/_components/` |
 | Donor sign-up | `/benfeitor` | `app/benfeitor/page.tsx`, `app/benfeitor/_actions/donor-actions.ts` |
 | Admin login | `/login` | `app/login/page.tsx`, `app/login/_actions/auth-actions.ts` |
 | Admin panel | `/admin/*` | `app/admin/_actions/admin-actions.ts`, layout with sidebar/topbar |

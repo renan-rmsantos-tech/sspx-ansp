@@ -15,12 +15,13 @@ const nonNegativeNumber = z.number().min(0, "Valor não pode ser negativo");
 
 const optionalNonNegative = nonNegativeNumber.optional();
 
-// Só aceita caminhos gerados por `createUploadUrl` (pending/{uuid}/...): uma
-// submissão não pode referenciar arquivos de outros namespaces do storage.
+// Só aceita caminhos gerados por `createApplicantUploadUrl`
+// (drafts/{conta}/{uuid}/...); `submitApplication` ainda confere que a pasta é
+// da conta logada. Uma submissão não pode referenciar outros namespaces.
 const uploadedPath = z
   .string()
   .min(1)
-  .refine((p) => p.startsWith("pending/") && !p.includes(".."), {
+  .refine((p) => p.startsWith("drafts/") && !p.includes(".."), {
     message: "Caminho de arquivo inválido",
   });
 

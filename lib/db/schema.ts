@@ -52,6 +52,66 @@ export const schoolYears = pgTable(
   ]
 );
 
+/**
+ * Conta do solicitante de bolsa. Separada de `admin_users`: o solicitante só
+ * enxerga a própria solicitação e nunca entra no /admin.
+ */
+export const applicantAccounts = pgTable(
+  "applicant_accounts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    /** Sempre em minúsculas e sem espaços nas pontas. */
+    email: text("email").notNull(),
+    password_hash: text("password_hash").notNull(),
+    email_verified_at: timestamp("email_verified_at", { withTimezone: true, mode: "string" }),
+    /** Incrementa ao trocar a senha; invalida as sessões abertas antes. */
+    session_version: integer("session_version").notNull().default(0),
+    created_at: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("applicant_accounts_email_idx").on(t.email)]
+);
+
+/** Links de uso único enviados por e-mail; só o hash SHA-256 do token é guardado. */
+export const applicantTokens = pgTable(
+  "applicant_tokens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    account_id: uuid("account_id")
+      .notNull()
+      .references(() => applicantAccounts.id, { onDelete: "cascade" }),
+    kind: text("kind").$type<"verify_email" | "reset_password">().notNull(),
+    token_hash: text("token_hash").notNull(),
+    expires_at: timestamp("expires_at", { withTimezone: true, mode: "string" }).notNull(),
+    used_at: timestamp("used_at", { withTimezone: true, mode: "string" }),
+    created_at: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("applicant_tokens_hash_idx").on(t.token_hash),
+    index("applicant_tokens_account_kind_idx").on(t.account_id, t.kind, t.created_at),
+    check("applicant_tokens_kind_check", sql`${t.kind} in ('verify_email', 'reset_password')`),
+  ]
+);
+
+/** Rascunho do formulário de bolsa: um por conta e ano letivo, apagado no envio. */
+export const applicationDrafts = pgTable(
+  "application_drafts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    account_id: uuid("account_id")
+      .notNull()
+      .references(() => applicantAccounts.id, { onDelete: "cascade" }),
+    school_year_id: uuid("school_year_id")
+      .notNull()
+      .references(() => schoolYears.id, { onDelete: "cascade" }),
+    data: jsonb("data").notNull(),
+    current_step: integer("current_step").notNull().default(1),
+    created_at: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
+    updated_at: timestamp("updated_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("application_drafts_account_year_idx").on(t.account_id, t.school_year_id)]
+);
+
 export const applications = pgTable(
   "applications",
   {
@@ -59,6 +119,10 @@ export const applications = pgTable(
     school_year_id: uuid("school_year_id")
       .notNull()
       .references(() => schoolYears.id),
+    /** Conta que enviou; nulo nas solicitações anteriores ao login de solicitantes. */
+    applicant_account_id: uuid("applicant_account_id").references(() => applicantAccounts.id, {
+      onDelete: "set null",
+    }),
     status: text("status")
       .$type<"pendente" | "aprovada" | "rejeitada">()
       .notNull()
@@ -138,6 +202,9 @@ export const applications = pgTable(
   (t) => [
     index("applications_status_data_envio_idx").on(t.status, t.data_envio),
     index("applications_school_year_id_idx").on(t.school_year_id),
+    uniqueIndex("applications_account_year_idx")
+      .on(t.applicant_account_id, t.school_year_id)
+      .where(sql`${t.applicant_account_id} is not null`),
   ]
 );
 

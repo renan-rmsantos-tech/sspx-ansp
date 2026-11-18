@@ -2,6 +2,7 @@ import { definePrototype, type PrototypeProps } from "@compozy/proto";
 import { FormUnavailableMessage } from "./form-unavailable-message";
 import { ScholarshipForm } from "./scholarship-form";
 import { ScholarshipPageLayout } from "./scholarship-page-layout";
+import { ApplicantBar } from "@/app/solicitar-bolsa/_components/account-forms";
 import { SuccessScreen } from "./success-screen";
 import { emptyStep1Errors, filledFormData, upcomingSchoolYear } from "./solicitar-bolsa.fixtures";
 
@@ -12,6 +13,7 @@ export const meta = definePrototype({
   standalone: true,
   states: [
     { id: "etapa-1-pais", label: "Etapa 1: dados dos pais" },
+    { id: "rascunho-salvo", label: "Rascunho retomado, com conta conectada" },
     { id: "etapa-1-erros", label: "Etapa 1: erros de validação" },
     { id: "etapa-2-alunos", label: "Etapa 2: dados dos alunos" },
     { id: "etapa-3-renda", label: "Etapa 3: renda familiar" },
@@ -33,7 +35,15 @@ const STEPS: Record<string, number> = {
 };
 
 function Screen({ state }: { state: string }) {
-  if (state === "envio-concluido") return <SuccessScreen />;
+  if (state === "envio-concluido") return <SuccessScreen showTrackingLink />;
+  if (state === "rascunho-salvo") {
+    return (
+      <>
+        <ApplicantBar email={filledFormData.email} />
+        <ScholarshipForm autosave initialStep={3} initialData={filledFormData} initialSavedAt="2026-11-17T14:20:00.000Z" />
+      </>
+    );
+  }
   if (state === "inscricoes-agendadas") return <FormUnavailableMessage year={upcomingSchoolYear} />;
   if (state === "inscricoes-fechadas") return <FormUnavailableMessage />;
   if (state === "etapa-1-erros") return <ScholarshipForm initialErrors={emptyStep1Errors} />;

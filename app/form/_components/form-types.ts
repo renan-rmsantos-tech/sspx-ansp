@@ -186,3 +186,61 @@ export function parseMoney(value: string): number {
 export function formatMoney(value: number): string {
   return `R$ ${value.toFixed(2).replace(".", ",")}`;
 }
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+/**
+ * Rascunho salvo → dados do formulário. Parte do formulário vazio e só aceita
+ * campos conhecidos com o mesmo tipo, para um rascunho antigo ou incompleto
+ * nunca quebrar a tela. Uploads que não terminaram são descartados.
+ */
+export function restoreDraft(draft: unknown, fallbackEmail = ""): FormData {
+  const restored: FormData = { ...INITIAL_FORM_DATA, email: fallbackEmail };
+  if (!isRecord(draft)) return restored;
+  const target = restored as unknown as Record<string, unknown>;
+  const initial = INITIAL_FORM_DATA as unknown as Record<string, unknown>;
+  for (const key of Object.keys(initial)) {
+    const value = draft[key];
+    const base = initial[key];
+    if (value === undefined) continue;
+    if (Array.isArray(base) ? Array.isArray(value) : typeof value === typeof base && (typeof base !== "object" || isRecord(value))) {
+      target[key] = isRecord(base) ? { ...base, ...(value as object) } : value;
+    }
+  }
+  const files = (list: unknown): UploadedFile[] =>
+    Array.isArray(list)
+      ? list.filter((f): f is UploadedFile => isRecord(f) && typeof f.path === "string" && Boolean(f.path) && typeof f.name === "string" && !f.uploading && !f.error)
+      : [];
+  for (const key of ["declaracao_vaga", "carta_recomendacao", "doc_pai", "doc_mae", "certidao_casamento", "comprovante_endereco", "extrato_ir", "extratos_bancarios"] as const) {
+    restored[key] = files(restored[key]);
+  }
+  restored.alunos = (restored.alunos as unknown[]).filter(isRecord).map((a) => ({
+    ...INITIAL_FORM_DATA.alunos[0],
+    ...(a as unknown as Student),
+    docRg: files(a.docRg),
+    docCertidao: files(a.docCertidao),
+  }));
+  if (restored.alunos.length === 0) restored.alunos = [...INITIAL_FORM_DATA.alunos];
+  if (!restored.email) restored.email = fallbackEmail;
+  return restored;
+}
+
+/** Dados do formulário prontos para salvar como rascunho (sem uploads em andamento). */
+export function draftSnapshot(data: FormData): FormData {
+  const done = (list: UploadedFile[]) =>
+    list.filter((f) => f.path && !f.uploading && !f.error).map(({ id, name, path }) => ({ id, name, path }));
+  return {
+    ...data,
+    declaracao_vaga: done(data.declaracao_vaga),
+    carta_recomendacao: done(data.carta_recomendacao),
+    doc_pai: done(data.doc_pai),
+    doc_mae: done(data.doc_mae),
+    certidao_casamento: done(data.certidao_casamento),
+    comprovante_endereco: done(data.comprovante_endereco),
+    extrato_ir: done(data.extrato_ir),
+    extratos_bancarios: done(data.extratos_bancarios),
+    alunos: data.alunos.map((a) => ({ ...a, docRg: done(a.docRg), docCertidao: done(a.docCertidao) })),
+  };
+}
