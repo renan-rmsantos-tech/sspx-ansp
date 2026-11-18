@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { PixPaymentDetails } from "../_components/pix-payment-details";
 import { ReceiptUpload } from "./receipt-upload";
 
 /** O que a página pública do comprovante sabe sobre o link, já lido no servidor. */
@@ -54,8 +55,9 @@ export function DonorReceiptPageView({ view }: { view: DonorReceiptView }) {
         </div>
       </dl>
       <p className="mt-5 text-sm leading-6 text-muted">
-        Cada pagamento mensal exige seu próprio comprovante. Envie o comprovante deste mês pelo link recebido por e-mail. O envio não confirma o crédito; a Arca fará a conferência no extrato bancário.
+        Faça o Pix deste mês com os dados abaixo e, em seguida, envie o comprovante nesta mesma página. Cada pagamento mensal exige seu próprio comprovante. O envio não confirma o crédito; a Arca fará a conferência no extrato bancário.
       </p>
+      <PixPaymentDetails embedded />
       <ReceiptUpload key={view.ticket} ticket={view.ticket} hasReceipt={view.hasReceipt} />
     </ReceiptShell>
   );

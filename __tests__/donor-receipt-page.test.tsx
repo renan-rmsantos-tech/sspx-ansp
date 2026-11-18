@@ -31,7 +31,11 @@ describe("public monthly receipt page", () => {
     expect(screen.getByText(/Cada pagamento mensal exige seu próprio comprovante/)).toBeInTheDocument();
     expect(screen.getByText(/substituirá o anterior/)).toBeInTheDocument();
     expect(document.body.textContent).not.toMatch(/CPF|@example|Ana Sobrenome|donors\/|receipt_path/i);
-    expect(document.querySelectorAll("a[href], img[src], script[src]")).toHaveLength(0);
+    expect(document.querySelectorAll("a[href], script[src]")).toHaveLength(0);
+    // Só o QR Code Pix, servido pelo próprio site: o ticket da URL não vaza para terceiros.
+    const images = [...document.querySelectorAll("img[src]")].map((img) => img.getAttribute("src"));
+    expect(images).toEqual(["/pix-acipec.png"]);
+    expect(screen.getByText("02862d22-6b43-45f8-9b58-265f3deeb5dd")).toBeInTheDocument();
   });
 
   it("gives the same no-detail state for invalid and expired links", async () => {

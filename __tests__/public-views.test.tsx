@@ -11,6 +11,7 @@ import { LoginForm } from "@/app/login/login-form";
 import * as donorActions from "@/app/benfeitor/_actions/donor-actions";
 import * as formActions from "@/app/form/_actions/form-actions";
 import * as authActions from "@/app/login/_actions/auth-actions";
+import { PIX_DETAILS } from "@/lib/data/pix-details";
 import { withServerActions } from "./helpers/server-actions";
 
 const { loginAction } = vi.hoisted(() => ({ loginAction: vi.fn() }));
@@ -118,6 +119,9 @@ describe("DonorReceiptPageView", () => {
     );
     expect(screen.getByText("Olá, Maria.")).toBeInTheDocument();
     expect(screen.getByTestId("receipt-state")).toHaveTextContent("Comprovante enviado – aguardando conferência");
+    expect(screen.getByRole("heading", { level: 2, name: "Faça sua contribuição por Pix" })).toBeInTheDocument();
+    expect(screen.getByAltText("QR Code Pix para contribuição à ACIPEC")).toBeInTheDocument();
+    expect(screen.getByText(PIX_DETAILS.key)).toBeInTheDocument();
     cleanup();
 
     render(<DonorReceiptPageView view={{ state: "rate_limited" }} />);
@@ -127,5 +131,6 @@ describe("DonorReceiptPageView", () => {
     render(<DonorReceiptPageView view={{ state: "invalid" }} />);
     expect(screen.getByText(/Este link não está disponível/)).toBeInTheDocument();
     expect(screen.queryByLabelText("Comprovante Pix")).not.toBeInTheDocument();
+    expect(screen.queryByAltText("QR Code Pix para contribuição à ACIPEC")).not.toBeInTheDocument();
   });
 });
