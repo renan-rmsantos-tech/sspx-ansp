@@ -1,5 +1,6 @@
 import { desc, relations, sql } from "drizzle-orm";
 import {
+  type AnyPgColumn,
   boolean,
   check,
   date,
@@ -302,6 +303,10 @@ export const documents = pgTable(
     nome_arquivo: text("nome_arquivo").notNull(),
     mime_type: text("mime_type").notNull(),
     tamanho_bytes: integer("tamanho_bytes").notNull(),
+    /** Pendência atendida por este arquivo, quando a família o reenviou pela conta. */
+    document_request_id: uuid("document_request_id").references((): AnyPgColumn => documentRequests.id, {
+      onDelete: "set null",
+    }),
     uploaded_at: timestamp("uploaded_at", {
       withTimezone: true,
       mode: "string",
@@ -692,6 +697,40 @@ export const applicationObservations = pgTable(
   ]
 );
 
+export type DocumentRequestStatus = "aberta" | "reenviada" | "resolvida" | "cancelada";
+
+/**
+ * Documento que a equipe pediu à família depois do envio (ilegível,
+ * divergente, faltando). A família reenvia pela conta; o arquivo novo entra
+ * em `documents` com `document_request_id`.
+ */
+export const documentRequests = pgTable(
+  "document_requests",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    application_id: uuid("application_id")
+      .notNull()
+      .references(() => applications.id, { onDelete: "cascade" }),
+    /** Categoria de `documents` (ex.: rg_pai, rg_aluno) ou `outro`. */
+    categoria: text("categoria").notNull(),
+    student_id: uuid("student_id").references(() => students.id, { onDelete: "set null" }),
+    motivo: text("motivo").notNull(),
+    status: text("status").$type<DocumentRequestStatus>().notNull().default("aberta"),
+    created_by: uuid("created_by").references(() => adminUsers.id, { onDelete: "set null" }),
+    created_at: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
+    /** Último aviso por e-mail enviado com esta pendência aberta; nulo se o envio falhou. */
+    notified_at: timestamp("notified_at", { withTimezone: true, mode: "string" }),
+    resubmitted_at: timestamp("resubmitted_at", { withTimezone: true, mode: "string" }),
+    resolved_at: timestamp("resolved_at", { withTimezone: true, mode: "string" }),
+    resolved_by: uuid("resolved_by").references(() => adminUsers.id, { onDelete: "set null" }),
+  },
+  (t) => [
+    index("document_requests_application_idx").on(t.application_id, t.created_at),
+    check("document_requests_status_check", sql`${t.status} in ('aberta', 'reenviada', 'resolvida', 'cancelada')`),
+    check("document_requests_motivo_check", sql`char_length(${t.motivo}) between 1 and 500`),
+  ]
+);
+
 /** Versões imutáveis dos documentos finais emitidos por Administradores. */
 export const issuedDocuments = pgTable(
   "issued_documents",
@@ -743,6 +782,7 @@ export const applicationsRelations = relations(applications, ({ one, many }) => 
   documents: many(documents),
   application_observations: many(applicationObservations),
   issued_documents: many(issuedDocuments),
+  document_requests: many(documentRequests),
   collaboration: one(collaboration, {
     fields: [applications.id],
     references: [collaboration.application_id],
@@ -832,4 +872,20 @@ export const documentsRelations = relations(documents, ({ one }) => ({
     fields: [documents.student_id],
     references: [students.id],
   }),
+  document_request: one(documentRequests, {
+    fields: [documents.document_request_id],
+    references: [documentRequests.id],
+  }),
+}));
+
+export const documentRequestsRelations = relations(documentRequests, ({ one, many }) => ({
+  application: one(applications, {
+    fields: [documentRequests.application_id],
+    references: [applications.id],
+  }),
+  student: one(students, {
+    fields: [documentRequests.student_id],
+    references: [students.id],
+  }),
+  documents: many(documents),
 }));

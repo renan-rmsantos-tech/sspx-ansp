@@ -8,6 +8,7 @@ import {
   sendVerificationEmail,
 } from "@/lib/applicant/account-emails";
 import { allowAccountEmail } from "@/lib/applicant/email-rate-limit";
+import { linkLegacyApplications } from "@/lib/applicant/link-legacy-applications";
 import { consumeToken, issueToken } from "@/lib/applicant/tokens";
 import { getApplicantSession, startApplicantSession } from "@/lib/auth/applicant-session";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
@@ -140,6 +141,8 @@ export async function loginApplicant(_prev: AccountFormState, formData: FormData
     };
   }
 
+  // Contas confirmadas antes deste vínculo existir também encontram a solicitação antiga.
+  await linkLegacyApplications(account.id, email);
   await startApplicantSession(account);
   redirect(AFTER_LOGIN);
 }
@@ -172,9 +175,10 @@ export async function confirmApplicantEmail(_prev: AccountFormState, formData: F
     .update(applicantAccounts)
     .set({ email_verified_at: sql`coalesce(${applicantAccounts.email_verified_at}, ${now})`, updated_at: now })
     .where(eq(applicantAccounts.id, accountId))
-    .returning({ id: applicantAccounts.id, session_version: applicantAccounts.session_version });
+    .returning({ id: applicantAccounts.id, email: applicantAccounts.email, session_version: applicantAccounts.session_version });
   if (!account) return { error: INVALID_LINK };
 
+  await linkLegacyApplications(account.id, account.email);
   await startApplicantSession(account);
   redirect(AFTER_LOGIN);
 }
@@ -222,9 +226,10 @@ export async function resetApplicantPassword(_prev: AccountFormState, formData: 
       updated_at: now,
     })
     .where(eq(applicantAccounts.id, accountId))
-    .returning({ id: applicantAccounts.id, session_version: applicantAccounts.session_version });
+    .returning({ id: applicantAccounts.id, email: applicantAccounts.email, session_version: applicantAccounts.session_version });
   if (!account) return { error: INVALID_RESET_LINK };
 
+  await linkLegacyApplications(account.id, account.email);
   await startApplicantSession(account);
   redirect(AFTER_LOGIN);
 }

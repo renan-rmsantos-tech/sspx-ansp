@@ -8,6 +8,7 @@ import {
   applicationDrafts,
   applications,
   benefactors,
+  documentRequests,
   collaboration,
   documents,
   otherChildren,
@@ -34,7 +35,10 @@ const UPLOAD_TICKET_TTL_SECONDS = 30 * 60;
 const SCHOLARSHIP_UPLOAD_CATEGORIES = new Set([
   "declaracao_vaga", "carta_recomendacao", "rg_pai", "rg_mae", "certidao", "comprovante_endereco",
   "extrato_ir", "extrato_bancario",
+  // Documento reenviado para atender uma pendência pedida pela equipe.
+  "pendencia",
 ]);
+const MAX_REQUESTED_FILES = 5;
 const isScholarshipUploadCategory = (category: string) =>
   SCHOLARSHIP_UPLOAD_CATEGORIES.has(category) || /^(rg_aluno|certidao_nascimento)_\d+$/.test(category);
 
@@ -372,6 +376,70 @@ export async function submitApplication(
   }
 }
 
+/**
+ * Reenvio de um documento pendente pela família logada: grava os arquivos
+ * como documentos novos da solicitação, ligados à pendência, e marca a
+ * pendência como reenviada. Os documentos anteriores continuam guardados.
+ */
+export async function submitRequestedDocument(
+  requestId: string,
+  paths: string[]
+): Promise<{ success: true } | { success: false; error: string }> {
+  const applicant = await getApplicant();
+  if (!applicant) return { success: false, error: NOT_LOGGED_IN };
+
+  const unique = new Set(paths);
+  if (!Array.isArray(paths) || paths.length === 0) return { success: false, error: "Envie pelo menos um arquivo." };
+  if (paths.length > MAX_REQUESTED_FILES || unique.size !== paths.length) {
+    return { success: false, error: `Envie no máximo ${MAX_REQUESTED_FILES} arquivos.` };
+  }
+  if (!pathsMatchCategory(paths, draftUploadPrefix(applicant.id), "pendencia", new Set())) {
+    return { success: false, error: "Arquivo inválido. Envie o documento novamente." };
+  }
+
+  try {
+    const request = await db.query.documentRequests.findFirst({
+      columns: { id: true, status: true, categoria: true, student_id: true, application_id: true },
+      with: { application: { columns: { id: true, applicant_account_id: true } } },
+      where: eq(documentRequests.id, requestId),
+    });
+    if (!request || request.application.applicant_account_id !== applicant.id) {
+      return { success: false, error: "Pendência não encontrada." };
+    }
+    if (request.status !== "aberta") return { success: false, error: "Este documento já foi reenviado." };
+
+    const rows: DocumentRow[] = paths.map((path) => ({
+      application_id: request.application_id,
+      categoria: request.categoria,
+      student_id: request.student_id,
+      storage_path: path,
+      nome_arquivo: path.split("/").pop() || path,
+      mime_type: guessMimeType(path),
+      tamanho_bytes: 0,
+      document_request_id: request.id,
+    }));
+    await fillDocumentSizes(rows);
+
+    const saved = await db.transaction(async (tx) => {
+      const [changed] = await tx
+        .update(documentRequests)
+        .set({ status: "reenviada", resubmitted_at: new Date().toISOString() })
+        .where(and(eq(documentRequests.id, request.id), eq(documentRequests.status, "aberta")))
+        .returning({ id: documentRequests.id });
+      if (!changed) return false;
+      await tx.insert(documents).values(rows);
+      return true;
+    });
+    if (!saved) return { success: false, error: "Este documento já foi reenviado." };
+
+    await moveFilesToApplication(rows, request.application_id);
+    return { success: true };
+  } catch (error) {
+    console.error("[submitRequestedDocument] falha:", error instanceof Error ? error.message : error);
+    return { success: false, error: "Não foi possível enviar o documento. Tente novamente." };
+  }
+}
+
 interface DocumentRow {
   application_id: string;
   categoria: string;
@@ -380,6 +448,7 @@ interface DocumentRow {
   nome_arquivo: string;
   mime_type: string;
   tamanho_bytes: number;
+  document_request_id?: string | null;
 }
 
 function collectDocumentRows(

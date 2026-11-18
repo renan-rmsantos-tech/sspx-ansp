@@ -1,3 +1,4 @@
+import type { DocumentRequestsData } from "../_actions/document-request-actions";
 import type { ServerActions } from "@/components/server-actions";
 import type { ApplicationSummary } from "../_components/application-card";
 import type { SecretariatApplicationSummary } from "./client";
@@ -146,6 +147,7 @@ function doc(applicationId: string, id: string, categoria: string, nome_arquivo:
     nome_arquivo,
     mime_type,
     tamanho_bytes: 284_512,
+    document_request_id: null,
     uploaded_at: "2026-10-28T13:40:00-03:00",
   };
 }
@@ -168,7 +170,7 @@ function summary(detail: ApplicationDetailData): ApplicationSummary {
 
 /** Lista da Administração: situações variadas, da mais recente para a mais antiga. */
 export const applications: ApplicationSummary[] = [
-  summary(applicationDetails["app-oliveira"]),
+  { ...summary(applicationDetails["app-oliveira"]), document_requests: [{ status: "reenviada" }, { status: "aberta" }] },
   {
     id: "app-ribeiro",
     status: "pendente",
@@ -263,6 +265,7 @@ export const secretariatApplications: SecretariatApplicationSummary[] = applicat
   ...CONTACTS[application.id],
   data_decisao: application.data_decisao ?? null,
   students: application.students.map(({ id, nome }) => ({ id, nome })),
+  document_requests: application.document_requests,
 }));
 
 export const secretariatApplicationsWithoutRejected: SecretariatApplicationSummary[] = secretariatApplications.filter(
@@ -325,4 +328,48 @@ export const currentIssuedDocuments: Record<string, IssuedDocument[]> = {
 /** Todas as versões emitidas, por solicitação (somente Administração). */
 export const issuedDocumentHistory: Record<string, IssuedDocument[]> = {
   "app-almeida": ISSUED_ALMEIDA,
+};
+
+/** Pendências de documento por solicitação: Oliveira tem conta e uma pendência reenviada; as demais são anteriores às contas. */
+export const documentRequestsByApplication: Record<string, DocumentRequestsData> = {
+  "app-oliveira": {
+    accountEmail: "familia.oliveira@example.com",
+    requests: [
+      {
+        id: "req-1",
+        categoria: "rg_mae",
+        student_id: null,
+        label: "RG da Mãe",
+        motivo: "A foto do RG está ilegível. Envie uma foto nítida da frente e do verso.",
+        status: "reenviada",
+        created_at: "2026-11-10T14:00:00-03:00",
+        notified_at: "2026-11-10T14:00:05-03:00",
+        resubmitted_at: "2026-11-11T09:12:00-03:00",
+        resolved_at: null,
+        documents: [
+          {
+            id: "dc-r1",
+            categoria: "rg_mae",
+            application_id: "app-oliveira",
+            nome_arquivo: "rg-mae-frente-verso.pdf",
+            storage_path: "applications/app-oliveira/r1/pendencia/rg-mae-frente-verso.pdf",
+            mime_type: "application/pdf",
+          },
+        ],
+      },
+      {
+        id: "req-2",
+        categoria: "extrato_bancario",
+        student_id: null,
+        label: "Extrato Bancário",
+        motivo: "O extrato enviado é de 2025. Envie os extratos dos últimos três meses.",
+        status: "aberta",
+        created_at: "2026-11-12T10:30:00-03:00",
+        notified_at: "2026-11-12T10:30:04-03:00",
+        resubmitted_at: null,
+        resolved_at: null,
+        documents: [],
+      },
+    ],
+  },
 };

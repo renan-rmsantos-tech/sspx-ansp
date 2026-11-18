@@ -28,6 +28,31 @@ export interface ApplicationSummary {
   motivo?: string | null;
   data_decisao?: string | null;
   students: Array<{ id: string; nome: string; serie: string; mensalidade: number }>;
+  /** Pendências de documento ainda abertas ou reenviadas. */
+  document_requests?: Array<{ status: "aberta" | "reenviada" | "resolvida" | "cancelada" }>;
+}
+
+type DocumentRequestStatusList = ApplicationSummary["document_requests"];
+
+/** Selo da lista: documento reenviado para conferir ou aguardando a família. */
+export function DocumentRequestsBadge({ requests }: { requests: DocumentRequestStatusList }) {
+  const resubmitted = requests?.filter((r) => r.status === "reenviada").length ?? 0;
+  const waiting = requests?.filter((r) => r.status === "aberta").length ?? 0;
+  if (resubmitted > 0) {
+    return (
+      <StatusPill tone="accent" data-testid="requests-badge">
+        {resubmitted === 1 ? "Documento reenviado" : `${resubmitted} documentos reenviados`}
+      </StatusPill>
+    );
+  }
+  if (waiting > 0) {
+    return (
+      <StatusPill tone="warn" data-testid="requests-badge">
+        {waiting === 1 ? "Documento pendente" : `${waiting} documentos pendentes`}
+      </StatusPill>
+    );
+  }
+  return null;
 }
 
 export type DecisionHandler = (
@@ -159,6 +184,7 @@ export function ApplicationCard({
             {application.students.length} {application.students.length === 1 ? "aluno" : "alunos"}
           </span>
           <span>Enviada em {formatDate(application.data_envio)}</span>
+          <DocumentRequestsBadge requests={application.document_requests} />
         </>
       }
       status={

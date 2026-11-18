@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { ApplicationCard, type ApplicationSummary } from "../_components/application-card";
+import { ApplicationCard, DocumentRequestsBadge, type ApplicationSummary } from "../_components/application-card";
+import { ApplicationDocuments } from "../_components/application-documents";
 import type { DetailTab } from "../_components/application-detail";
 import type { DecisionMode } from "../_components/decision-actions";
 import { DataGrid, DataItem } from "../_components/data-grid";
@@ -262,6 +263,7 @@ export interface SecretariatApplicationSummary {
   email: string | null;
   data_decisao: string | null;
   students: Array<{ id: string; nome: string }>;
+  document_requests?: ApplicationSummary["document_requests"];
 }
 
 export function SecretariatApplicationsClient({
@@ -290,7 +292,7 @@ export function SecretariatApplicationsClient({
     <div className="space-y-6">
       <PageHeader
         title="Solicitações de bolsa"
-        description="Acompanhamento das famílias: contato, alunos, documentos finais e observações internas."
+        description="Acompanhamento das famílias: contato, alunos, documentos enviados, pendências, documentos finais e observações internas."
       />
       {error ? (
         <LoadError error={error} />
@@ -316,7 +318,7 @@ export function SecretariatApplicationsClient({
   );
 }
 
-export type SecretariatTab = "resumo" | "documentos-finais" | "observacoes";
+export type SecretariatTab = "resumo" | "documentos" | "documentos-finais" | "observacoes";
 type Observation = { id: string; body: string; created_at: string; author_user?: { email: string } | null };
 type IssuedDocument = { id: string; kind: "decision" | "contract"; version: number };
 
@@ -377,6 +379,7 @@ function SecretariatApplicationCard({
             {application.students.length} {application.students.length === 1 ? "aluno" : "alunos"}
           </span>
           <span>{application.telefone}</span>
+          <DocumentRequestsBadge requests={application.document_requests} />
         </>
       }
       status={
@@ -389,6 +392,9 @@ function SecretariatApplicationCard({
         <TabsList variant="line" aria-label="Seções da solicitação" className={PAGE_TABS_LIST_CLASS} data-testid="detail-tabs">
           <TabsTrigger value="resumo" className={PAGE_TABS_TRIGGER_CLASS} data-testid="detail-tab-resumo">
             Resumo
+          </TabsTrigger>
+          <TabsTrigger value="documentos" className={PAGE_TABS_TRIGGER_CLASS} data-testid="detail-tab-documentos">
+            Documentos
           </TabsTrigger>
           <TabsTrigger value="documentos-finais" className={PAGE_TABS_TRIGGER_CLASS} data-testid="detail-tab-documentos-finais">
             Documentos finais
@@ -409,6 +415,10 @@ function SecretariatApplicationCard({
             <DataItem label="Situação" value={STATUS_LABELS[application.status]} />
             <DataItem label="Data da decisão" value={formatDate(application.data_decisao)} />
           </DataGrid>
+        </TabsContent>
+
+        <TabsContent value="documentos" data-testid="detail-panel-documentos">
+          {tab === "documentos" && <ApplicationDocuments applicationId={application.id} students={application.students} />}
         </TabsContent>
 
         <TabsContent value="documentos-finais">

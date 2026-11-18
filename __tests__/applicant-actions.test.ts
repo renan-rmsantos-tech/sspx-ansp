@@ -33,6 +33,9 @@ vi.mock("@/lib/auth/applicant-session", async () => {
 
 vi.mock("@/lib/applicant/account-emails", () => emails);
 
+const { mockLink } = vi.hoisted(() => ({ mockLink: vi.fn().mockResolvedValue(0) }));
+vi.mock("@/lib/applicant/link-legacy-applications", () => ({ linkLegacyApplications: mockLink }));
+
 vi.mock("next/navigation", () => ({
   redirect: vi.fn((url: string) => {
     throw new Error(`REDIRECT:${url}`);
@@ -156,6 +159,7 @@ describe("loginApplicant", () => {
       "REDIRECT:/solicitar-bolsa"
     );
     expect(mockSession).toMatchObject({ applicantId: "acc-1", sessionVersion: 2 });
+    expect(mockLink).toHaveBeenCalledWith("acc-1", "maria@example.com");
   });
 
   it("rejects a wrong password and an unknown e-mail with the same message", async () => {
@@ -177,6 +181,7 @@ describe("loginApplicant", () => {
     expect(result.unverifiedEmail).toBe("maria@example.com");
     expect(result.error).toMatch(/Confirme seu e-mail/);
     expect(mockSession.save).not.toHaveBeenCalled();
+    expect(mockLink).not.toHaveBeenCalled();
   });
 
   it("locks the e-mail after repeated failures", async () => {
@@ -191,11 +196,12 @@ describe("loginApplicant", () => {
 describe("e-mail confirmation and password reset", () => {
   it("confirms the e-mail with a valid link and logs the applicant in", async () => {
     setReturning(applicantTokens, [{ account_id: "acc-1" }]);
-    setReturning(applicantAccounts, [{ id: "acc-1", session_version: 0 }]);
+    setReturning(applicantAccounts, [{ id: "acc-1", email: "maria@example.com", session_version: 0 }]);
 
     await expect(confirmApplicantEmail(EMPTY, form({ token: "token-claro" }))).rejects.toThrow("REDIRECT:/solicitar-bolsa");
     expect(updated[0]).toMatchObject({ table: applicantTokens, values: { used_at: expect.any(String) } });
     expect(updated[1].table).toBe(applicantAccounts);
+    expect(mockLink).toHaveBeenCalledWith("acc-1", "maria@example.com");
     expect(mockSession.applicantId).toBe("acc-1");
   });
 
@@ -218,7 +224,7 @@ describe("e-mail confirmation and password reset", () => {
 
   it("sets the new password, bumps the session version and logs in", async () => {
     setReturning(applicantTokens, [{ account_id: "acc-1" }]);
-    setReturning(applicantAccounts, [{ id: "acc-1", session_version: 3 }]);
+    setReturning(applicantAccounts, [{ id: "acc-1", email: "maria@example.com", session_version: 3 }]);
 
     await expect(
       resetApplicantPassword(EMPTY, form({ token: "token-claro", password: "nova-senha-1", confirmation: "nova-senha-1" }))
@@ -227,6 +233,7 @@ describe("e-mail confirmation and password reset", () => {
     const change = updated.find((row) => row.table === applicantAccounts)?.values as { password_hash: string };
     expect(await verifyPassword("nova-senha-1", change.password_hash)).toBe(true);
     expect(mockSession.sessionVersion).toBe(3);
+    expect(mockLink).toHaveBeenCalledWith("acc-1", "maria@example.com");
   });
 
   it("validates the new password before consuming the link", async () => {

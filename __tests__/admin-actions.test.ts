@@ -744,6 +744,21 @@ describe("getDocumentUrl", () => {
     expect(mockSize).toHaveBeenNthCalledWith(2, "applications/app-1/uuid/rg_pai/rg.pdf");
   });
 
+  it("lets the Secretariat download only files registered as documents of the application", async () => {
+    authAs({ id: "sec", email: "sec@test.com", role: "secretaria", ativo: true });
+    mockSize.mockResolvedValue(1024);
+
+    expect(await getDocumentUrl("donors/d-1/recibo.pdf")).toEqual({ error: "Erro ao gerar URL do documento." });
+    queryFor("documents").findFirst.mockResolvedValueOnce(undefined);
+    expect(await getDocumentUrl("donors/d-1/recibo.pdf", "app-1")).toEqual({ error: "Erro ao gerar URL do documento." });
+    expect(mockSize).not.toHaveBeenCalled();
+
+    queryFor("documents").findFirst.mockResolvedValueOnce({ id: "doc-1" });
+    const result = await getDocumentUrl("applications/app-1/u/rg_pai/rg.pdf", "app-1");
+    expect("url" in result).toBe(true);
+    expect(mockRequireCapability).toHaveBeenCalledWith("applications:documents");
+  });
+
   it("returns an error when no candidate path exists", async () => {
     mockSize.mockResolvedValue(null);
 

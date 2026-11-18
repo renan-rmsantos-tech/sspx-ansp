@@ -9,6 +9,8 @@ export type StaffRole = "admin" | "secretaria";
 export type Capability =
   | "applications:read-full"
   | "applications:read-operational"
+  /** Documentos enviados pela família e pedidos de reenvio. */
+  | "applications:documents"
   | "applications:decide"
   | "observations:read"
   | "observations:create"
@@ -28,6 +30,7 @@ export interface StaffIdentity {
 
 const SECRETARIAT_CAPABILITIES = new Set<Capability>([
   "applications:read-operational",
+  "applications:documents",
   "observations:read",
   "observations:create",
   "donors:read-operational",

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "./modal";
 import { Notice } from "./notice";
 import { useServerAction } from "@/components/server-actions";
+import { documentLabel } from "@/lib/applicant/document-labels";
 
 interface Document {
   id: string;
@@ -19,28 +20,8 @@ interface DocumentPreviewProps {
   documents: Array<Record<string, unknown>>;
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  declaracao_vaga: "Declaração de Vaga do Colégio",
-  carta_recomendacao: "Carta de Recomendação do Padre",
-  rg_pai: "RG do Pai",
-  rg_mae: "RG da Mãe",
-  certidao: "Certidão de Casamento",
-  comprovante_endereco: "Comprovante de Endereço",
-  extrato_ir: "Extrato IR",
-  extrato_bancario: "Extrato Bancário",
-  rg_aluno: "RG do Aluno",
-  certidao_nascimento: "Certidão de Nascimento",
-};
-
-function resolveCategoryLabel(categoria: string, storagePath: string): string {
-  if (CATEGORY_LABELS[categoria]) return CATEGORY_LABELS[categoria];
-  if (categoria.startsWith("certidao_nascimento") || storagePath.includes("certidao_nascimento")) {
-    return "Certidão de Nascimento";
-  }
-  if (categoria.startsWith("rg_aluno") || storagePath.includes("/rg_aluno")) {
-    return "RG do Aluno";
-  }
-  return categoria;
+function resolveCategoryLabel(categoria: string): string {
+  return documentLabel(categoria);
 }
 
 async function downloadFromSignedUrl(url: string, filename: string) {
@@ -113,7 +94,7 @@ export function DocumentPreview({ documents }: DocumentPreviewProps) {
           >
             <span className="min-w-0">
               <span className="block truncate font-medium text-fg">
-                {resolveCategoryLabel(doc.categoria, doc.storage_path)}
+                {resolveCategoryLabel(doc.categoria)}
               </span>
               <span className="block truncate text-xs text-muted">{doc.nome_arquivo}</span>
             </span>

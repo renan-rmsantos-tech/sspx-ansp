@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import type * as AdminActions from "@/app/admin/_actions/admin-actions";
+import type * as DocumentRequestActions from "@/app/admin/_actions/document-request-actions";
 import type * as DonorEmailActions from "@/app/admin/_actions/donor-email-actions";
 import type * as DonorFinancialReportActions from "@/app/admin/_actions/donor-financial-report-actions";
 import type * as DonorMonthlyInstructionsActions from "@/app/admin/_actions/donor-monthly-instructions-actions";
@@ -18,6 +19,7 @@ import type * as ApplicantActions from "@/app/solicitar-bolsa/_actions/applicant
 
 /** Todas as server actions que as views de cliente chamam. */
 export type ServerActions = typeof AdminActions &
+  typeof DocumentRequestActions &
   typeof DonorEmailActions &
   typeof DonorFinancialReportActions &
   typeof DonorMonthlyInstructionsActions &

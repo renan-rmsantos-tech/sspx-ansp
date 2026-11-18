@@ -20,6 +20,8 @@ import {
   adminUsers,
   contractTemplates,
   decisionTemplates,
+  documentRequests,
+  documents,
   donorPaymentLedger,
   donorMonthlyInstructionSends,
   donorPledges,
@@ -82,7 +84,13 @@ export async function getApplications(
           email: true,
           data_decisao: true,
         },
-        with: { students: { columns: { id: true, nome: true } } },
+        with: {
+          students: { columns: { id: true, nome: true } },
+          document_requests: {
+            columns: { status: true },
+            where: inArray(documentRequests.status, ["aberta", "reenviada"]),
+          },
+        },
         where: filter ? eq(applications.status, filter) : undefined,
         orderBy: desc(applications.data_envio),
       });
@@ -91,7 +99,13 @@ export async function getApplications(
     }
 
     const data = await db.query.applications.findMany({
-      with: { students: true },
+      with: {
+        students: true,
+        document_requests: {
+          columns: { status: true },
+          where: inArray(documentRequests.status, ["aberta", "reenviada"]),
+        },
+      },
       where: filter ? eq(applications.status, filter) : undefined,
       orderBy: desc(applications.data_envio),
     });
@@ -458,11 +472,44 @@ function resolveDocumentPaths(path: string, applicationId?: string): string[] {
  * URL temporária para o admin abrir um documento. O ticket assinado expira em
  * 5 minutos e é o que autoriza a rota `/api/documents` a ler o arquivo.
  */
+/** Documentos enviados pela família, sem os reenviados por pendência (que aparecem no painel de pendências). */
+export async function getApplicationDocuments(applicationId: string) {
+  await requireCapability("applications:documents");
+  try {
+    const rows = await db.query.documents.findMany({
+      columns: {
+        id: true,
+        application_id: true,
+        student_id: true,
+        categoria: true,
+        nome_arquivo: true,
+        storage_path: true,
+        mime_type: true,
+      },
+      where: and(eq(documents.application_id, applicationId), isNull(documents.document_request_id)),
+    });
+    return { data: rows, error: null };
+  } catch {
+    return { data: null, error: "Erro ao carregar os documentos." };
+  }
+}
+
 export async function getDocumentUrl(
   path: string,
   applicationId?: string
 ): Promise<{ url: string } | { error: string }> {
-  await requireAuth();
+  const staff = await requireCapability("applications:documents");
+
+  // A Secretaria só baixa arquivos registrados como documento da solicitação;
+  // nunca um caminho arbitrário (recibos de benfeitores, rascunhos etc.).
+  if (staff.role !== "admin") {
+    if (!applicationId) return { error: "Erro ao gerar URL do documento." };
+    const registered = await db.query.documents.findFirst({
+      columns: { id: true },
+      where: and(eq(documents.application_id, applicationId), eq(documents.storage_path, path)),
+    });
+    if (!registered) return { error: "Erro ao gerar URL do documento." };
+  }
 
   // PDFs finais possuem uma fronteira própria: são resolvidos exclusivamente
   // pelo ID persistido em getIssuedDocumentUrl, nunca por caminho fornecido.

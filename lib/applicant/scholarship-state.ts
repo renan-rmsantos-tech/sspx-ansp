@@ -1,6 +1,6 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { applicationDrafts, applications } from "@/lib/db/schema";
+import { applicationDrafts, applications, documentRequests } from "@/lib/db/schema";
 
 /** Solicitação da conta no ano informado ou, sem ano, a mais recente. */
 export async function findApplicantApplication(accountId: string, schoolYearId?: string) {
@@ -9,6 +9,12 @@ export async function findApplicantApplication(accountId: string, schoolYearId?:
     with: {
       school_years: { columns: { nome: true } },
       students: { columns: { nome: true, serie: true } },
+      document_requests: {
+        columns: { id: true, categoria: true, motivo: true, status: true, created_at: true, resubmitted_at: true },
+        with: { student: { columns: { nome: true } } },
+        where: ne(documentRequests.status, "cancelada"),
+        orderBy: asc(documentRequests.created_at),
+      },
     },
     where: schoolYearId
       ? and(eq(applications.applicant_account_id, accountId), eq(applications.school_year_id, schoolYearId))

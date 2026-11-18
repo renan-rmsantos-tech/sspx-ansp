@@ -1,5 +1,6 @@
 import type { AccountFormState } from "../_actions/applicant-actions";
 import type { MyApplicationData } from "./my-application";
+import type { RequestedDocument } from "./requested-documents";
 
 export const applicantEmail = "maria.almeida@example.com";
 
@@ -34,3 +35,20 @@ export const submittedApplication: MyApplicationData = {
     { nome: "Pedro de Almeida", serie: "2º Ano" },
   ],
 };
+
+export const requestedDocuments: RequestedDocument[] = [
+  {
+    id: "req-2",
+    label: "Extrato Bancário",
+    motivo: "O extrato enviado é de 2025. Envie os extratos dos últimos três meses.",
+    status: "aberta",
+    resubmitted_at: null,
+  },
+  {
+    id: "req-1",
+    label: "RG da Mãe",
+    motivo: "A foto do RG está ilegível. Envie uma foto nítida da frente e do verso.",
+    status: "reenviada",
+    resubmitted_at: "2026-11-11T12:12:00.000Z",
+  },
+];

@@ -9,6 +9,7 @@ import {
   applications,
   applicationsWithoutRejected,
   currentIssuedDocuments,
+  documentRequestsByApplication,
   issuedDocumentHistory,
   observations,
   secretariatApplications,
@@ -25,6 +26,7 @@ export const meta = definePrototype({
     { id: "renda-e-despesas", label: "Registro aberto em Renda e despesas (Administração)" },
     { id: "aprovar", label: "Formulário de aprovação aberto (Administração)" },
     { id: "rejeitar", label: "Formulário de rejeição aberto (Administração)" },
+    { id: "pendencias-documentos", label: "Pendências de documento: uma reenviada, outra aguardando" },
     { id: "documentos-finais", label: "Aprovada, com documentos finais emitidos" },
     { id: "observacoes", label: "Observações internas da Secretaria" },
     { id: "erro-detalhe", label: "Detalhe indisponível (Administração)" },
@@ -44,6 +46,16 @@ const OVERRIDES: Partial<ServerActions> = {
   getApplicationObservations: async (id) => observations[id] ?? [],
   getCurrentIssuedDocuments: async (id) => currentIssuedDocuments[id] ?? [],
   getIssuedDocumentHistory: async (id) => issuedDocumentHistory[id] ?? [],
+  getApplicationDocuments: async (id) => ({
+    data: ((applicationDetails[id]?.documents ?? []) as Array<Record<string, unknown>>).filter(
+      (document) => !document.document_request_id
+    ) as never,
+    error: null,
+  }),
+  getDocumentRequests: async (id) => ({
+    success: true,
+    data: documentRequestsByApplication[id] ?? { accountEmail: null, requests: [] },
+  }),
 };
 
 const ACTIONS = fixtureActions(OVERRIDES);
@@ -56,6 +68,7 @@ const ACTIONS_DETAIL_ERROR = fixtureActions({
 /** Registro aberto, aba e formulário de decisão de cada estado na visão da Administração. */
 const ADMIN_OPEN: Record<string, { id?: string; tab?: DetailTab; decision?: DecisionMode }> = {
   "renda-e-despesas": { tab: "financeiro" },
+  "pendencias-documentos": { tab: "documentos" },
   aprovar: { tab: "decisao", decision: "approve" },
   rejeitar: { tab: "decisao", decision: "reject" },
   "documentos-finais": { id: "app-almeida", tab: "decisao" },
@@ -65,6 +78,7 @@ const ADMIN_OPEN: Record<string, { id?: string; tab?: DetailTab; decision?: Deci
 /** A Secretaria não vê renda nem decide: os estados só da Administração abrem o Resumo. */
 const SECRETARIAT_OPEN: Record<string, { id: string; tab: SecretariatTab }> = {
   "renda-e-despesas": { id: "app-oliveira", tab: "resumo" },
+  "pendencias-documentos": { id: "app-oliveira", tab: "documentos" },
   aprovar: { id: "app-oliveira", tab: "resumo" },
   rejeitar: { id: "app-oliveira", tab: "resumo" },
   "erro-detalhe": { id: "app-oliveira", tab: "resumo" },

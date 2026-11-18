@@ -32,7 +32,14 @@ function formatDate(iso: string): string {
 }
 
 /** Acompanhamento da solicitação enviada pela conta logada. */
-export function MyApplication({ application }: { application: MyApplicationData | null }) {
+export function MyApplication({
+  application,
+  pendingDocuments = 0,
+}: {
+  application: MyApplicationData | null;
+  /** Pendências de documento ainda abertas. */
+  pendingDocuments?: number;
+}) {
   if (!application) {
     return (
       <section className="rounded-xl border border-border bg-surface p-7 text-center max-sm:p-5" data-testid="my-application-empty">
@@ -50,7 +57,17 @@ export function MyApplication({ application }: { application: MyApplicationData 
     );
   }
 
-  const status = STATUS[application.status];
+  const status =
+    application.status === "pendente" && pendingDocuments > 0
+      ? {
+          label: "Documento pendente",
+          text:
+            pendingDocuments === 1
+              ? "A equipe pediu que você reenvie um documento. Veja o motivo e anexe o arquivo corrigido logo abaixo."
+              : `A equipe pediu que você reenvie ${pendingDocuments} documentos. Veja os motivos e anexe os arquivos corrigidos logo abaixo.`,
+          tone: "border-danger/40 bg-danger/5 text-danger",
+        }
+      : STATUS[application.status];
   return (
     <section
       aria-labelledby="my-application-title"

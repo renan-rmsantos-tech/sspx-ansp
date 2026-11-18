@@ -3,6 +3,7 @@ import { ServerActionsProvider } from "@/components/server-actions";
 import { requireStaff } from "@/lib/auth/authorization";
 import * as adminActions from "./_actions/admin-actions";
 import { getAdminHomeSummary } from "./_actions/admin-home-actions";
+import * as documentRequestActions from "./_actions/document-request-actions";
 import * as donorEmailActions from "./_actions/donor-email-actions";
 import * as donorFinancialReportActions from "./_actions/donor-financial-report-actions";
 import * as donorMonthlyInstructionsActions from "./_actions/donor-monthly-instructions-actions";
@@ -18,6 +19,7 @@ import { AdminShell } from "./_components/admin-shell";
 // para renderizarem com fixtures na galeria de protótipos.
 const actions = {
   ...adminActions,
+  ...documentRequestActions,
   ...donorEmailActions,
   ...donorFinancialReportActions,
   ...donorMonthlyInstructionsActions,

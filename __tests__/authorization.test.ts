@@ -75,6 +75,9 @@ describe("staff authorization", () => {
     await expect(requireCapability("observations:create")).resolves.toMatchObject({
       role: "secretaria",
     });
+    await expect(requireCapability("applications:documents")).resolves.toMatchObject({
+      role: "secretaria",
+    });
     await expect(requireCapability("applications:decide")).rejects.toThrow(
       "permissão"
     );

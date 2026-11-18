@@ -24,6 +24,8 @@ export function SuccessScreen({ showTrackingLink = false }: { showTrackingLink?:
       <p className="mx-auto mt-2.5 max-w-[42ch] text-[15px] text-muted">
         Sua solicitação de bolsa foi recebida com sucesso. A direção da escola
         analisará o pedido e entrará em contato.
+        {showTrackingLink &&
+          " Se algum documento precisar ser reenviado, avisaremos por e-mail e você poderá enviá-lo pela sua conta."}
       </p>
       {showTrackingLink ? (
         <Link

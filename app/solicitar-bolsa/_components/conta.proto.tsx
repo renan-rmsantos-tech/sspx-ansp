@@ -10,10 +10,12 @@ import {
   ResetPasswordForm,
 } from "./account-forms";
 import { MyApplication } from "./my-application";
+import { RequestedDocuments } from "./requested-documents";
 import {
   applicantEmail,
   invalidLinkState,
   invalidLoginState,
+  requestedDocuments,
   sentState,
   signUpErrorsState,
   submittedApplication,
@@ -38,6 +40,7 @@ export const meta = definePrototype({
     { id: "esqueci-senha-enviado", label: "Esqueci minha senha: link enviado" },
     { id: "nova-senha", label: "Escolher nova senha" },
     { id: "minha-solicitacao", label: "Minha solicitação: em análise" },
+    { id: "minha-solicitacao-pendencias", label: "Minha solicitação: documento pendente" },
     { id: "minha-solicitacao-aprovada", label: "Minha solicitação: aprovada" },
     { id: "minha-solicitacao-vazia", label: "Minha solicitação: nenhuma enviada" },
   ],
@@ -70,6 +73,14 @@ function Screen({ state }: { state: string }) {
         <>
           <ApplicantBar email={applicantEmail} />
           <MyApplication application={submittedApplication} />
+        </>
+      );
+    case "minha-solicitacao-pendencias":
+      return (
+        <>
+          <ApplicantBar email={applicantEmail} />
+          <MyApplication application={submittedApplication} pendingDocuments={1} />
+          <RequestedDocuments initialRequests={requestedDocuments} />
         </>
       );
     case "minha-solicitacao-aprovada":

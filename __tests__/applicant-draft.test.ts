@@ -54,3 +54,12 @@ describe("referencedUploadDirs", () => {
     expect([...dirs].sort()).toEqual([`${ACC}/${UP1}`, `${ACC}/${UP2}`]);
   });
 });
+
+describe("documentLabel", () => {
+  it("never throws on a missing category", async () => {
+    const { documentLabel } = await import("@/lib/applicant/document-labels");
+    expect(documentLabel(undefined)).toBe("Documento");
+    expect(documentLabel("rg_aluno", "Ana")).toBe("RG do Aluno — Ana");
+    expect(documentLabel("certidao_casamento")).toBe("Certidão de Casamento");
+  });
+});

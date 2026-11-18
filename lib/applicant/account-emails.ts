@@ -52,3 +52,20 @@ Se não foi você, pode ignorar esta mensagem.`,
     action: { label: "Entrar", url: `${applicantLinkOrigin()}/solicitar-bolsa/entrar` },
   });
 }
+
+/** Avisa a família dos documentos que a equipe pediu de novo. */
+export function sendDocumentRequestEmail(to: string, items: Array<{ label: string; motivo: string }>) {
+  const list = items.map((item) => `• ${item.label}: ${item.motivo}`).join("\n");
+  return sendApplicantEmail({
+    to,
+    subject: "Documento pendente na sua solicitação de bolsa",
+    body: `Prezado(a) responsável,
+
+Ao analisar sua solicitação de bolsa, a equipe da ${SIGNATURE} precisa que você reenvie ${items.length === 1 ? "o documento abaixo" : "os documentos abaixo"}:
+
+${list}
+
+Para reenviar, entre na sua conta com seu e-mail e senha e abra "Minha solicitação". Os demais dados da solicitação continuam como foram enviados.`,
+    action: { label: "Reenviar documento", url: `${applicantLinkOrigin()}/solicitar-bolsa/minha-solicitacao` },
+  });
+}

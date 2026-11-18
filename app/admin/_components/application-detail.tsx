@@ -4,7 +4,9 @@ import { useState, type ReactNode } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataGrid, DataItem } from "./data-grid";
 import { DocumentPreview } from "./document-preview";
+import { DocumentRequests } from "./document-requests";
 import { EmptyState } from "./empty-state";
+import type { DocumentRequestsData } from "../_actions/document-request-actions";
 import { PAGE_TABS_LIST_CLASS, PAGE_TABS_TRIGGER_CLASS } from "./url-tabs";
 
 export type DetailTab = "resumo" | "documentos" | "financeiro" | "decisao";
@@ -16,6 +18,8 @@ interface ApplicationDetailProps {
   /** Conteúdo extra no fim da aba Resumo (ex.: observações internas). */
   afterResumo?: ReactNode;
   defaultTab?: DetailTab;
+  /** Pendências já carregadas (protótipos); sem elas, o painel busca no servidor. */
+  documentRequestsData?: DocumentRequestsData | null;
 }
 
 const EXPENSES: Array<[string, string]> = [
@@ -46,7 +50,14 @@ function pickDefaultTab(documents: unknown[], status?: string): DetailTab {
   return status === "pendente" && documents.length > 0 ? "documentos" : "resumo";
 }
 
-export function ApplicationDetail({ detail, status, decisionPanel, afterResumo, defaultTab }: ApplicationDetailProps) {
+export function ApplicationDetail({
+  detail,
+  status,
+  decisionPanel,
+  afterResumo,
+  defaultTab,
+  documentRequestsData = null,
+}: ApplicationDetailProps) {
   const d = detail;
   const students = (d.students as Array<Record<string, unknown>>) ?? [];
   const otherChildren = (d.other_children as Array<Record<string, unknown>>) ?? [];
@@ -54,6 +65,8 @@ export function ApplicationDetail({ detail, status, decisionPanel, afterResumo, 
   const collaboration = d.collaboration as Record<string, unknown> | null;
   const benefactors = (d.benefactors as Array<Record<string, unknown>>) ?? [];
   const documents = (d.documents as Array<Record<string, unknown>>) ?? [];
+  // Arquivos reenviados para uma pendência aparecem junto da pendência.
+  const originalDocuments = documents.filter((doc) => !doc.document_request_id);
   const tuitionTotal = students.reduce((total, s) => total + (Number(s.mensalidade) || 0), 0);
   const expensesTotal = EXPENSES.reduce((total, [, key]) => total + (Number(d[key]) || 0), 0);
 
@@ -71,7 +84,7 @@ export function ApplicationDetail({ detail, status, decisionPanel, afterResumo, 
           Resumo
         </TabsTrigger>
         <TabsTrigger value="documentos" className={PAGE_TABS_TRIGGER_CLASS} data-testid="detail-tab-documentos">
-          Documentos ({documents.length})
+          Documentos ({originalDocuments.length})
         </TabsTrigger>
         <TabsTrigger value="financeiro" className={PAGE_TABS_TRIGGER_CLASS} data-testid="detail-tab-financeiro">
           Renda e despesas
@@ -158,9 +171,9 @@ export function ApplicationDetail({ detail, status, decisionPanel, afterResumo, 
         {afterResumo}
       </TabsContent>
 
-      <TabsContent value="documentos" data-testid="detail-panel-documentos">
-        {documents.length > 0 ? (
-          <DocumentPreview documents={documents} />
+      <TabsContent value="documentos" className="space-y-6" data-testid="detail-panel-documentos">
+        {originalDocuments.length > 0 ? (
+          <DocumentPreview documents={originalDocuments} />
         ) : (
           <EmptyState
             title="Nenhum documento enviado"
@@ -168,6 +181,11 @@ export function ApplicationDetail({ detail, status, decisionPanel, afterResumo, 
             className="py-8"
           />
         )}
+        <DocumentRequests
+          applicationId={String(d.id)}
+          students={students.map((student) => ({ id: String(student.id), nome: String(student.nome) }))}
+          initialData={documentRequestsData}
+        />
       </TabsContent>
 
       <TabsContent value="financeiro" className="space-y-6" data-testid="detail-panel-financeiro">
