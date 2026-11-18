@@ -29,6 +29,9 @@ const requiredFileArray = z
   .array(uploadedPath)
   .min(1, "Envie pelo menos um arquivo");
 
+/** Documento que a família pode enviar ou não. */
+const optionalFileArray = z.array(uploadedPath).default([]);
+
 const studentSchema = z.object({
   nome: z.string().min(1, "Nome do aluno é obrigatório"),
   cpf: optionalCpfSchema,
@@ -77,8 +80,8 @@ export const applicationSubmissionSchema = z.object({
   compromisso_contribuicao: z.literal(true, { message: "Aceite o compromisso de contribuição." }),
   ciencia_confidencialidade: z.literal(true, { message: "Confirme a ciência sobre o sigilo dos documentos." }),
   escola: z.string().min(1, "Nome da escola é obrigatório"),
-  declaracao_vaga: requiredFileArray,
-  carta_recomendacao: requiredFileArray,
+  declaracao_vaga: optionalFileArray,
+  carta_recomendacao: optionalFileArray,
 
   pai: z.object({
     nome: z.string().min(1, "Nome do pai é obrigatório"),

@@ -154,9 +154,17 @@ describe("applicationSubmissionSchema", () => {
     expect(result.success).toBe(false);
   });
 
+  it.each(["declaracao_vaga", "carta_recomendacao"])("accepts the application without the optional %s", (field) => {
+    const data = validApplication() as Record<string, unknown>;
+    data[field] = [];
+    expect(applicationSubmissionSchema.safeParse(data).success).toBe(true);
+    delete data[field];
+    const parsed = applicationSubmissionSchema.safeParse(data);
+    expect(parsed.success && (parsed.data as Record<string, unknown>)[field]).toEqual([]);
+  });
+
   it.each([
-    "declaracao_vaga", "carta_recomendacao", "certidao_casamento", "comprovante_endereco", "extrato_ir",
-    "extratos_bancarios",
+    "certidao_casamento", "comprovante_endereco", "extrato_ir", "extratos_bancarios",
   ])("rejects each missing required document group: %s", (field) => {
     const data = validApplication() as Record<string, unknown>;
     data[field] = [];

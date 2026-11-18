@@ -50,10 +50,9 @@ function validateStep1(data: FormData): Record<string, string> {
   }
   if (!data.mae_profissao.trim()) errors.mae_profissao = M;
   {
-    const declaracaoVaga = docError(data.declaracao_vaga);
-    if (declaracaoVaga) errors.declaracao_vaga = declaracaoVaga;
-    const cartaRecomendacao = docError(data.carta_recomendacao);
-    if (cartaRecomendacao) errors.carta_recomendacao = cartaRecomendacao;
+    // Opcionais: só seguram o avanço enquanto um arquivo ainda está subindo.
+    if (data.declaracao_vaga.some((f) => f.uploading)) errors.declaracao_vaga = MSG_ENVIANDO;
+    if (data.carta_recomendacao.some((f) => f.uploading)) errors.carta_recomendacao = MSG_ENVIANDO;
     const docPai = docError(data.doc_pai);
     if (docPai) errors.doc_pai = docPai;
     const docMae = docError(data.doc_mae);

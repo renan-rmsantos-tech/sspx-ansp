@@ -19,16 +19,16 @@ vi.mock("@/app/form/_actions/form-actions", () => ({
   saveApplicationDraft: (...args: unknown[]) => mockSaveDraft(...args),
 }));
 
-async function uploadAll() {
+async function uploadAll(skip = 0) {
   const file = new File(["x"], "doc.pdf", { type: "application/pdf" });
-  for (const input of screen.getAllByTestId("upload-input")) {
+  for (const input of screen.getAllByTestId("upload-input").slice(skip)) {
     await act(async () => {
       fireEvent.change(input, { target: { files: [file] } });
     });
   }
 }
 
-async function fillStep1() {
+async function fillStep1({ skipOptionalDocuments = false } = {}) {
   // Escola não é mais escolhida no formulário (valor padrão: Colégio São José).
   fireEvent.change(screen.getByTestId("pai-nome"), {
     target: { value: "João Silva" },
@@ -64,7 +64,8 @@ async function fillStep1() {
     target: { value: "joao@email.com" },
   });
   // Documentos obrigatórios do passo 1 (RG do pai/mãe, certidão, comprovante).
-  await uploadAll();
+  // Os dois primeiros campos são a declaração de vaga e a carta do padre, opcionais.
+  await uploadAll(skipOptionalDocuments ? 2 : 0);
 }
 
 async function fillStep2() {
@@ -175,6 +176,15 @@ describe("ScholarshipForm", () => {
   it("advances to step 2 when step 1 is valid", async () => {
     render(<ScholarshipForm />);
     await fillStep1();
+    fireEvent.click(screen.getByTestId("btn-next"));
+    expect(screen.getByTestId("step-2")).toBeInTheDocument();
+  });
+
+  it("advances without the school vacancy declaration and the priest's letter, which are optional", async () => {
+    render(<ScholarshipForm />);
+    expect(screen.getByText("Declaração de vaga do colégio").parentElement).toHaveTextContent("(opcional)");
+    expect(screen.getByText("Carta de recomendação do padre").parentElement).toHaveTextContent("(opcional)");
+    await fillStep1({ skipOptionalDocuments: true });
     fireEvent.click(screen.getByTestId("btn-next"));
     expect(screen.getByTestId("step-2")).toBeInTheDocument();
   });

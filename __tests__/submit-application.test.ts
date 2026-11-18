@@ -186,12 +186,13 @@ describe("submitApplication", () => {
     );
   });
 
-  it("rejects a submission without the priest's recommendation letter", async () => {
-    const result = await submitApplication({ ...validInput(), carta_recomendacao: [] });
+  it("accepts a submission without the priest's letter and the school vacancy declaration", async () => {
+    const result = await submitApplication({ ...validInput(), carta_recomendacao: [], declaracao_vaga: [] });
 
-    expect(result.success).toBe(false);
-    expect(result.errors).toHaveProperty("carta_recomendacao");
-    expect(inserted).toHaveLength(0);
+    expect(result.success).toBe(true);
+    const categories = (insertedFor(documents) as Array<{ categoria: string }>).map((row) => row.categoria);
+    expect(categories).not.toContain("carta_recomendacao");
+    expect(categories).not.toContain("declaracao_vaga");
   });
 
   it("rejects a recommendation letter uploaded under another category", async () => {

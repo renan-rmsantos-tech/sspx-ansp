@@ -80,18 +80,17 @@ export function Step1Applicant({ data, onChange, errors }: Step1Props) {
         <div className="mb-5">
           <label className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg">
             Declaração de vaga do colégio
-            <RequiredMark />
+            <span className="ml-1 font-normal text-muted">(opcional)</span>
           </label>
           <p className="mb-2 text-xs text-muted">
-            Envie o documento emitido pelo colégio confirmando a disponibilidade
-            da vaga.
+            Se já tiver, envie o documento emitido pelo colégio confirmando a
+            disponibilidade da vaga.
           </p>
           <FileUpload
             label="para enviar a declaração de vaga do colégio"
             category="declaracao_vaga"
             files={data.declaracao_vaga}
             onChange={(f) => updateFiles("declaracao_vaga", f)}
-            required
             error={errors.declaracao_vaga}
           />
         </div>
@@ -99,17 +98,16 @@ export function Step1Applicant({ data, onChange, errors }: Step1Props) {
         <div className="mb-5">
           <label className="mb-1.5 block text-[13px] font-medium tracking-wide text-fg">
             Carta de recomendação do padre
-            <RequiredMark />
+            <span className="ml-1 font-normal text-muted">(opcional)</span>
           </label>
           <p className="mb-2 text-xs text-muted">
-            Envie a carta em que o padre recomenda a família para a bolsa.
+            Se já tiver, envie a carta em que o padre recomenda a família para a bolsa.
           </p>
           <FileUpload
             label="para enviar a carta de recomendação do padre"
             category="carta_recomendacao"
             files={data.carta_recomendacao}
             onChange={(f) => updateFiles("carta_recomendacao", f)}
-            required
             error={errors.carta_recomendacao}
           />
         </div>
