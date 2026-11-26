@@ -48,7 +48,7 @@ Admin sections: solicitações, benfeitores, ano letivo, cabeçalho (PDF header)
 ```
 app/                 # Next.js routes (form, admin, benfeitor, login, api)
 lib/                 # db, auth, storage, pdf, validations, templates
-drafts/              # @compozy/proto drafts (drafts/<slug>/index.proto.tsx)
+drafts/              # @protohq/cli drafts (drafts/<slug>/index.proto.tsx)
 proto/               # proto review store (review/) and next/* shims for the gallery (next/)
 drizzle/             # SQL migrations
 scripts/             # bootstrap, backup, post-receive deploy hook, cleanup
@@ -70,7 +70,7 @@ proto.config.ts      # Prototype gallery config; vite.config.ts and proto.canvas
 
 Leia `PRODUCT.md`, `DESIGN.md` e `COPY.md` antes de trabalho de UX/UI ou copy. O catálogo e os protótipos ficam em `docs/design/opendesign/`; são referência visual, não código de produção. A fonte executável dos tokens é `app/globals.css` e os componentes em `app/` e `components/` prevalecem em qualquer divergência.
 
-Protótipos usam `@compozy/proto` (skills `proto` e `proto-apply-comments`): `<view>.proto.tsx` ao lado da view real, com fixtures em `<view>.fixtures.ts`, e explorações em `drafts/<slug>/index.proto.tsx`. `npm run proto dev` abre a galeria em `127.0.0.1:4400`; `npm run proto check` precisa passar antes da revisão. A galeria compila com `vite.config.ts` (o `next build` não o usa) e troca `next/link`, `next/image` e `next/navigation` pelas versões de `proto/next/`. Views recebem dados e callbacks por props e pedem server actions com `useServerAction("nome")` (`components/server-actions.tsx`), nunca importando `_actions/`: `app/admin/layout.tsx` e as páginas públicas entregam as actions reais com `ServerActionsProvider`, e os protótipos entregam `fixtureActions()`. Protótipos nunca alcançam server actions, banco ou sessão, e o guard de `proto.config.ts` falha quando alcançam. Detalhes em `docs/design/prototyping.md`.
+Protótipos usam `@protohq/cli` (skills `proto` e `proto-apply-comments`): `<view>.proto.tsx` ao lado da view real, com fixtures em `<view>.fixtures.ts`, e explorações em `drafts/<slug>/index.proto.tsx`. `npm run proto dev` abre a galeria em `http://127.0.0.1:4400/p/<projeto>/`; `npm run proto check` precisa passar antes da revisão. A galeria compila com `vite.config.ts` (o `next build` não o usa) e troca `next/link`, `next/image` e `next/navigation` pelas versões de `proto/next/`. Views recebem dados e callbacks por props e pedem server actions com `useServerAction("nome")` (`components/server-actions.tsx`), nunca importando `_actions/`: `app/admin/layout.tsx` e as páginas públicas entregam as actions reais com `ServerActionsProvider`, e os protótipos entregam `fixtureActions()`. Protótipos nunca alcançam server actions, banco ou sessão, e o guard de `proto.config.ts` falha quando alcançam. Detalhes em `docs/design/prototyping.md`.
 
 ## Development
 

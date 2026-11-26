@@ -1,4 +1,4 @@
-import { definePrototype, type PrototypeProps } from "@compozy/proto";
+import { definePrototype, type PrototypeProps } from "@protohq/cli";
 import { PageHeader } from "../_components/page-header";
 import { ModelosTabs, type ModelTab } from "./modelos-tabs";
 import { contractTemplate, decisionTemplates } from "./modelos.fixtures";

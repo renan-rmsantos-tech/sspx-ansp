@@ -1,4 +1,4 @@
-import { definePrototype, type PrototypeProps } from "@compozy/proto";
+import { definePrototype, type PrototypeProps } from "@protohq/cli";
 import { FormUnavailableMessage } from "./form-unavailable-message";
 import { ScholarshipForm } from "./scholarship-form";
 import { ScholarshipPageLayout } from "./scholarship-page-layout";

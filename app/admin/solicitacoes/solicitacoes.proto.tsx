@@ -1,4 +1,4 @@
-import { definePrototype, type PrototypeProps } from "@compozy/proto";
+import { definePrototype, type PrototypeProps } from "@protohq/cli";
 import { ServerActionsProvider, type ServerActions } from "@/components/server-actions";
 import { fixtureActions } from "@/proto/server-actions.fixtures";
 import { SecretariatApplicationsClient, SolicitacoesClient, type SecretariatTab } from "./client";

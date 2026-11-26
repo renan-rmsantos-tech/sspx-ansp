@@ -45,7 +45,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@compozy/proto": "^0.1.6",
+    "@protohq/cli": "0.3.0",
     "@eslint/eslintrc": "^3.3.5",
     "@tailwindcss/postcss": "^4.3.1",
     "@testing-library/jest-dom": "^6.9.1",

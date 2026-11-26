@@ -1,4 +1,4 @@
-import { definePrototype, type PrototypeProps } from "@compozy/proto";
+import { definePrototype, type PrototypeProps } from "@protohq/cli";
 import { AdminHome } from "./admin-home";
 import { adminHomeSummary, adminHomeSummaryIdle } from "./admin-home.fixtures";
 

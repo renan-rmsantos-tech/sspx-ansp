@@ -1,4 +1,4 @@
-import { definePrototype, type PrototypeProps } from "@compozy/proto";
+import { definePrototype, type PrototypeProps } from "@protohq/cli";
 import { AnoLetivoClient } from "./client";
 import { schoolYears, today } from "./ano-letivo.fixtures";
 

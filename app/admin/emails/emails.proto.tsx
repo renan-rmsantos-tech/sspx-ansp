@@ -1,4 +1,4 @@
-import { definePrototype, type PrototypeProps } from "@compozy/proto";
+import { definePrototype, type PrototypeProps } from "@protohq/cli";
 import { ServerActionsProvider } from "@/components/server-actions";
 import { renderDonorMonthlyInstructionsPreview } from "@/lib/email/donor-monthly-instructions-template";
 import { renderDonorReminderPreview } from "@/lib/email/donor-reminder-template";

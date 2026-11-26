@@ -1,4 +1,4 @@
-import { definePrototype } from "@compozy/proto";
+import { definePrototype } from "@protohq/cli";
 import { CartazFamilias } from "./cartaz-familias";
 
 export const meta = definePrototype({

@@ -1,4 +1,4 @@
-import { definePrototype, type PrototypeProps } from "@compozy/proto";
+import { definePrototype, type PrototypeProps } from "@protohq/cli";
 import { useState, type ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
