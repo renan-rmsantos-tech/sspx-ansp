@@ -1,6 +1,6 @@
 import "./app/globals.css";
 
-import type { CanvasProps, FrameProps } from "@compozy/proto";
+import type { CanvasProps, FrameProps } from "@protohq/cli";
 import { AdminShell } from "@/app/admin/_components/admin-shell";
 import { ServerActionsProvider } from "@/components/server-actions";
 import type { StaffRole } from "@/lib/auth/authorization";

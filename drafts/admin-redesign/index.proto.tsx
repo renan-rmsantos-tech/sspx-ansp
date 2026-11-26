@@ -1,4 +1,4 @@
-import { definePrototype, setParam, type PrototypeProps } from "@compozy/proto";
+import { definePrototype, setParam, type PrototypeProps } from "@protohq/cli";
 import { SCREENS, Shell, type Role, type ScreenId } from "./shell";
 
 export const meta = definePrototype({

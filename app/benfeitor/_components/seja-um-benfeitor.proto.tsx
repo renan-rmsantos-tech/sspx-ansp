@@ -1,4 +1,4 @@
-import { definePrototype, type PrototypeProps } from "@compozy/proto";
+import { definePrototype, type PrototypeProps } from "@protohq/cli";
 import { DonorForm } from "./donor-form";
 import { DonorPageLayout } from "./donor-page-layout";
 import { emptyMonthlyErrors } from "./seja-um-benfeitor.fixtures";

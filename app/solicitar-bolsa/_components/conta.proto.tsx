@@ -1,4 +1,4 @@
-import { definePrototype, type PrototypeProps } from "@compozy/proto";
+import { definePrototype, type PrototypeProps } from "@protohq/cli";
 import { ScholarshipPageLayout } from "@/app/form/_components/scholarship-page-layout";
 import { ApplicantPageLayout } from "./applicant-page-layout";
 import {

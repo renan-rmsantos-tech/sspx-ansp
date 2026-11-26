@@ -1,4 +1,4 @@
-import { definePrototype, type PrototypeProps } from "@compozy/proto";
+import { definePrototype, type PrototypeProps } from "@protohq/cli";
 import { CabecalhoClient } from "./client";
 import { documentHeader, footerError, minimalHeader, overlongFooterHeader } from "./cabecalho.fixtures";
 

@@ -1,4 +1,4 @@
-import { definePrototype } from "@compozy/proto";
+import { definePrototype } from "@protohq/cli";
 import { LandingPage } from "./landing";
 
 export const meta = definePrototype({

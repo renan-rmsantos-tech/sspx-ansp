@@ -1,4 +1,4 @@
-import { definePrototype, type PrototypeProps } from "@compozy/proto";
+import { definePrototype, type PrototypeProps } from "@protohq/cli";
 import { PostRedes, type PostFormato, type PostTema } from "./post-redes";
 
 export const meta = definePrototype({
